@@ -1,7 +1,7 @@
 import React from 'react';
-import ReactDOM from 'react-dom'; // <<< THÊM IMPORT NÀY
+import ReactDOM from 'react-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { X } from 'lucide-react'; // Sử dụng icon từ Lucide cho nhất quán
+import { X } from 'lucide-react';
 
 const Modal = ({
                  isOpen,
@@ -25,8 +25,6 @@ const Modal = ({
     full: 'max-w-7xl'
   };
 
-  // <<< SỬ DỤNG ReactDOM.createPortal >>>
-  // Component Modal sẽ được render vào `document.body`
   return ReactDOM.createPortal(
       <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -34,56 +32,60 @@ const Modal = ({
           role="dialog"
           aria-modal="true"
       >
-        {/* Backdrop */}
+        {/* Enhanced Backdrop */}
         <div
-            className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/40 backdrop-blur-md transition-all duration-300"
             onClick={onClose}
             aria-hidden="true"
         />
 
-        {/* Nội dung Modal */}
+        {/* Modal Content with Enhanced Design */}
         <div
             className={`
-          relative w-full ${sizes[size]} transform transition-all
-          flex flex-col rounded-xl shadow-2xl
-          ${currentTheme.bgCard} ${currentTheme.border} border
-          ${className}
-        `}
-            onClick={(e) => e.stopPropagation()}
+              relative w-full ${sizes[size]} transform transition-all duration-300
+              flex flex-col shadow-2xl shadow-slate-900/50
+              ${currentTheme.bgCard} backdrop-blur-xl
+              border border-white/10 dark:border-slate-700/50
+              rounded-3xl overflow-hidden
+              ${className}
+            `}
         >
-          {/* Header */}
+          {/* Enhanced Header with Gradient */}
           {(title || showCloseButton) && (
-              <div className={`px-6 py-4 ${currentTheme.border} border-b flex items-center justify-between flex-shrink-0`}>
-                {title && (
-                    <h3 id="modal-title" className={`text-lg font-semibold ${currentTheme.text}`}>
-                      {title}
-                    </h3>
-                )}
-                {showCloseButton && (
-                    <button
-                        onClick={onClose}
-                        className={`p-2 rounded-full ${currentTheme.textSecondary} hover:${currentTheme.bgHover}`}
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                )}
+              <div className="relative px-8 py-6 border-b border-slate-200/60 dark:border-slate-700/60">
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 to-transparent dark:from-slate-800/50" />
+                <div className="relative flex items-center justify-between">
+                  {title && (
+                      <h3 id="modal-title" className={`text-2xl font-semibold ${currentTheme.text} tracking-tight`}>
+                        {title}
+                      </h3>
+                  )}
+                  {showCloseButton && (
+                      <button
+                          onClick={onClose}
+                          className="w-10 h-10 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 flex items-center justify-center border border-slate-200/60 dark:border-slate-700/60"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                  )}
+                </div>
               </div>
           )}
 
-          {/* Content (cho phép cuộn nếu nội dung dài) */}
-          <div className="px-6 py-5 overflow-y-auto">
+          {/* Enhanced Content */}
+          <div className="px-8 py-6 overflow-y-auto max-h-[70vh]">
             {children}
           </div>
 
-          {/* Footer */}
+          {/* Enhanced Footer */}
           {footer && (
-              <div className={`px-6 py-4 ${currentTheme.border} border-t flex-shrink-0`}>
+              <div className="relative px-8 py-6 border-t border-slate-200/60 dark:border-slate-700/60 bg-slate-50/30 dark:bg-slate-800/30">
                 {footer}
               </div>
           )}
         </div>
       </div>,
-      document.body // <<< Nơi mà Portal sẽ render component vào
+      document.body
   );
 };
 

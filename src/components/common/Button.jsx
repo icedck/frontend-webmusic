@@ -15,89 +15,98 @@ const Button = ({
   const { currentTheme } = useDarkMode();
 
   const baseClasses = `
-    inline-flex items-center justify-center font-medium rounded-lg 
-    transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
-    disabled:opacity-50 disabled:cursor-not-allowed
+    relative inline-flex items-center justify-center font-medium 
+    transition-all duration-300 ease-out focus:outline-none 
+    disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden
+    active:scale-95 transform-gpu
   `;
 
   const variants = {
     primary: `
-      bg-gradient-to-r from-music-500 to-music-600 text-white
-      hover:from-music-600 hover:to-music-700 
-      focus:ring-music-500
-      shadow-lg hover:shadow-xl
+      bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 text-white
+      hover:from-slate-700 hover:via-slate-800 hover:to-slate-700
+      border border-slate-700/50 hover:border-slate-600/50
+      shadow-lg shadow-slate-900/25 hover:shadow-xl hover:shadow-slate-900/40
+      rounded-2xl
+      before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/10 before:to-transparent 
+      before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
     `,
     secondary: `
-      bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100
-      hover:bg-gray-300 dark:hover:bg-gray-600
-      focus:ring-gray-500
+      bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm
+      text-slate-700 dark:text-slate-300
+      hover:bg-slate-200/80 dark:hover:bg-slate-700/80
+      border border-slate-200/60 dark:border-slate-700/60 hover:border-slate-300/60 dark:hover:border-slate-600/60
+      rounded-2xl shadow-sm hover:shadow-md
     `,
     outline: `
-      border-2 border-music-500 text-music-600 dark:text-music-400
-      hover:bg-music-500 hover:text-white
-      focus:ring-music-500
+      border-2 border-slate-300/60 dark:border-slate-700/60 
+      text-slate-700 dark:text-slate-300
+      hover:bg-slate-50/80 dark:hover:bg-slate-800/80 
+      hover:border-slate-400/60 dark:hover:border-slate-600/60
+      rounded-2xl backdrop-blur-sm
     `,
     ghost: `
-      text-gray-600 dark:text-gray-400
-      hover:bg-gray-100 dark:hover:bg-gray-800
-      focus:ring-gray-500
+      text-slate-600 dark:text-slate-400
+      hover:bg-slate-100/60 dark:hover:bg-slate-800/60
+      hover:text-slate-900 dark:hover:text-slate-100
+      rounded-2xl
     `,
     danger: `
-      bg-red-500 text-white
-      hover:bg-red-600
-      focus:ring-red-500
+      bg-gradient-to-r from-red-500 to-rose-500 text-white
+      hover:from-red-600 hover:to-rose-600
+      border border-red-400/50 hover:border-red-500/50
+      shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/40
+      rounded-2xl
     `,
     success: `
-      bg-green-500 text-white
-      hover:bg-green-600
-      focus:ring-green-500
+      bg-gradient-to-r from-emerald-500 to-teal-500 text-white
+      hover:from-emerald-600 hover:to-teal-600
+      border border-emerald-400/50 hover:border-emerald-500/50
+      shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/40
+      rounded-2xl
+    `,
+    accent: `
+      bg-gradient-to-r from-indigo-500 to-purple-500 text-white
+      hover:from-indigo-600 hover:to-purple-600
+      border border-indigo-400/50 hover:border-indigo-500/50
+      shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40
+      rounded-2xl
+      before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/10 before:to-transparent 
+      before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
     `
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
-    xl: 'px-8 py-4 text-lg'
+    sm: 'px-4 py-2 text-sm h-9',
+    md: 'px-6 py-3 text-base h-11',
+    lg: 'px-8 py-4 text-lg h-13',
+    icon: 'w-10 h-10 text-sm',
   };
 
-  const classes = `
-    ${baseClasses}
-    ${variants[variant]}
-    ${sizes[size]}
-    ${className}
-  `.trim().replace(/\s+/g, ' ');
+  const buttonClasses = [
+    baseClasses,
+    variants[variant] || variants.primary,
+    sizes[size],
+    loading && 'cursor-wait',
+    className
+  ].filter(Boolean).join(' ');
 
   return (
     <button
       type={type}
       disabled={disabled || loading}
       onClick={onClick}
-      className={classes}
+      className={buttonClasses}
       {...props}
     >
       {loading && (
-        <svg 
-          className="animate-spin -ml-1 mr-2 h-4 w-4" 
-          fill="none" 
-          viewBox="0 0 24 24"
-        >
-          <circle 
-            cx="12" 
-            cy="12" 
-            r="10" 
-            stroke="currentColor" 
-            strokeWidth="4" 
-            className="opacity-25"
-          />
-          <path 
-            fill="currentColor" 
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            className="opacity-75"
-          />
-        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
       )}
-      {children}
+      <span className={loading ? 'opacity-0' : 'opacity-100 transition-opacity duration-200'}>
+        {children}
+      </span>
     </button>
   );
 };

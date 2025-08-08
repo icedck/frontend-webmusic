@@ -107,141 +107,191 @@ const ArtistManagement = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-music-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative w-16 h-16 mx-auto">
+              <div className="absolute inset-0 rounded-full border-4 border-indigo-200/30 dark:border-indigo-800/30"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-500 animate-spin"></div>
+            </div>
+          </div>
+          <p className={`text-lg font-light ${currentTheme?.text || 'text-gray-700 dark:text-gray-300'} tracking-wide`}>
+            Đang tải danh sách ca sĩ...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className={`text-3xl font-bold ${currentTheme.text}`}>
-            Quản lý ca sĩ
-          </h1>
-          <p className={`mt-2 ${currentTheme.textSecondary}`}>
-            Tạo và quản lý thông tin ca sĩ trong hệ thống
-          </p>
-        </div>
-        <Button onClick={handleCreateArtist}>
-          <Plus className="w-4 h-4 mr-2" />
-          Thêm ca sĩ mới
-        </Button>
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Tìm kiếm theo tên ca sĩ hoặc thể loại..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Artists Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredArtists.map((artist) => (
-          <div key={artist.id} className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            {/* Artist Avatar */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center">
-                <div className="h-12 w-12 bg-gradient-to-br from-music-400 to-music-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                  {artist.avatar ? (
-                    <img src={artist.avatar} alt="" className="h-12 w-12 rounded-full object-cover" />
-                  ) : (
-                    <User className="w-6 h-6" />
-                  )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-pink-500/10 rounded-3xl blur-3xl"></div>
+          <div className={`relative ${currentTheme.bgCard} backdrop-blur-sm border border-white/20 dark:border-slate-700/50 rounded-3xl p-8 shadow-xl shadow-slate-900/5`}>
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+                  <h1 className={`text-4xl font-light tracking-tight ${currentTheme.text}`}>
+                    Quản lý ca sĩ
+                  </h1>
                 </div>
-                <div>
-                  <h3 className={`font-semibold ${currentTheme.text}`}>
-                    {artist.name}
-                  </h3>
-                  <p className={`text-sm ${currentTheme.textSecondary} flex items-center gap-1`}>
-                    <Music className="w-3 h-3" />
-                    {artist.songsCount} bài hát
+                <p className={`text-lg ${currentTheme.textSecondary} ml-5 font-light`}>
+                  Tạo và quản lý thông tin ca sĩ trong hệ thống
+                </p>
+              </div>
+              <Button 
+                onClick={handleCreateArtist}
+                className="group relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 rounded-2xl px-6 py-3 transition-all duration-300 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-105"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <Plus className="w-5 h-5 mr-2" />
+                <span className="font-medium">Thêm ca sĩ mới</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative max-w-md">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl blur opacity-50"></div>
+          <div className={`relative ${currentTheme.bgCard} border border-slate-200/60 dark:border-slate-700/60 rounded-2xl overflow-hidden shadow-lg`}>
+            <Search className="absolute left-4 top-4 h-5 w-5 text-slate-400" />
+            <Input
+              placeholder="Tìm kiếm theo tên ca sĩ hoặc thể loại..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 pr-4 py-4 bg-transparent border-0 text-base placeholder:text-slate-400 focus:ring-0"
+            />
+          </div>
+        </div>
+
+        {/* Artists Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredArtists.map((artist) => (
+            <div key={artist.id} className="group relative">
+              {/* Floating gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500 scale-95 group-hover:scale-100"></div>
+              
+              <div className={`relative ${currentTheme.bgCard} backdrop-blur-sm border border-white/10 dark:border-slate-700/30 rounded-3xl p-6 shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-500 group-hover:border-indigo-200/50 dark:group-hover:border-indigo-700/50`}>
+                {/* Artist Header */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
+                      <div className="relative w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                        {artist.avatar ? (
+                          <img src={artist.avatar} alt="" className="w-16 h-16 rounded-2xl object-cover" />
+                        ) : (
+                          <User className="w-7 h-7" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className={`text-xl font-semibold ${currentTheme.text} tracking-tight`}>
+                        {artist.name}
+                      </h3>
+                      <p className={`text-sm ${currentTheme.textSecondary} flex items-center gap-2 font-medium`}>
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <Music className="w-4 h-4" />
+                        {artist.songsCount} bài hát
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                    <button
+                      onClick={() => handleEditArtist(artist)}
+                      className="w-9 h-9 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteArtist(artist.id)}
+                      className="w-9 h-9 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Artist Bio */}
+                <div className="mb-6">
+                  <p className={`text-sm ${currentTheme.textSecondary} leading-relaxed line-clamp-3`}>
+                    {artist.bio}
+                  </p>
+                </div>
+
+                {/* Genres */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {artist.genres.map((genre, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1.5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-medium border border-indigo-200/50 dark:border-indigo-800/50 backdrop-blur-sm"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <div className={`pt-4 border-t border-slate-200/60 dark:border-slate-700/60`}>
+                  <p className={`text-xs ${currentTheme.textSecondary} font-medium tracking-wide`}>
+                    Tạo ngày: {formatDate(artist.createdAt)}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleEditArtist(artist)}
-                  className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteArtist(artist.id)}
-                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredArtists.length === 0 && (
+          <div className="text-center py-16">
+            <div className="relative inline-block">
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-800 rounded-3xl blur-lg opacity-50"></div>
+              <div className={`relative w-24 h-24 ${currentTheme.bgCard} border border-slate-200/60 dark:border-slate-700/60 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>
+                <User className={`w-12 h-12 ${currentTheme.textSecondary}`} />
               </div>
             </div>
-
-            {/* Artist Bio */}
-            <p className={`text-sm ${currentTheme.textSecondary} mb-4 line-clamp-3`}>
-              {artist.bio}
+            <h3 className={`text-2xl font-light ${currentTheme.text} mb-3 tracking-tight`}>
+              {searchTerm ? 'Không tìm thấy ca sĩ nào' : 'Chưa có ca sĩ nào'}
+            </h3>
+            <p className={`${currentTheme.textSecondary} mb-8 text-lg font-light max-w-md mx-auto`}>
+              {searchTerm ? 'Thử thay đổi từ khóa tìm kiếm' : 'Bắt đầu bằng cách thêm ca sĩ đầu tiên'}
             </p>
-
-            {/* Genres */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {artist.genres.map((genre, index) => (
-                <span
-                  key={index}
-                  className="bg-music-100 dark:bg-music-900/20 text-music-600 dark:text-music-400 px-2 py-1 rounded-full text-xs"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
-
-            {/* Creation Date */}
-            <p className={`text-xs ${currentTheme.textMuted}`}>
-              Tạo ngày: {formatDate(artist.createdAt)}
-            </p>
+            {!searchTerm && (
+              <Button 
+                onClick={handleCreateArtist}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 rounded-2xl px-8 py-3 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-105 transition-all duration-300"
+              >
+                Thêm ca sĩ mới
+              </Button>
+            )}
           </div>
-        ))}
+        )}
+
+        {/* Modals */}
+        {showCreateModal && (
+          <ArtistModal
+            onSave={handleSaveArtist}
+            onCancel={() => setShowCreateModal(false)}
+            title="Thêm ca sĩ mới"
+          />
+        )}
+
+        {showEditModal && selectedArtist && (
+          <ArtistModal
+            artist={selectedArtist}
+            onSave={handleSaveArtist}
+            onCancel={() => setShowEditModal(false)}
+            title="Chỉnh sửa thông tin ca sĩ"
+          />
+        )}
       </div>
-
-      {filteredArtists.length === 0 && (
-        <div className="text-center py-12">
-          <User className={`w-12 h-12 ${currentTheme.textSecondary} mx-auto mb-4`} />
-          <h3 className={`text-lg font-medium ${currentTheme.text} mb-2`}>
-            {searchTerm ? 'Không tìm thấy ca sĩ nào' : 'Chưa có ca sĩ nào'}
-          </h3>
-          <p className={`${currentTheme.textSecondary} mb-4`}>
-            {searchTerm ? 'Thử thay đổi từ khóa tìm kiếm' : 'Bắt đầu bằng cách thêm ca sĩ đầu tiên'}
-          </p>
-          {!searchTerm && (
-            <Button onClick={handleCreateArtist}>
-              Thêm ca sĩ mới
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* Create Artist Modal */}
-      {showCreateModal && (
-        <ArtistModal
-          onSave={handleSaveArtist}
-          onCancel={() => setShowCreateModal(false)}
-          title="Thêm ca sĩ mới"
-        />
-      )}
-
-      {/* Edit Artist Modal */}
-      {showEditModal && selectedArtist && (
-        <ArtistModal
-          artist={selectedArtist}
-          onSave={handleSaveArtist}
-          onCancel={() => setShowEditModal(false)}
-          title="Chỉnh sửa thông tin ca sĩ"
-        />
-      )}
     </div>
   );
 };
@@ -291,83 +341,118 @@ const ArtistModal = ({ artist, onSave, onCancel, title }) => {
   };
 
   return (
-    <Modal isOpen={true} onClose={onCancel} title={title}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
-            Tên ca sĩ *
-          </label>
-          <Input
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Nhập tên ca sĩ"
-            required
-          />
-        </div>
-
-        <div>
-          <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
-            Tiểu sử
-          </label>
-          <textarea
-            name="bio"
-            value={formData.bio}
-            onChange={handleInputChange}
-            rows="4"
-            placeholder="Nhập tiểu sử ca sĩ..."
-            className={`w-full px-4 py-2 border rounded-lg ${currentTheme.bg} ${currentTheme.text} ${currentTheme.border} focus:ring-2 focus:ring-music-500 focus:border-music-500 resize-none`}
-          />
-        </div>
-
-        <div>
-          <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
-            Thể loại
-          </label>
-          <div className="flex gap-2 mb-2">
-            <select
-              value={newGenre}
-              onChange={(e) => setNewGenre(e.target.value)}
-              className={`flex-1 px-4 py-2 border rounded-lg ${currentTheme.bg} ${currentTheme.text} ${currentTheme.border} focus:ring-2 focus:ring-music-500 focus:border-music-500`}
-            >
-              <option value="">Chọn thể loại</option>
-              {commonGenres.filter(genre => !formData.genres.includes(genre)).map(genre => (
-                <option key={genre} value={genre}>{genre}</option>
-              ))}
-            </select>
-            <Button type="button" onClick={handleAddGenre} variant="outline">
-              Thêm
-            </Button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+      <div className="relative w-full max-w-lg">
+        {/* Background glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-pink-500/20 rounded-3xl blur-2xl"></div>
+        
+        <div className={`relative ${currentTheme.bgCard} backdrop-blur-xl border border-white/20 dark:border-slate-700/50 rounded-3xl shadow-2xl shadow-slate-900/25 overflow-hidden`}>
+          {/* Header */}
+          <div className="relative px-8 py-6 border-b border-slate-200/60 dark:border-slate-700/60">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5"></div>
+            <h2 className={`relative text-2xl font-semibold ${currentTheme.text} tracking-tight`}>
+              {title}
+            </h2>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.genres.map((genre, index) => (
-              <span
-                key={index}
-                className="bg-music-100 dark:bg-music-900/20 text-music-600 dark:text-music-400 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-              >
-                {genre}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveGenre(genre)}
-                  className="text-music-500 hover:text-music-700"
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            <div className="space-y-2">
+              <label className={`block text-sm font-medium ${currentTheme.text} tracking-wide`}>
+                Tên ca sĩ <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Nhập tên ca sĩ"
+                  required
+                  className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl focus:border-indigo-300 dark:focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className={`block text-sm font-medium ${currentTheme.text} tracking-wide`}>
+                Tiểu sử
+              </label>
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                rows="4"
+                placeholder="Nhập tiểu sử ca sĩ..."
+                className={`w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl ${currentTheme.text} focus:border-indigo-300 dark:focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 resize-none`}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <label className={`block text-sm font-medium ${currentTheme.text} tracking-wide`}>
+                Thể loại
+              </label>
+              
+              {/* Add Genre Section */}
+              <div className="flex gap-3">
+                <select
+                  value={newGenre}
+                  onChange={(e) => setNewGenre(e.target.value)}
+                  className={`flex-1 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl ${currentTheme.text} focus:border-indigo-300 dark:focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200`}
                 >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
+                  <option value="">Chọn thể loại</option>
+                  {commonGenres.filter(genre => !formData.genres.includes(genre)).map(genre => (
+                    <option key={genre} value={genre}>{genre}</option>
+                  ))}
+                </select>
+                <Button 
+                  type="button" 
+                  onClick={handleAddGenre}
+                  className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-700/50 rounded-2xl transition-all duration-200 hover:scale-105"
+                >
+                  Thêm
+                </Button>
+              </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button variant="outline" onClick={onCancel}>
-            Hủy
-          </Button>
-          <Button type="submit">
-            {artist ? 'Cập nhật' : 'Tạo ca sĩ'}
-          </Button>
+              {/* Selected Genres */}
+              <div className="flex flex-wrap gap-2 min-h-[2rem]">
+                {formData.genres.map((genre, index) => (
+                  <span
+                    key={index}
+                    className="group inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-sm font-medium border border-indigo-200/50 dark:border-indigo-800/50 hover:from-indigo-500/20 hover:to-purple-500/20 transition-all duration-200"
+                  >
+                    {genre}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGenre(genre)}
+                      className="w-4 h-4 text-indigo-400 hover:text-red-500 rounded-full flex items-center justify-center transition-colors duration-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200/60 dark:border-slate-700/60">
+              <Button 
+                type="button"
+                onClick={onCancel}
+                className="px-6 py-3 bg-slate-100/70 hover:bg-slate-200/70 dark:bg-slate-800/70 dark:hover:bg-slate-700/70 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl transition-all duration-200 hover:scale-105"
+              >
+                Hủy
+              </Button>
+              <Button 
+                type="submit"
+                className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 rounded-2xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200 hover:scale-105"
+              >
+                {artist ? 'Cập nhật' : 'Tạo ca sĩ'}
+              </Button>
+            </div>
+          </form>
         </div>
-      </form>
-    </Modal>
+      </div>
+    </div>
   );
 };
 
