@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS cho Music App */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300;
+  }
+}
+
+@layer components {
+  /* Audio Player Custom Styles */
+  .audio-player {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg;
+  }
+  
+  .audio-controls {
+    @apply flex items-center justify-center space-x-4 p-4;
+  }
+  
+  .audio-progress {
+    @apply w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden;
+  }
+  
+  .audio-progress-bar {
+    @apply h-full bg-gradient-to-r from-music-500 to-music-600 transition-all duration-300;
+  }
+  
+  /* Music Card Styles */
+  .music-card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 
+           hover:shadow-md hover:border-music-300 dark:hover:border-music-600 
+           transition-all duration-300 group cursor-pointer;
+  }
+  
+  .music-card:hover {
+    @apply transform scale-105;
+  }
+  
+  /* Gradient Backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-music-500 to-music-600;
+  }
+  
+  .gradient-secondary {
+    @apply bg-gradient-to-r from-accent-500 to-accent-600;
+  }
+  
+  /* Custom Scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(168 85 247) rgb(243 244 246);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-700;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-music-500 rounded-full;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-music-600;
+  }
+}
+
+@layer utilities {
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-gradient-to-r from-music-600 to-accent-600 bg-clip-text text-transparent;
+  }
+  
+  /* Backdrop Blur */
+  .backdrop-music {
+    backdrop-filter: blur(20px);
+    @apply bg-white/80 dark:bg-gray-900/80;
+  }
+  
+  /* Music Animation */
+  .music-playing {
+    @apply animate-pulse;
+  }
+  
+  .music-equalizer {
+    animation: equalizer 1.5s ease-in-out infinite alternate;
+  }
+  
+  @keyframes equalizer {
+    from { height: 4px; }
+    to { height: 20px; }
+  }
+}
