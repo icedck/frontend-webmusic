@@ -75,9 +75,22 @@ const getSongByIdForAdmin = async (songId) => {
     }
 };
 
-const updateSongByAdmin = async (songId, songData) => {
+const updateSongByAdmin = async (songId, songData, audioFile, thumbnailFile) => {
     try {
-        const response = await apiService.put(`/api/v1/songs/admin/${songId}`, songData);
+        const formData = new FormData();
+        formData.append('songRequest', new Blob([JSON.stringify(songData)], { type: 'application/json' }));
+        if (audioFile) {
+            formData.append('audioFile', audioFile);
+        }
+        if (thumbnailFile) {
+            formData.append('thumbnailFile', thumbnailFile);
+        }
+
+        const response = await apiService.put(`/api/v1/songs/admin/${songId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
         return response.data;
     } catch (error) {
         console.error(`Failed to update song ${songId}:`, error);
