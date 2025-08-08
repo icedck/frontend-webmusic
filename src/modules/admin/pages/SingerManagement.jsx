@@ -106,7 +106,6 @@ const SingerManagement = () => {
                 </table>
             </div>
 
-            {/* <<< THÊM BỘ ĐIỀU KHIỂN PHÂN TRANG >>> */}
             {!loading && pageInfo.totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                     <span className="text-sm">
