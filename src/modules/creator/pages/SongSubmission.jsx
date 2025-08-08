@@ -4,6 +4,7 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import { submissionService } from '../services/submissionService';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
+import { toast } from 'react-toastify';
 import { Music, Upload, Tag, User as UserIcon, Type, Info, PlusCircle, Trash2 } from 'lucide-react';
 
 const SongSubmission = () => {
@@ -22,6 +23,7 @@ const SongSubmission = () => {
   const [audioFile, setAudioFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [newSingers, setNewSingers] = useState([]);
+  const [newSingerFiles, setNewSingerFiles] = useState({});
 
   const [availableSingers, setAvailableSingers] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
@@ -78,18 +80,33 @@ const SongSubmission = () => {
   const handleFileChange = (e, setFile) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      if(e.target.name === 'audioFile' && errors.audioFile) {
-        setErrors(prev => ({...prev, audioFile: ''}));
+      if (e.target.name === 'audioFile' && errors.audioFile) {
+        setErrors(prev => ({ ...prev, audioFile: '' }));
       }
     }
   };
 
   const handleAddNewSinger = () => setNewSingers([...newSingers, { name: '', email: '' }]);
-  const handleRemoveNewSinger = (index) => setNewSingers(newSingers.filter((_, i) => i !== index));
+  const handleRemoveNewSinger = (index) => {
+    setNewSingers(newSingers.filter((_, i) => i !== index));
+    const updatedFiles = { ...newSingerFiles };
+    delete updatedFiles[index];
+    setNewSingerFiles(updatedFiles);
+  };
+
   const handleNewSingerChange = (index, e) => {
     const updatedSingers = [...newSingers];
     updatedSingers[index][e.target.name] = e.target.value;
     setNewSingers(updatedSingers);
+  };
+
+  const handleNewSingerFileChange = (index, e) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewSingerFiles(prev => ({
+        ...prev,
+        [index]: e.target.files[0]
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -116,7 +133,7 @@ const SongSubmission = () => {
     try {
       if (isEditMode) {
         await submissionService.updateSubmission(submissionId, requestDto);
-        alert('Đã cập nhật yêu cầu thành công!');
+        toast.success('Đã cập nhật yêu cầu thành công!');
       } else {
         const submissionFormData = new FormData();
         submissionFormData.append('submissionRequest', new Blob([JSON.stringify(requestDto)], { type: "application/json" }));
@@ -124,8 +141,15 @@ const SongSubmission = () => {
         if (thumbnailFile) {
           submissionFormData.append('thumbnailFile', thumbnailFile);
         }
+
+        requestDto.newSingers.forEach((singer, index) => {
+          if (newSingerFiles[index]) {
+            submissionFormData.append('newSingerAvatars', newSingerFiles[index]);
+          }
+        });
+
         await submissionService.createSubmission(submissionFormData);
-        alert('Đã gửi yêu cầu thành công!');
+        toast.success('Đã gửi yêu cầu thành công!');
       }
       navigate('/creator/my-submissions');
     } catch (error) {
@@ -163,9 +187,13 @@ const SongSubmission = () => {
             <h2 className="text-xl font-semibold mb-4">Ca sĩ & Thể loại</h2>
             <div className="space-y-4">
               <div>
-                <label className="flex items-center text-sm font-medium mb-1"><UserIcon className="w-4 h-4 mr-2" />Ca sĩ bạn quản lý (Đã duyệt)</label>
+                <label className="flex items-center text-sm font-medium mb-1"><UserIcon className="w-4 h-4 mr-2" />Ca sĩ bạn quản lý</label>
                 <select multiple name="existingSingerIds" value={formData.existingSingerIds} onChange={(e) => setFormData(p => ({...p, existingSingerIds: Array.from(e.target.selectedOptions, o => o.value)}))} className={`w-full h-32 p-2 border rounded ${currentTheme.bg}`}>
-                  {availableSingers.filter(s => s.status === 'APPROVED').map(singer => <option key={singer.id} value={singer.id}>{singer.name}</option>)}
+                  {availableSingers.length > 0 ? (
+                      availableSingers.map(singer => <option key={singer.id} value={singer.id}>{singer.name}</option>)
+                  ) : (
+                      <option disabled>Bạn chưa quản lý ca sĩ nào.</option>
+                  )}
                 </select>
               </div>
               <div>
@@ -178,12 +206,15 @@ const SongSubmission = () => {
           </div>
 
           <div className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            <h2 className="text-xl font-semibold mb-4">Ca sĩ mới (hoặc đang chờ duyệt)</h2>
+            <h2 className="text-xl font-semibold mb-4">Thêm ca sĩ mới</h2>
             {newSingers.map((singer, index) => (
-                <div key={singer.id || index} className="flex items-center gap-4 mb-4">
-                  <Input name="name" value={singer.name} onChange={(e) => handleNewSingerChange(index, e)} placeholder="Tên ca sĩ *" required className="flex-1"/>
-                  <Input name="email" type="email" value={singer.email} onChange={(e) => handleNewSingerChange(index, e)} placeholder="Email liên hệ *" required className="flex-1"/>
-                  <Button type="button" variant="danger" size="icon" onClick={() => handleRemoveNewSinger(index)}><Trash2 className="w-4 h-4"/></Button>
+                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-center">
+                  <Input name="name" value={singer.name} onChange={(e) => handleNewSingerChange(index, e)} placeholder="Tên ca sĩ *" required />
+                  <Input name="email" type="email" value={singer.email} onChange={(e) => handleNewSingerChange(index, e)} placeholder="Email liên hệ *" required />
+                  <div className="flex items-center gap-2">
+                    <input type="file" accept="image/*" onChange={(e) => handleNewSingerFileChange(index, e)} className="text-sm w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold"/>
+                    <Button type="button" variant="danger" size="icon" onClick={() => handleRemoveNewSinger(index)}><Trash2 className="w-4 h-4"/></Button>
+                  </div>
                 </div>
             ))}
             <Button type="button" variant="outline" onClick={handleAddNewSinger} className="flex items-center"><PlusCircle className="w-4 h-4 mr-2"/>Thêm ca sĩ</Button>
@@ -193,12 +224,12 @@ const SongSubmission = () => {
             <h2 className="text-xl font-semibold mb-4">Tệp tin</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Upload className="w-4 h-4 mr-2" />File audio {isEditMode ? '(Để trống nếu không đổi)' : '*'}</label>
+                <label className="flex items-center text-sm font-medium mb-1"><Upload className="w-4 h-4 mr-2" />File audio *</label>
                 <input type="file" name="audioFile" accept="audio/*" onChange={(e) => handleFileChange(e, setAudioFile)} className={`w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-music-100 file:text-music-700 hover:file:bg-music-200`}/>
                 {errors.audioFile && <p className="text-red-500 text-sm mt-1">{errors.audioFile}</p>}
               </div>
               <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Music className="w-4 h-4 mr-2" />Ảnh bìa {isEditMode && '(Để trống nếu không đổi)'}</label>
+                <label className="flex items-center text-sm font-medium mb-1"><Music className="w-4 h-4 mr-2" />Ảnh bìa</label>
                 <input type="file" name="thumbnailFile" accept="image/*" onChange={(e) => handleFileChange(e, setThumbnailFile)} className={`w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200`}/>
               </div>
             </div>
