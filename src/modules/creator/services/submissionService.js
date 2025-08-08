@@ -53,7 +53,6 @@ const getSubmissionById = async (id) => {
 
 const updateSubmission = async (id, requestDto) => {
     try {
-        // <<< SỬA LỖI TẠI ĐÂY: Thay 'post' thành 'put' >>>
         const response = await apiService.put(`/api/v1/submissions/${id}`, requestDto);
         return response;
     } catch (error) {
@@ -64,7 +63,6 @@ const updateSubmission = async (id, requestDto) => {
 
 const withdrawSubmission = async (id) => {
     try {
-        // <<< SỬA LỖI: Sửa đường dẫn cho khớp với backend >>>
         await apiService.delete(`/api/v1/submissions/${id}/withdraw`);
     } catch (error) {
         console.error(`Failed to withdraw submission ${id}:`, error);

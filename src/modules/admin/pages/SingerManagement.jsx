@@ -14,7 +14,7 @@ const StatusBadge = ({ status }) => {
         REJECTED: 'bg-red-100 text-red-800',
     };
     return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
-}
+};
 
 const SingerManagement = () => {
     const { currentTheme } = useDarkMode();
@@ -22,43 +22,49 @@ const SingerManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // <<< THÊM STATE CHO PHÂN TRANG >>>
     const [pageInfo, setPageInfo] = useState({
         pageNumber: 0,
-        pageSize: 10, // Hiển thị 10 ca sĩ mỗi trang
+        pageSize: 5,
         totalPages: 0,
         totalElements: 0,
     });
 
-    const fetchSingers = async (page = 0) => {
+    const fetchSingers = async (page, size) => {
         try {
             setLoading(true);
-            const response = await adminService.getSingers(page, pageInfo.pageSize);
+            const response = await adminService.getSingers(page, size);
             if (response.success && response.data) {
                 setSingers(Array.isArray(response.data.content) ? response.data.content : []);
-                setPageInfo(response.data.pageInfo);
+
+                setPageInfo(prev => ({
+                    ...prev,
+                    pageNumber: response.data.pageInfo.page,
+                    totalPages: response.data.pageInfo.totalPages,
+                    totalElements: response.data.pageInfo.totalElements,
+                }));
             } else {
                 setSingers([]);
+                setError(response.message || "Không thể tải danh sách ca sĩ.");
             }
         } catch (err) {
-            setError("Không thể tải danh sách ca sĩ.");
+            setError("Đã xảy ra lỗi khi tải danh sách ca sĩ.");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchSingers(pageInfo.pageNumber);
-    }, [pageInfo.pageNumber]); // Tự động gọi lại khi pageNumber thay đổi
+        fetchSingers(pageInfo.pageNumber, pageInfo.pageSize);
+    }, []);
 
     const handleSuccess = () => {
         setIsModalOpen(false);
-        fetchSingers(0); // Quay về trang đầu tiên sau khi thêm thành công
+        fetchSingers(0, pageInfo.pageSize);
     };
 
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < pageInfo.totalPages) {
+            fetchSingers(newPage, pageInfo.pageSize);
             setPageInfo(prev => ({ ...prev, pageNumber: newPage }));
         }
     };
@@ -88,7 +94,7 @@ const SingerManagement = () => {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {loading && <tr><td colSpan="3" className="text-center py-4">Đang tải...</td></tr>}
                     {error && <tr><td colSpan="3" className="text-center py-4 text-red-500">{error}</td></tr>}
-                    {!loading && !error && singers.map((singer) => (
+                    {!loading && !error && singers.length > 0 && singers.map((singer) => (
                         <tr key={singer.id}>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
@@ -102,6 +108,9 @@ const SingerManagement = () => {
                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={singer.status} /></td>
                         </tr>
                     ))}
+                    {!loading && !error && singers.length === 0 && (
+                        <tr><td colSpan="3" className="text-center py-4">Không có dữ liệu.</td></tr>
+                    )}
                     </tbody>
                 </table>
             </div>
@@ -109,13 +118,13 @@ const SingerManagement = () => {
             {!loading && pageInfo.totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                     <span className="text-sm">
-                        Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số {pageInfo.totalElements} ca sĩ)
+                        Trang {isNaN(pageInfo.pageNumber + 1) ? 1 : pageInfo.pageNumber + 1} / {pageInfo.totalPages || 1} (Tổng số {pageInfo.totalElements} ca sĩ)
                     </span>
                     <div className="flex items-center space-x-2">
                         <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber - 1)} disabled={pageInfo.pageNumber === 0}>
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber + 1)} disabled={pageInfo.pageNumber === pageInfo.totalPages - 1}>
+                        <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber + 1)} disabled={pageInfo.pageNumber >= pageInfo.totalPages - 1}>
                             <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>

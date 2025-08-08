@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
-import { PlusCircle, Edit } from 'lucide-react';
+import { PlusCircle, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '../services/adminService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -21,25 +21,45 @@ const SongManagementAdmin = () => {
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pageInfo, setPageInfo] = useState({
+        pageNumber: 0,
+        pageSize: 5,
+        totalPages: 0,
+        totalElements: 0,
+    });
+
+    const fetchSongs = async (page, size) => {
+        try {
+            setLoading(true);
+            const response = await adminService.getSongs(page, size);
+            if (response.success && response.data && response.data.pageInfo) {
+                setSongs(Array.isArray(response.data.content) ? response.data.content : []);
+                setPageInfo(prevInfo => ({
+                    ...prevInfo,
+                    pageNumber: response.data.pageInfo.page,
+                    totalPages: response.data.pageInfo.totalPages,
+                    totalElements: response.data.pageInfo.totalElements,
+                }));
+            } else {
+                setSongs([]);
+                setError("Dữ liệu không hợp lệ hoặc không có thông tin phân trang.");
+            }
+        } catch (err) {
+            setError("Đã xảy ra lỗi khi tải danh sách bài hát.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchSongs = async () => {
-            try {
-                setLoading(true);
-                const response = await adminService.getSongs();
-                if (response.success && Array.isArray(response.data.content)) {
-                    setSongs(response.data.content);
-                } else {
-                    setSongs([]);
-                }
-            } catch (err) {
-                setError("Không thể tải danh sách bài hát.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchSongs();
+        fetchSongs(pageInfo.pageNumber, pageInfo.pageSize);
     }, []);
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < pageInfo.totalPages) {
+            fetchSongs(newPage, pageInfo.pageSize);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -77,7 +97,6 @@ const SongManagementAdmin = () => {
                                         <img className="h-10 w-10 rounded-lg object-cover" src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : `https://ui-avatars.com/api/?name=${song.title.replace(/\s/g, '+')}&background=random`} alt={song.title} />
                                     </div>
                                     <div className="ml-4">
-                                        {/* <<< SỬA LỖI TẠI ĐÂY: Bọc tên bài hát trong thẻ Link >>> */}
                                         <Link to={`/song/${song.id}`} className="font-medium hover:underline">
                                             {song.title}
                                         </Link>
@@ -96,6 +115,22 @@ const SongManagementAdmin = () => {
                     </tbody>
                 </table>
             </div>
+
+            {!loading && pageInfo.totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                    <span className="text-sm">
+                        Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số {pageInfo.totalElements} bài hát)
+                    </span>
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber - 1)} disabled={pageInfo.pageNumber === 0}>
+                            <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber + 1)} disabled={pageInfo.pageNumber >= pageInfo.totalPages - 1}>
+                            <ChevronRight className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import { apiService } from '../../../shared/services/apiService';
 
-const getSingers = async (page = 0, size = 20, search = '') => {
+const getSingers = async (page = 0, size = 5, search = '') => {
     try {
         const timestamp = new Date().getTime();
         const response = await apiService.get(`/api/v1/singers/admin/all?page=${page}&size=${size}&search=${search}&_=${timestamp}`);
@@ -55,7 +55,7 @@ const createSongByAdmin = async (formData) => {
     }
 };
 
-const getSongs = async (page = 0, size = 20, search = '') => {
+const getSongs = async (page = 0, size = 5, search = '') => {
     try {
         const response = await apiService.get(`/api/v1/songs/admin/all?page=${page}&size=${size}&search=${search}`);
         return response.data;
