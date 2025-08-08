@@ -1,11 +1,10 @@
-// src/components/layout/DashboardLayout.jsx
 import React from 'react';
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../common/Button';
 import {
-  Music, Home, Search, Users as AdminIcon, Mic2, ListMusic as SongIcon,
+  Music, Home, Search, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings
 } from 'lucide-react';
 
@@ -31,7 +30,8 @@ const DashboardLayout = () => {
   const adminNavItems = [
     { name: 'Quản lý người dùng', href: '/admin/users', icon: AdminIcon },
     { name: 'Quản lý ca sĩ', href: '/admin/singers', icon: Mic2 },
-    { name: 'Quản lý bài hát', href: '/admin/songs', icon: SongIcon }
+    { name: 'Quản lý bài hát', href: '/admin/songs', icon: SongIcon },
+    { name: 'Duyệt bài hát', href: '/admin/submissions', icon: CheckSquare }
   ];
 
   return (

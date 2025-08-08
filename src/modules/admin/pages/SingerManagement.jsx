@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import CreateSingerModal from '../components/CreateSingerModal';
 
@@ -23,12 +23,21 @@ const SingerManagement = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const fetchSingers = async () => {
+    // <<< THÊM STATE CHO PHÂN TRANG >>>
+    const [pageInfo, setPageInfo] = useState({
+        pageNumber: 0,
+        pageSize: 10, // Hiển thị 10 ca sĩ mỗi trang
+        totalPages: 0,
+        totalElements: 0,
+    });
+
+    const fetchSingers = async (page = 0) => {
         try {
             setLoading(true);
-            const response = await adminService.getSingers();
-            if (response.success && Array.isArray(response.data.content)) {
-                setSingers(response.data.content);
+            const response = await adminService.getSingers(page, pageInfo.pageSize);
+            if (response.success && response.data) {
+                setSingers(Array.isArray(response.data.content) ? response.data.content : []);
+                setPageInfo(response.data.pageInfo);
             } else {
                 setSingers([]);
             }
@@ -40,12 +49,18 @@ const SingerManagement = () => {
     };
 
     useEffect(() => {
-        fetchSingers();
-    }, []);
+        fetchSingers(pageInfo.pageNumber);
+    }, [pageInfo.pageNumber]); // Tự động gọi lại khi pageNumber thay đổi
 
     const handleSuccess = () => {
         setIsModalOpen(false);
-        fetchSingers();
+        fetchSingers(0); // Quay về trang đầu tiên sau khi thêm thành công
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < pageInfo.totalPages) {
+            setPageInfo(prev => ({ ...prev, pageNumber: newPage }));
+        }
     };
 
     return (
@@ -90,6 +105,23 @@ const SingerManagement = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* <<< THÊM BỘ ĐIỀU KHIỂN PHÂN TRANG >>> */}
+            {!loading && pageInfo.totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                    <span className="text-sm">
+                        Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số {pageInfo.totalElements} ca sĩ)
+                    </span>
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber - 1)} disabled={pageInfo.pageNumber === 0}>
+                            <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber + 1)} disabled={pageInfo.pageNumber === pageInfo.totalPages - 1}>
+                            <ChevronRight className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             <CreateSingerModal
                 isOpen={isModalOpen}

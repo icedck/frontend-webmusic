@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
-import { PlusCircle, Music } from 'lucide-react';
+import { PlusCircle, Edit } from 'lucide-react';
 import { adminService } from '../services/adminService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -22,23 +22,22 @@ const SongManagementAdmin = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchSongs = async () => {
-        try {
-            setLoading(true);
-            const response = await adminService.getSongs();
-            if (response.success && Array.isArray(response.data.content)) {
-                setSongs(response.data.content);
-            } else {
-                setSongs([]);
-            }
-        } catch (err) {
-            setError("Không thể tải danh sách bài hát.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchSongs = async () => {
+            try {
+                setLoading(true);
+                const response = await adminService.getSongs();
+                if (response.success && Array.isArray(response.data.content)) {
+                    setSongs(response.data.content);
+                } else {
+                    setSongs([]);
+                }
+            } catch (err) {
+                setError("Không thể tải danh sách bài hát.");
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchSongs();
     }, []);
 
@@ -64,11 +63,12 @@ const SongManagementAdmin = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ca sĩ</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trạng thái</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {loading && <tr><td colSpan="3" className="text-center py-4">Đang tải...</td></tr>}
-                    {error && <tr><td colSpan="3" className="text-center py-4 text-red-500">{error}</td></tr>}
+                    {loading && <tr><td colSpan="4" className="text-center py-4">Đang tải...</td></tr>}
+                    {error && <tr><td colSpan="4" className="text-center py-4 text-red-500">{error}</td></tr>}
                     {!loading && !error && songs.map((song) => (
                         <tr key={song.id}>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -76,11 +76,21 @@ const SongManagementAdmin = () => {
                                     <div className="flex-shrink-0 h-10 w-10">
                                         <img className="h-10 w-10 rounded-lg object-cover" src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : `https://ui-avatars.com/api/?name=${song.title.replace(/\s/g, '+')}&background=random`} alt={song.title} />
                                     </div>
-                                    <div className="ml-4 font-medium">{song.title}</div>
+                                    <div className="ml-4">
+                                        {/* <<< SỬA LỖI TẠI ĐÂY: Bọc tên bài hát trong thẻ Link >>> */}
+                                        <Link to={`/song/${song.id}`} className="font-medium hover:underline">
+                                            {song.title}
+                                        </Link>
+                                    </div>
                                 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">{song.singers?.map(s => s.name).join(', ') || 'N/A'}</td>
                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={song.status} /></td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <Link to={`/admin/songs/edit/${song.id}`} className="text-music-500 hover:text-music-600">
+                                    <Edit className="w-5 h-5" />
+                                </Link>
+                            </td>
                         </tr>
                     ))}
                     </tbody>

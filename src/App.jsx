@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/layout/LandingPage';
@@ -6,7 +5,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { Login, Register } from './modules/auth';
 import Dashboard from './pages/Dashboard';
-import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin } from './modules/admin';
+import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
 import { PremiumUpgrade, TransactionHistory } from './modules/premium';
@@ -16,6 +15,7 @@ import { Profile, ChangePassword } from './modules/auth';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider, useDarkMode } from './hooks/useDarkMode.jsx';
 import { AuthProvider } from './hooks/useAuth.jsx';
+import { AudioProvider } from './hooks/useAudio.jsx';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -44,6 +44,8 @@ function AppContent() {
                             <Route path="/admin/singers" element={<SingerManagement />} />
                             <Route path="/admin/songs" element={<SongManagementAdmin />} />
                             <Route path="/admin/songs/new" element={<CreateSongAdmin />} />
+                            <Route path="/admin/songs/edit/:songId" element={<EditSongAdmin />} />
+                            <Route path="/admin/submissions" element={<SubmissionManagement />} />
                             <Route path="/creator" element={<CreatorDashboard />} />
                             <Route path="/creator/my-submissions" element={<MySubmissions />} />
                             <Route path="/creator/submission/new" element={<SongSubmission />} />
@@ -68,7 +70,9 @@ function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <AppContent />
+                <AudioProvider>
+                    <AppContent />
+                </AudioProvider>
             </AuthProvider>
         </ThemeProvider>
     );

@@ -2,3 +2,5 @@ export { default as UserManagement } from './pages/UserManagement';
 export { default as SingerManagement } from './pages/SingerManagement';
 export { default as SongManagementAdmin } from './pages/SongManagementAdmin';
 export { default as CreateSongAdmin } from './pages/CreateSongAdmin';
+export { default as EditSongAdmin } from './pages/EditSongAdmin';
+export { default as SubmissionManagement } from './pages/SubmissionManagement'; // Thêm mới
