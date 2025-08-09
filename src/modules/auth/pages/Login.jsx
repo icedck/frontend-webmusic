@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
-import { useAuth } from '../../../hooks/useAuth.jsx'; // <<< SỬ DỤNG HOOK useAuth
+import { useAuth } from '../../../hooks/useAuth.jsx';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import { Music, Eye, EyeOff, Mail, Lock } from 'lucide-react';

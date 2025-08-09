@@ -9,14 +9,14 @@
   }
   
   body {
-    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300;
+    @apply bg-white dark:bg-surface-900 text-surface-900 dark:text-white transition-colors duration-300;
   }
 }
 
 @layer components {
   /* Audio Player Custom Styles */
   .audio-player {
-    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg;
+    @apply bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg shadow-lg;
   }
   
   .audio-controls {
@@ -24,17 +24,17 @@
   }
   
   .audio-progress {
-    @apply w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden;
+    @apply w-full h-2 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden;
   }
   
   .audio-progress-bar {
-    @apply h-full bg-gradient-to-r from-music-500 to-music-600 transition-all duration-300;
+    @apply h-full bg-gradient-to-r from-primary-500 to-accent-600 transition-all duration-300;
   }
   
   /* Music Card Styles */
   .music-card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 
-           hover:shadow-md hover:border-music-300 dark:hover:border-music-600 
+    @apply bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-surface-100 dark:border-surface-700 
+           hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 
            transition-all duration-300 group cursor-pointer;
   }
   
@@ -44,7 +44,7 @@
   
   /* Gradient Backgrounds */
   .gradient-primary {
-    @apply bg-gradient-to-r from-music-500 to-music-600;
+    @apply bg-gradient-to-r from-primary-500 to-primary-600;
   }
   
   .gradient-secondary {
@@ -54,7 +54,7 @@
   /* Custom Scrollbar */
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgb(168 85 247) rgb(243 244 246);
+    scrollbar-color: rgb(52 157 95) rgb(243 244 246);
   }
   
   .custom-scrollbar::-webkit-scrollbar {
@@ -62,28 +62,28 @@
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-gray-100 dark:bg-gray-700;
+    @apply bg-surface-100 dark:bg-surface-700;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-music-500 rounded-full;
+    @apply bg-primary-500 rounded-full;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-music-600;
+    @apply bg-primary-600;
   }
 }
 
 @layer utilities {
   /* Text Gradients */
   .text-gradient {
-    @apply bg-gradient-to-r from-music-600 to-accent-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent;
   }
   
   /* Backdrop Blur */
   .backdrop-music {
     backdrop-filter: blur(20px);
-    @apply bg-white/80 dark:bg-gray-900/80;
+    @apply bg-white/80 dark:bg-surface-900/80;
   }
   
   /* Music Animation */

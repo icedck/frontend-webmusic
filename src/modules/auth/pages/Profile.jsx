@@ -1,166 +1,163 @@
-// src/modules/auth/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAuth } from '../../../hooks/useAuth';
 import { authService } from '../services/authService';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
-import { User, Mail, Phone, Calendar, Save, X, Users } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Save, X, Users, Lock, Eye, EyeOff, Camera, Trash2 } from 'lucide-react';
 
+// Component Card chung cho trang Cài đặt
+const SettingsCard = ({ title, description, children }) => {
+  const { isDarkMode } = useDarkMode();
+  return (
+      <div className={`rounded-xl border ${isDarkMode ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white/80'} backdrop-blur-lg`}>
+        <div className="p-6">
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <p className={`mt-1 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{description}</p>
+        </div>
+        <div className="p-6 pt-0">
+          {children}
+        </div>
+      </div>
+  );
+};
+
+// Component chính của trang
 const Profile = () => {
   const { currentTheme } = useDarkMode();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
 
+  // States cho Profile
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [formData, setFormData] = useState({ displayName: '', phoneNumber: '', dateOfBirth: '', gender: '' });
 
-  const [formData, setFormData] = useState({
-    displayName: '',
-    phoneNumber: '',
-    dateOfBirth: '',
-    gender: '',
-  });
+  // States cho Password
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmationPassword: '' });
+  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
 
   useEffect(() => {
     if (user) {
       setFormData({
         displayName: user.displayName || '',
         phoneNumber: user.phoneNumber || '',
-        dateOfBirth: user.dateOfBirth || '',
+        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
         gender: user.gender || '',
       });
     }
   }, [user]);
 
-  const handleChange = (e) => {
+  const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-    if (serverError) setServerError('');
-    if (successMessage) setSuccessMessage('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    const updateData = {
-      displayName: formData.displayName,
-      phoneNumber: formData.phoneNumber || null,
-      dateOfBirth: formData.dateOfBirth || null,
-      gender: formData.gender || null,
-    };
+    setProfileLoading(true);
+    setProfileError('');
+    setProfileSuccess('');
     try {
-      const response = await authService.updateProfile(updateData);
+      const response = await authService.updateProfile(formData);
       updateUser(response.data);
-      setSuccessMessage('Cập nhật thông tin thành công!');
+      setProfileSuccess('Cập nhật thông tin thành công!');
       setIsEditing(false);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setTimeout(() => setProfileSuccess(''), 3000);
     } catch (error) {
-      console.error('Update profile error:', error);
-      const errorData = error.response?.data;
-      setServerError(errorData?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+      setProfileError(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    if (user) {
-      setFormData({
-        displayName: user.displayName || '',
-        phoneNumber: user.phoneNumber || '',
-        dateOfBirth: user.dateOfBirth || '',
-        gender: user.gender || '',
-      });
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmationPassword) {
+      setPasswordError('Mật khẩu xác nhận không khớp.');
+      return;
     }
-    setErrors({});
-    setServerError('');
-    setIsEditing(false);
+    setPasswordLoading(true);
+    setPasswordError('');
+    setPasswordSuccess('');
+    try {
+      await authService.changePassword(passwordData);
+      setPasswordSuccess('Đổi mật khẩu thành công! Bạn sẽ được đăng xuất sau 3 giây.');
+      setTimeout(() => logout(), 3000);
+    } catch (error) {
+      setPasswordError(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className={`text-2xl font-bold ${currentTheme.text}`}>Thông tin cá nhân</h1>
-            <p className={`mt-1 ${currentTheme.textSecondary}`}>Xem và chỉnh sửa thông tin cá nhân của bạn.</p>
-          </div>
-          {!isEditing && <Button onClick={() => setIsEditing(true)}>Chỉnh sửa</Button>}
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">Cài đặt tài khoản</h1>
+          <p className={`mt-2 ${currentTheme.textSecondary}`}>Quản lý thông tin cá nhân và bảo mật tài khoản của bạn.</p>
         </div>
 
-        {successMessage && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-              <p className="text-green-600 dark:text-green-400 text-sm">✅ {successMessage}</p>
+        {/* --- Card Thông tin cá nhân --- */}
+        <SettingsCard title="Thông tin cá nhân" description="Cập nhật thông tin công khai và chi tiết liên hệ của bạn.">
+          <form onSubmit={handleProfileSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="Tên hiển thị *" icon={User} name="displayName" value={formData.displayName} onChange={handleProfileChange} disabled={!isEditing} />
+              <Input label="Email" icon={Mail} name="email" value={user?.email || ''} disabled />
+              <Input label="Số điện thoại" icon={Phone} name="phoneNumber" value={formData.phoneNumber} onChange={handleProfileChange} disabled={!isEditing} placeholder="Chưa cập nhật" />
+              <Input label="Ngày sinh" icon={Calendar} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleProfileChange} disabled={!isEditing} />
             </div>
-        )}
-        {serverError && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <p className="text-red-600 dark:text-red-400 text-sm">{serverError}</p>
-            </div>
-        )}
+            {isEditing && (
+                <div className="flex items-center justify-end space-x-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button type="button" variant="ghost" onClick={() => setIsEditing(false)} disabled={profileLoading}>Hủy</Button>
+                  <Button type="submit" disabled={profileLoading}>{profileLoading ? 'Đang lưu...' : 'Lưu thay đổi'}</Button>
+                </div>
+            )}
+            {!isEditing && (
+                <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button onClick={() => setIsEditing(true)}>Chỉnh sửa thông tin</Button>
+                </div>
+            )}
+            {profileSuccess && <p className="text-sm text-green-500 mt-2 text-right">{profileSuccess}</p>}
+            {profileError && <p className="text-sm text-red-500 mt-2 text-right">{profileError}</p>}
+          </form>
+        </SettingsCard>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            {/* Tên hiển thị */}
-            <div>
-              <label className={`flex items-center text-sm font-medium ${currentTheme.text} mb-2`}>
-                <User className="w-4 h-4 mr-2" /> Tên hiển thị *
-              </label>
-              <Input name="displayName" type="text" value={formData.displayName} onChange={handleChange} disabled={!isEditing} placeholder="Tên hiển thị của bạn" />
+        {/* --- Card Bảo mật --- */}
+        <SettingsCard title="Bảo mật" description="Thay đổi mật khẩu để giữ an toàn cho tài khoản của bạn.">
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="relative">
+              <Input label="Mật khẩu hiện tại" icon={Lock} name="currentPassword" type={showPasswords.current ? 'text' : 'password'} value={passwordData.currentPassword} onChange={handlePasswordChange} disabled={passwordLoading} />
+              <button type="button" className={`absolute bottom-3 right-3 ${currentTheme.textSecondary}`} onClick={() => togglePasswordVisibility('current')}>{showPasswords.current ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
             </div>
-            {/* Email */}
-            <div>
-              <label className={`flex items-center text-sm font-medium ${currentTheme.textSecondary} mb-2`}>
-                <Mail className="w-4 h-4 mr-2" /> Email
-              </label>
-              <Input name="email" type="email" value={user?.email || ''} disabled placeholder="Email không thể thay đổi" />
+            <div className="relative">
+              <Input label="Mật khẩu mới" icon={Lock} name="newPassword" type={showPasswords.new ? 'text' : 'password'} value={passwordData.newPassword} onChange={handlePasswordChange} disabled={passwordLoading} />
+              <button type="button" className={`absolute bottom-3 right-3 ${currentTheme.textSecondary}`} onClick={() => togglePasswordVisibility('new')}>{showPasswords.new ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
             </div>
-            {/* Số điện thoại */}
-            <div>
-              <label className={`flex items-center text-sm font-medium ${currentTheme.text} mb-2`}>
-                <Phone className="w-4 h-4 mr-2" /> Số điện thoại
-              </label>
-              <Input name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} disabled={!isEditing} placeholder="Chưa cập nhật" />
+            <div className="relative">
+              <Input label="Xác nhận mật khẩu mới" icon={Lock} name="confirmationPassword" type={showPasswords.confirm ? 'text' : 'password'} value={passwordData.confirmationPassword} onChange={handlePasswordChange} disabled={passwordLoading} />
+              <button type="button" className={`absolute bottom-3 right-3 ${currentTheme.textSecondary}`} onClick={() => togglePasswordVisibility('confirm')}>{showPasswords.confirm ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
             </div>
-            {/* Ngày sinh */}
-            <div>
-              <label className={`flex items-center text-sm font-medium ${currentTheme.text} mb-2`}>
-                <Calendar className="w-4 h-4 mr-2" /> Ngày sinh
-              </label>
-              <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} disabled={!isEditing} />
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={passwordLoading}>{passwordLoading ? 'Đang lưu...' : 'Lưu mật khẩu mới'}</Button>
             </div>
-            {/* Giới tính */}
-            <div>
-              <label className={`flex items-center text-sm font-medium ${currentTheme.text} mb-2`}>
-                <Users className="w-4 h-4 mr-2" /> Giới tính
-              </label>
-              {isEditing ? (
-                  <select name="gender" value={formData.gender} onChange={handleChange} className={`w-full p-3 rounded-lg ${currentTheme.bg} ${currentTheme.text} ${currentTheme.border} border focus:ring-music-500 focus:border-music-500`}>
-                    <option value="">Chọn giới tính</option>
-                    <option value="Male">Nam</option>
-                    <option value="Female">Nữ</option>
-                    <option value="Other">Khác</option>
-                  </select>
-              ) : (
-                  <Input value={formData.gender === 'Male' ? 'Nam' : formData.gender === 'Female' ? 'Nữ' : formData.gender === 'Other' ? 'Khác' : 'Chưa cập nhật'} disabled />
-              )}
-            </div>
-          </div>
-
-          {isEditing && (
-              <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Button type="button" variant="outline" onClick={handleCancel} disabled={loading} className="flex items-center space-x-2">
-                  <X className="w-4 h-4" /> <span>Hủy</span>
-                </Button>
-                <Button type="submit" disabled={loading} className="flex items-center space-x-2">
-                  <Save className="w-4 h-4" /> <span>{loading ? 'Đang lưu...' : 'Lưu thay đổi'}</span>
-                </Button>
-              </div>
-          )}
-        </form>
+            {passwordSuccess && <p className="text-sm text-green-500 mt-2 text-right">{passwordSuccess}</p>}
+            {passwordError && <p className="text-sm text-red-500 mt-2 text-right">{passwordError}</p>}
+          </form>
+        </SettingsCard>
       </div>
   );
 };

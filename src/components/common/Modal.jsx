@@ -32,14 +32,14 @@ const Modal = ({
           role="dialog"
           aria-modal="true"
       >
-        {/* Enhanced Backdrop */}
+        {/* Backdrop */}
         <div
             className="fixed inset-0 bg-black/40 backdrop-blur-md transition-all duration-300"
             onClick={onClose}
             aria-hidden="true"
         />
 
-        {/* Modal Content with Enhanced Design */}
+        {/* Modal Content */}
         <div
             className={`
               relative w-full ${sizes[size]} transform transition-all duration-300
@@ -50,10 +50,10 @@ const Modal = ({
               ${className}
             `}
         >
-          {/* Enhanced Header with Gradient */}
+          {/* Header */}
           {(title || showCloseButton) && (
               <div className="relative px-8 py-6 border-b border-slate-200/60 dark:border-slate-700/60">
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 to-transparent dark:from-slate-800/50" />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-50/60 to-transparent dark:from-slate-800/60" />
                 <div className="relative flex items-center justify-between">
                   {title && (
                       <h3 id="modal-title" className={`text-2xl font-semibold ${currentTheme.text} tracking-tight`}>
@@ -72,12 +72,12 @@ const Modal = ({
               </div>
           )}
 
-          {/* Enhanced Content */}
+          {/* Content */}
           <div className="px-8 py-6 overflow-y-auto max-h-[70vh]">
             {children}
           </div>
 
-          {/* Enhanced Footer */}
+          {/* Footer */}
           {footer && (
               <div className="relative px-8 py-6 border-t border-slate-200/60 dark:border-slate-700/60 bg-slate-50/30 dark:bg-slate-800/30">
                 {footer}

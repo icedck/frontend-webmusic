@@ -16,28 +16,28 @@ const Card = ({
   const variants = {
     default: `
       ${currentTheme.bgCard} backdrop-blur-sm
-      border border-slate-200/60 dark:border-slate-700/60
-      shadow-lg shadow-slate-900/5
+      border border-surface-200/60 dark:border-surface-700/60
+      shadow-lg shadow-surface-900/5
       rounded-3xl
     `,
     elevated: `
       ${currentTheme.bgCard} backdrop-blur-sm
-      border border-white/20 dark:border-slate-700/50
-      shadow-xl shadow-slate-900/10
+      border border-white/20 dark:border-surface-700/50
+      shadow-xl shadow-surface-900/10
       rounded-3xl
-      bg-gradient-to-br from-white/80 to-white/60 dark:from-slate-800/80 dark:to-slate-900/60
+      bg-gradient-to-br from-white/80 to-white/60 dark:from-surface-800/80 dark:to-surface-900/60
     `,
     glass: `
-      backdrop-blur-xl bg-white/10 dark:bg-slate-800/10
-      border border-white/20 dark:border-slate-700/30
-      shadow-2xl shadow-slate-900/20
+      backdrop-blur-xl bg-white/10 dark:bg-surface-800/10
+      border border-white/20 dark:border-surface-700/30
+      shadow-2xl shadow-surface-900/20
       rounded-3xl
     `,
     gradient: `
-      bg-gradient-to-br from-slate-50/90 via-white/80 to-slate-100/90 
-      dark:from-slate-800/90 dark:via-slate-900/80 dark:to-slate-800/90
-      backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/60
-      shadow-xl shadow-slate-900/10
+      bg-gradient-to-br from-surface-50/90 via-white/80 to-surface-100/90 
+      dark:from-surface-800/90 dark:via-surface-900/80 dark:to-surface-800/90
+      backdrop-blur-sm border border-surface-200/60 dark:border-surface-700/60
+      shadow-xl shadow-surface-900/10
       rounded-3xl
     `
   };
@@ -48,8 +48,8 @@ const Card = ({
   `;
 
   const hoverClasses = hover || clickable ? `
-    hover:shadow-xl hover:shadow-slate-900/15
-    hover:border-slate-300/80 dark:hover:border-slate-600/80
+    hover:shadow-xl hover:shadow-surface-900/15
+    hover:border-surface-300/80 dark:hover:border-surface-600/80
     hover:scale-[1.02] hover:-translate-y-1
     ${clickable ? 'cursor-pointer active:scale-[0.98] active:translate-y-0' : ''}
   ` : '';

@@ -1,8 +1,6 @@
 // src/modules/auth/services/authService.js
 import { apiService } from "../../../shared/services/apiService.js";
 
-// ... (các hàm register, getMe, handleLoginSuccess, login giữ nguyên)
-
 const register = async (userData) => {
     try {
         const response = await apiService.post('/api/v1/auth/register', userData);

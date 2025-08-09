@@ -20,14 +20,14 @@ const Input = ({
     ${currentTheme.bgCard} ${currentTheme.text}
     ${error 
       ? 'border-red-400/60 focus:border-red-500 focus:ring-4 focus:ring-red-500/20 bg-red-50/50 dark:bg-red-900/10' 
-      : `border-slate-200/60 dark:border-slate-700/60 
-         focus:border-indigo-300 dark:focus:border-indigo-600 
-         focus:ring-4 focus:ring-indigo-500/20`
+      : `border-surface-200/60 dark:border-surface-700/60 
+         focus:border-primary-300 dark:focus:border-primary-600 
+         focus:ring-4 focus:ring-primary-500/20`
     }
-    hover:border-slate-300/80 dark:hover:border-slate-600/80
+    hover:border-surface-300/80 dark:hover:border-surface-600/80
     rounded-2xl focus:outline-none
     disabled:opacity-50 disabled:cursor-not-allowed
-    placeholder:text-slate-400 dark:placeholder:text-slate-500
+    placeholder:text-surface-400 dark:placeholder:text-surface-500
     ${className}
   `.trim().replace(/\s+/g, ' ');
 
@@ -51,7 +51,7 @@ const Input = ({
           {...props}
         />
         {!error && (
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary-500/5 to-accent-500/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
         )}
       </div>
       {error && (

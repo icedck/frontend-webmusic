@@ -3,15 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './components/layout/LandingPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import { Login, Register } from './modules/auth';
+import { Login, Register, Profile } from './modules/auth';
 import Dashboard from './pages/Dashboard';
 import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
 import { PremiumUpgrade, TransactionHistory } from './modules/premium';
 import { SearchResults } from './modules/search';
-import ProfileLayout from './modules/auth/pages/ProfileLayout';
-import { Profile, ChangePassword } from './modules/auth';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider, useDarkMode } from './hooks/useDarkMode.jsx';
 import { AuthProvider } from './hooks/useAuth.jsx';
@@ -27,10 +25,10 @@ function AppContent() {
         <>
             <Router>
                 <Routes>
+                    {/* ... các Routes của bạn không thay đổi ... */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-
                     <Route element={<ProtectedRoute />}>
                         <Route element={<DashboardLayout />}>
                             <Route path="/dashboard" element={<Dashboard />} />
@@ -50,16 +48,24 @@ function AppContent() {
                             <Route path="/creator/my-submissions" element={<MySubmissions />} />
                             <Route path="/creator/submission/new" element={<SongSubmission />} />
                             <Route path="/creator/submission/edit/:submissionId" element={<SongSubmission />} />
-                            <Route path="/profile" element={<ProfileLayout />}>
-                                <Route index element={<Profile />} />
-                                <Route path="password" element={<ChangePassword />} />
-                            </Route>
+                            <Route path="/profile" element={<Profile />} />
                         </Route>
                     </Route>
-
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
-                <Tooltip id="global-tooltip" style={{ backgroundColor: "#7c3aed", color: "#FFFFFF", borderRadius: "8px" }} opacity={1} offset={10} />
+
+                {/* <<< THAY ĐỔI TẠI ĐÂY >>> */}
+                {/* Cập nhật màu Tooltip sang tông Cyan */}
+                <Tooltip
+                    id="global-tooltip"
+                    style={{
+                        backgroundColor: isDarkMode ? 'rgb(6, 182, 212)' : 'rgb(8, 145, 178)',
+                        color: "#FFFFFF",
+                        borderRadius: "8px"
+                    }}
+                    opacity={1}
+                    offset={10}
+                />
             </Router>
             <ToastContainer autoClose={3000} hideProgressBar newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss={false} draggable={false} pauseOnHover={false} theme={isDarkMode ? "dark" : "light"} position="bottom-right" />
         </>

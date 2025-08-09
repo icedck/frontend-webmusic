@@ -10,20 +10,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: colors.purple,
-        accent: colors.pink,
-        music: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7c3aed',
-          800: '#6b21a8',
-          900: '#581c87',
-        }
+        // <<< THAY ĐỔI TẠI ĐÂY >>>
+        // Đổi màu primary sang Cyan. Đây sẽ là màu gốc cho text, border, focus...
+        primary: colors.cyan,
+
+        // Giữ lại các màu phụ, chúng ta không cần thay đổi chúng
+        accent: colors.cyan,
+        surface: colors.slate,
       },
       keyframes: {
         shimmer: {

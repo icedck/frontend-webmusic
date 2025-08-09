@@ -22,9 +22,9 @@ export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
-      return saved ? JSON.parse(saved) : false;
+      return saved ? JSON.parse(saved) : true; // Mặc định là Dark Mode
     }
-    return false;
+    return true;
   });
 
   useEffect(() => {
@@ -41,41 +41,43 @@ export const ThemeProvider = ({ children }) => {
   };
 
   const currentTheme = {
-    // Primary colors
-    primary: isDarkMode ? 'bg-music-600' : 'bg-music-500',
-    primaryHover: isDarkMode ? 'hover:bg-music-700' : 'hover:bg-music-600',
-    
-    // Background colors
-    bg: isDarkMode ? 'bg-gray-900' : 'bg-white',
-    bgSecondary: isDarkMode ? 'bg-gray-800' : 'bg-gray-50',
-    bgCard: isDarkMode ? 'bg-gray-800' : 'bg-white',
-    
-    // Text colors
-    text: isDarkMode ? 'text-white' : 'text-gray-900',
-    textSecondary: isDarkMode ? 'text-gray-300' : 'text-gray-600',
-    textMuted: isDarkMode ? 'text-gray-400' : 'text-gray-500',
-    
-    // Border colors
-    border: isDarkMode ? 'border-gray-700' : 'border-gray-200',
-    borderHover: isDarkMode ? 'hover:border-music-600' : 'hover:border-music-300',
-    
+    // Primary colors (Teal)
+    primary: isDarkMode ? 'bg-primary-500' : 'bg-primary-600',
+    primaryHover: isDarkMode ? 'hover:bg-primary-600' : 'hover:bg-primary-700',
+
+    // Background colors (Slate)
+    bg: isDarkMode ? 'bg-slate-900' : 'bg-slate-50',
+    bgSecondary: isDarkMode ? 'bg-slate-800' : 'bg-slate-100',
+    bgCard: isDarkMode ? 'bg-slate-800' : 'bg-white',
+    bgHover: isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-200',
+
+    // Text colors (Slate & Primary)
+    text: isDarkMode ? 'text-slate-100' : 'text-slate-800',
+    textSecondary: isDarkMode ? 'text-slate-400' : 'text-slate-500',
+    textMuted: isDarkMode ? 'text-slate-500' : 'text-slate-400',
+    textPrimary: isDarkMode ? 'text-primary-400' : 'text-primary-600', // Bổ sung màu text primary
+
+    // Border colors (Slate)
+    border: isDarkMode ? 'border-slate-700' : 'border-slate-200',
+    borderHover: isDarkMode ? 'hover:border-primary-500' : 'hover:border-primary-500',
+
     // Focus states
-    focusRing: isDarkMode ? 'focus:ring-music-500' : 'focus:ring-music-400',
-    
+    focusRing: isDarkMode ? 'focus:ring-primary-500' : 'focus:ring-primary-500',
+
     // Audio player theme
     audioPlayer: {
-      bg: isDarkMode ? 'bg-gray-800' : 'bg-white',
-      border: isDarkMode ? 'border-gray-700' : 'border-gray-200',
-      progress: isDarkMode ? 'bg-gray-700' : 'bg-gray-200',
-      progressFill: 'bg-gradient-to-r from-music-500 to-music-600'
+      bg: isDarkMode ? 'bg-slate-800' : 'bg-white',
+      border: isDarkMode ? 'border-slate-700' : 'border-slate-200',
+      progress: isDarkMode ? 'bg-slate-700' : 'bg-slate-200',
+      progressFill: 'bg-primary-500'
     },
-    
+
     // Music card theme
     musicCard: {
-      bg: isDarkMode ? 'bg-gray-800' : 'bg-white',
-      border: isDarkMode ? 'border-gray-700' : 'border-gray-100',
-      hover: isDarkMode ? 'hover:border-music-600' : 'hover:border-music-300',
-      shadow: isDarkMode ? 'shadow-gray-900/10' : 'shadow-gray-900/5'
+      bg: isDarkMode ? 'bg-slate-800' : 'bg-white',
+      border: isDarkMode ? 'border-slate-700' : 'border-slate-200',
+      hover: isDarkMode ? 'hover:border-primary-500' : 'hover:border-primary-500',
+      shadow: 'shadow-lg shadow-slate-900/5'
     }
   };
 
@@ -86,8 +88,8 @@ export const ThemeProvider = ({ children }) => {
   };
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+      <ThemeContext.Provider value={value}>
+        {children}
+      </ThemeContext.Provider>
   );
 };

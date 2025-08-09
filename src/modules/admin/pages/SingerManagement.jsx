@@ -9,9 +9,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 
 const StatusBadge = ({ status }) => {
     const statusStyles = {
-        PENDING: 'bg-yellow-100 text-yellow-800',
-        APPROVED: 'bg-green-100 text-green-800',
-        REJECTED: 'bg-red-100 text-red-800',
+        PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
+        APPROVED: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+        REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
     };
     return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
 };
@@ -76,9 +76,14 @@ const SingerManagement = () => {
                     <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Quản lý ca sĩ</h1>
                     <p className={`mt-2 ${currentTheme.textSecondary}`}>Thêm, sửa, và quản lý các ca sĩ trong hệ thống.</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2">
+                {/* <<< THAY ĐỔI NÚT BẤM TẠI ĐÂY >>> */}
+                <Button
+                    onClick={() => setIsModalOpen(true)}
+                    size="icon"
+                    data-tooltip-id="global-tooltip"
+                    data-tooltip-content="Thêm ca sĩ"
+                >
                     <PlusCircle className="w-5 h-5" />
-                    <span>Thêm ca sĩ</span>
                 </Button>
             </div>
 
