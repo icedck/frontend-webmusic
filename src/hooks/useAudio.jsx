@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 
 const AudioContext = createContext();
 
@@ -19,10 +19,63 @@ export const AudioProvider = ({ children }) => {
   const [isRepeat, setIsRepeat] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
   const [queue, setQueue] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
-  
+
   const audioRef = useRef(null);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+  const playSong = useCallback(async (song, playlist = []) => {
+    try {
+      setLoading(true);
+      setCurrentSong(song);
+
+      if (playlist.length > 0) {
+        setQueue(playlist);
+        const index = playlist.findIndex(s => s.id === song.id);
+        setCurrentIndex(index >= 0 ? index : 0);
+      } else {
+        const currentQueue = queue.length > 0 ? queue : [song];
+        setQueue(currentQueue);
+        const index = currentQueue.findIndex(s => s.id === song.id);
+        if (index !== -1) {
+          setCurrentIndex(index);
+        } else {
+          setQueue(prev => [...prev, song]);
+          setCurrentIndex(prev => prev.length);
+        }
+      }
+
+      if (audioRef.current) {
+        audioRef.current.src = `${API_BASE_URL}${song.filePath}`;
+        await audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error playing song:', error);
+      setIsPlaying(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE_URL, queue]);
+
+  const playNext = useCallback(() => {
+    if (queue.length === 0) return;
+
+    let nextIndex;
+    if (isShuffle) {
+      nextIndex = Math.floor(Math.random() * queue.length);
+      // Avoid playing the same song again in shuffle mode if queue is > 1
+      if (queue.length > 1 && nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % queue.length;
+      }
+    } else {
+      nextIndex = (currentIndex + 1) % queue.length;
+    }
+
+    playSong(queue[nextIndex], queue);
+  }, [queue, isShuffle, currentIndex, playSong]);
+
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -40,12 +93,16 @@ export const AudioProvider = ({ children }) => {
     };
     const handleLoadStart = () => setLoading(true);
     const handleCanPlay = () => setLoading(false);
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
@@ -53,65 +110,25 @@ export const AudioProvider = ({ children }) => {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
     };
-  }, [isRepeat]);
-
-  const playSong = async (song, playlist = []) => {
-    try {
-      setLoading(true);
-      setCurrentSong(song);
-      
-      if (playlist.length > 0) {
-        setQueue(playlist);
-        const index = playlist.findIndex(s => s.id === song.id);
-        setCurrentIndex(index >= 0 ? index : 0);
-      } else {
-        setQueue([song]);
-        setCurrentIndex(0);
-      }
-
-      if (audioRef.current) {
-        audioRef.current.src = song.file_path || song.url;
-        await audioRef.current.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('Error playing song:', error);
-      setLoading(false);
-    }
-  };
+  }, [isRepeat, playNext]);
 
   const togglePlay = async () => {
     if (!audioRef.current || !currentSong) return;
-
     try {
       if (isPlaying) {
         audioRef.current.pause();
-        setIsPlaying(false);
       } else {
         await audioRef.current.play();
-        setIsPlaying(true);
       }
     } catch (error) {
       console.error('Error toggling play:', error);
     }
   };
 
-  const playNext = () => {
-    if (queue.length === 0) return;
-
-    let nextIndex;
-    if (isShuffle) {
-      nextIndex = Math.floor(Math.random() * queue.length);
-    } else {
-      nextIndex = (currentIndex + 1) % queue.length;
-    }
-
-    setCurrentIndex(nextIndex);
-    playSong(queue[nextIndex], queue);
-  };
-
-  const playPrevious = () => {
+  const playPrevious = useCallback(() => {
     if (queue.length === 0) return;
 
     let prevIndex;
@@ -121,9 +138,8 @@ export const AudioProvider = ({ children }) => {
       prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
     }
 
-    setCurrentIndex(prevIndex);
     playSong(queue[prevIndex], queue);
-  };
+  }, [queue, isShuffle, currentIndex, playSong]);
 
   const seekTo = (time) => {
     if (audioRef.current) {
@@ -140,11 +156,11 @@ export const AudioProvider = ({ children }) => {
   };
 
   const toggleRepeat = () => {
-    setIsRepeat(!isRepeat);
+    setIsRepeat(prev => !prev);
   };
 
   const toggleShuffle = () => {
-    setIsShuffle(!isShuffle);
+    setIsShuffle(prev => !prev);
   };
 
   const addToQueue = (song) => {
@@ -157,18 +173,17 @@ export const AudioProvider = ({ children }) => {
 
   const clearQueue = () => {
     setQueue([]);
-    setCurrentIndex(0);
+    setCurrentIndex(-1);
   };
 
   const formatTime = (time) => {
-    if (isNaN(time)) return '0:00';
+    if (isNaN(time) || time === 0) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const value = {
-    // State
     currentSong,
     isPlaying,
     currentTime,
@@ -179,11 +194,7 @@ export const AudioProvider = ({ children }) => {
     queue,
     currentIndex,
     loading,
-    
-    // Audio element ref
     audioRef,
-    
-    // Controls
     playSong,
     togglePlay,
     playNext,
@@ -192,20 +203,16 @@ export const AudioProvider = ({ children }) => {
     changeVolume,
     toggleRepeat,
     toggleShuffle,
-    
-    // Queue management
     addToQueue,
     removeFromQueue,
     clearQueue,
-    
-    // Utilities
     formatTime
   };
 
   return (
-    <AudioContext.Provider value={value}>
-      {children}
-      <audio ref={audioRef} preload="metadata" />
-    </AudioContext.Provider>
+      <AudioContext.Provider value={value}>
+        {children}
+        <audio ref={audioRef} preload="metadata" />
+      </AudioContext.Provider>
   );
 };

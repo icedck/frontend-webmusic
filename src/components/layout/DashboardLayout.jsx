@@ -2,15 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useAuth } from '../../hooks/useAuth';
+import { useAudio } from '../../hooks/useAudio';
 import CommandPalette from './CommandPalette';
 import PlayerSidebar from './PlayerSidebar';
 import Button from '../common/Button';
-import ConfirmationModal from '../common/ConfirmationModal'; // Import ConfirmationModal
+import ConfirmationModal from '../common/ConfirmationModal';
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Star, Heart, Shuffle, Repeat,
-  Palette, Info, FileText, Shield, Flag, Phone
+  Palette, Info, FileText, Shield, Flag, Phone, Repeat1
 } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const mainNavItems = [
   { href: '/dashboard', icon: Home, label: 'Trang chủ', roles: ['all'] },
@@ -30,6 +33,10 @@ const adminNavItems = [
 const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   const { currentTheme, toggleDarkMode, isDarkMode } = useDarkMode();
   const { user, logout, isPremium, isAdmin, isCreator } = useAuth();
+  const {
+    currentSong, isPlaying, isRepeat, isShuffle,
+    togglePlay, playNext, playPrevious, toggleRepeat, toggleShuffle
+  } = useAudio();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -45,16 +52,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [settingsMenuRef]);
-
-  const { isPlaying, currentSong } = {
-    isPlaying: true,
-    currentSong: {
-      id: "1",
-      title: "Waiting For You",
-      albumArtUrl: "https://photo-resize-zmp3.zmdcdn.me/w94_r1x1_jpeg/cover/e/3/d/4/e3d4365751b9231365829a2491a13b99.jpg",
-      artist: { id: "mono", name: "MONO" },
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -80,7 +77,8 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   return (
       <header className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}>
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
-          <div className="flex items-center gap-2 flex-1">
+          {/* Left Section */}
+          <div className="flex items-center gap-2">
             <Link to="/dashboard" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Music className="w-5 h-5 text-white" />
@@ -112,23 +110,33 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
               })}
             </nav>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex items-center gap-4 flex-1 justify-end">
-            {currentSong && (
-                <div className={`flex items-center gap-3 min-w-0 transition-all duration-500 ease-in-out ${!isPlayerVisible ? 'max-w-xl opacity-100' : 'max-w-0 opacity-0'}`}>
-                  <Button variant="ghost" size="icon" className="!w-9 !h-9"><Shuffle size={18} /></Button>
-                  <Button variant="ghost" size="icon" className="!w-9 !h-9"><SkipBack size={18} /></Button>
-                  <Button size="icon" className="!w-10 !h-10">{isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}</Button>
-                  <Button variant="ghost" size="icon" className="!w-9 !h-9"><SkipForward size={18} /></Button>
-                  <Button variant="ghost" size="icon" className="!w-9 !h-9"><Repeat size={18} /></Button>
-                  <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                  <img src={currentSong?.albumArtUrl} alt={currentSong?.title} className="w-10 h-10 rounded-md hidden md:block" />
-                  <div className="hidden lg:block min-w-0">
-                    <p className="font-semibold truncate">{currentSong?.title}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{currentSong?.artist.name}</p>
-                  </div>
-                </div>
-            )}
+
+          {/* Right Section */}
+          <div className="flex items-center gap-4">
+            <div className={`
+              flex items-center gap-3
+              transition-all duration-300 ease-in-out
+              ${!isPlayerVisible && currentSong ? 'max-w-md opacity-100' : 'max-w-0 opacity-0'}
+              overflow-hidden
+            `}>
+              {currentSong && (
+                  <>
+                    <Button variant="ghost" size="icon" className={`!w-9 !h-9 ${isShuffle ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`} onClick={toggleShuffle}><Shuffle size={18} /></Button>
+                    <Button variant="ghost" size="icon" className="!w-9 !h-9" onClick={playPrevious}><SkipBack size={18} /></Button>
+                    <Button size="icon" className="!w-10 !h-10 bg-cyan-500 text-white" onClick={togglePlay}>{isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}</Button>
+                    <Button variant="ghost" size="icon" className="!w-9 !h-9" onClick={playNext}><SkipForward size={18} /></Button>
+                    <Button variant="ghost" size="icon" className={`!w-9 !h-9 ${isRepeat ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`} onClick={toggleRepeat}>{isRepeat ? <Repeat1 size={18} /> : <Repeat size={18} />}</Button>
+                    <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                    <img src={`${API_BASE_URL}${currentSong.thumbnailPath}`} alt={currentSong.title} className="w-10 h-10 rounded-md hidden md:block" />
+                    <div className="hidden lg:block min-w-0">
+                      <p className="font-semibold truncate">{currentSong.title}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{currentSong.singers.map(s => s.name).join(', ')}</p>
+                    </div>
+                  </>
+              )}
+            </div>
+
+            {/* Standard User Controls */}
             <div className="flex items-center gap-2">
               {user && !isPremium() && (
                   <Link to="/premium">
@@ -148,9 +156,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                 {isSettingsOpen && (
                     <div className={`absolute top-full right-0 mt-2 w-64 p-2 rounded-xl shadow-lg border backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-slate-200/50'}`}>
                       <div className="text-sm font-semibold px-3 py-1 mb-1">Cài đặt</div>
-                      <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}>
-                        <Palette size={16} /> Giao diện
-                      </Link>
+                      <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><Palette size={16} /> Giao diện</Link>
                       <hr className={`my-2 ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`} />
                       <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><Info size={16} /> Giới thiệu</Link>
                       <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><FileText size={16} /> Thỏa thuận sử dụng</Link>

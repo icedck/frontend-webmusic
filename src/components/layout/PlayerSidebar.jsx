@@ -1,29 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-// import { useAudio } from '../../hooks/useAudio'; // Sẽ dùng sau
+import { useAudio } from '../../hooks/useAudio';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import Button from '../common/Button';
 import {
     Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Star, ChevronsRight,
-    ChevronsLeft, Music, Heart, ListMusic, Volume2, MoreHorizontal, GripVertical
+    ChevronsLeft, Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal, GripVertical
 } from 'lucide-react';
 
-const mockCurrentlyPlaying = {
-    id: "1",
-    title: "Waiting For You",
-    albumArtUrl: "https://photo-resize-zmp3.zmdcdn.me/w240_r1x1_jpeg/cover/e/3/d/4/e3d4365751b9231365829a2491a13b99.jpg",
-    duration: 262,
-    artist: { id: "mono", name: "MONO" },
-};
-
-const mockQueue = [
-    { id: "2", title: "Em là", artistName: "MONO", duration: 185, albumArtUrl: "https://via.placeholder.com/100/A78BFA/FFFFFF?text=EL" },
-    { id: "3", title: "Từng Quen", artistName: "Wren Evans", duration: 210, albumArtUrl: "https://via.placeholder.com/100/F472B6/FFFFFF?text=TQ" },
-    { id: "4", title: "À Lôi", artistName: "Double2T", duration: 187, albumArtUrl: "https://via.placeholder.com/100/60A5FA/FFFFFF?text=AL" },
-    { id: "5", title: "See Tình", artistName: "Hoàng Thùy Linh", duration: 195, albumArtUrl: "https://via.placeholder.com/100/FBBF24/FFFFFF?text=ST" },
-    { id: "6", title: "Chúng ta của tương lai", artistName: "Sơn Tùng M-TP", duration: 303, albumArtUrl: "https://via.placeholder.com/100/818CF8/FFFFFF?text=CT" },
-];
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const PremiumUpsellCard = () => {
     const { isDarkMode } = useDarkMode();
@@ -51,144 +37,128 @@ const PremiumUpsellCard = () => {
     );
 };
 
-const QueueItem = ({ song, isPlayingNow = false }) => {
+const QueueItem = ({ song, isPlayingNow }) => {
     const { isDarkMode } = useDarkMode();
-    const formattedDuration = (secs) => `${Math.floor(secs / 60)}:${('0' + Math.floor(secs % 60)).slice(-2)}`;
+    const { formatTime } = useAudio();
 
     return (
         <div className={`group flex items-center p-2 rounded-lg transition-colors ${isPlayingNow ? (isDarkMode ? 'bg-white/10' : 'bg-black/5') : 'hover:bg-white/5 dark:hover:bg-black/10'}`}>
             <GripVertical className="w-5 h-5 text-slate-500 cursor-grab mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <img src={song.albumArtUrl} alt={song.title} className="w-10 h-10 rounded-md" />
+            <img src={`${API_BASE_URL}${song.thumbnailPath}`} alt={song.title} className="w-10 h-10 rounded-md" />
             <div className="flex-1 min-w-0 mx-3">
-                <p className={`font-semibold truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{song.title}</p>
-                <p className={`text-sm truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{song.artistName || song.artist.name}</p>
+                <p className={`font-semibold truncate ${isPlayingNow ? 'text-cyan-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>{song.title}</p>
+                <p className={`text-sm truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {song.singers.map(s => s.name).join(', ')}
+                </p>
             </div>
-            <span className={`text-xs font-mono ml-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{formattedDuration(song.duration)}</span>
+            {song.duration && (
+                <span className={`text-xs font-mono ml-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{formatTime(song.duration)}</span>
+            )}
         </div>
     );
 };
 
 const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     const { user, isPremium } = useAuth();
-    const { currentTheme, isDarkMode } = useDarkMode();
-    const { isPlaying, progress } = { isPlaying: true, progress: 45 };
-    const [volume, setVolume] = useState(75);
+    const { isDarkMode } = useDarkMode();
+    const {
+        currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle, queue,
+        togglePlay, playNext, playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle, formatTime
+    } = useAudio();
+
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-    const song = mockCurrentlyPlaying;
-    const queue = mockQueue;
+    const progressBarRef = useRef(null);
 
-    const [isShuffled, setIsShuffled] = useState(false);
-    const [repeatMode, setRepeatMode] = useState('all'); // 'none', 'all', 'one'
-
-    const handleCycleRepeat = () => {
-        if (repeatMode === 'none') setRepeatMode('all');
-        else if (repeatMode === 'all') setRepeatMode('one');
-        else setRepeatMode('none');
+    const handleSeek = (e) => {
+        if (!progressBarRef.current || !duration) return;
+        const rect = progressBarRef.current.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        const newTime = (clickX / width) * duration;
+        seekTo(newTime);
     };
 
-    const formattedDuration = (secs) => `${Math.floor(secs / 60)}:${('0' + Math.floor(secs % 60)).slice(-2)}`;
+    const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    const VolumeIcon = () => {
+        if (volume === 0) return <VolumeX size={18} />;
+        if (volume < 0.5) return <Volume1 size={18} />;
+        return <Volume2 size={18} />;
+    };
 
     return (
         <aside className={`relative flex-shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-0' : 'w-80'}`}>
             <div className={`relative w-80 h-full overflow-hidden transition-opacity duration-300 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
                 <div className="absolute inset-0">
-                    <img src={song.albumArtUrl} alt="Ambient background" className={`w-full h-full object-cover scale-110 filter blur-2xl ${isDarkMode ? 'brightness-[.4]' : 'brightness-100'}`} />
+                    {currentSong && <img src={`${API_BASE_URL}${currentSong.thumbnailPath}`} alt="Ambient background" className={`w-full h-full object-cover scale-110 filter blur-2xl transition-all duration-500 ${isDarkMode ? 'brightness-[.4]' : 'brightness-100'}`} />}
                     <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/40' : 'bg-white/20'}`}></div>
                 </div>
 
                 <div className="relative h-full flex flex-col p-4">
-                    {!song ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500">
-                            <Music className="w-10 h-10 mb-2" />
-                            <p>Chưa có nhạc đang phát.</p>
+                    <button onClick={onToggle} className={`absolute top-4 right-4 w-8 h-8 rounded-full transition-colors flex items-center justify-center z-20 ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-700/90 text-slate-300 hover:text-white' : 'bg-white/80 text-slate-700 hover:bg-slate-200 hover:text-black'}`}>
+                        <ChevronsRight size={20} />
+                    </button>
+
+                    {/* Empty State Wrapper */}
+                    <div className={`absolute inset-4 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-opacity duration-500 ease-in-out ${!currentSong ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                        <Music className="w-10 h-10 mb-2" />
+                        <p className="font-semibold">Chưa có nhạc</p>
+                        <p className="text-sm">Hãy chọn một bài hát để bắt đầu.</p>
+                    </div>
+
+                    {/* Player UI Wrapper */}
+                    <div className={`h-full flex flex-col transition-opacity duration-500 ease-in-out ${currentSong ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                        <div className="flex-1 flex flex-col min-h-0">
+                            <h3 className={`text-lg font-bold mb-3 px-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Danh sách phát</h3>
+                            <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                                {queue.map(qSong => (
+                                    <QueueItem key={qSong.id} song={qSong} isPlayingNow={currentSong?.id === qSong.id}/>
+                                ))}
+                            </div>
                         </div>
-                    ) : (
-                        <>
-                            <div className="flex-1 flex flex-col min-h-0">
-                                <h3 className={`text-lg font-bold mb-3 px-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Danh sách phát</h3>
-                                <div className="flex-1 overflow-y-auto space-y-1 pr-1">
-                                    <QueueItem song={song} isPlayingNow={true} />
-                                    {queue.map(qSong => (
-                                        <QueueItem key={qSong.id} song={qSong} />
-                                    ))}
+
+                        <div className={`relative mt-4 p-4 backdrop-blur-2xl border rounded-2xl transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}>
+                            <div className="flex items-center gap-3">
+                                {currentSong && <img src={`${API_BASE_URL}${currentSong.thumbnailPath}`} className="w-14 h-14 rounded-md flex-shrink-0" />}
+                                <div className="flex-1 min-w-0">
+                                    <p className={`font-bold truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{currentSong?.title}</p>
+                                    <p className={`text-sm truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                                        {currentSong?.singers.map(s => s.name).join(', ')}
+                                    </p>
                                 </div>
+                                <Button variant="ghost" size="icon" className="!w-9 !h-9 flex-shrink-0 text-slate-500 hover:text-pink-500 dark:text-slate-400 dark:hover:text-pink-400">
+                                    <Heart size={18} />
+                                </Button>
                             </div>
 
-                            <div className={`relative mt-4 p-4 backdrop-blur-2xl border rounded-2xl transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}>
-                                <button onClick={onToggle} className={`absolute -top-3 right-3 w-8 h-8 rounded-full transition-colors flex items-center justify-center ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-700/90 text-slate-300 hover:text-white' : 'bg-white/80 text-slate-700 hover:bg-slate-200 hover:text-black'}`}>
-                                    <ChevronsRight size={20} />
-                                </button>
-
-                                <div className="flex justify-between items-center gap-4">
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <img src={song.albumArtUrl} className="w-14 h-14 rounded-md" />
-                                        <div className="min-w-0">
-                                            <p className={`font-bold truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{song.title}</p>
-                                            <Link to={`/artist/${song.artist.id}`} className={`text-sm hover:underline truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{song.artist.name}</Link>
-                                        </div>
-                                        <Button variant="ghost" size="icon" className="!w-9 !h-9 text-slate-500 hover:text-pink-500 dark:text-slate-400 dark:hover:text-pink-400">
-                                            <Heart size={18} />
-                                        </Button>
-                                    </div>
+                            <div className="my-2">
+                                <div className="flex justify-center items-center gap-4">
+                                    <Button variant="ghost" size="icon" className={`!rounded-full ${isShuffle ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black')}`} onClick={toggleShuffle}><Shuffle size={18} /></Button>
+                                    <Button onClick={playPrevious} variant="ghost" size="icon" className={`!rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`}><SkipBack size={22} /></Button>
+                                    <Button onClick={togglePlay} variant="secondary" size="icon" className={`!w-14 !h-14 !rounded-full transition-colors ${isDarkMode ? 'bg-white hover:bg-slate-200 text-slate-900' : 'bg-slate-900 hover:bg-slate-700 text-white'}`} >{isPlaying ? <Pause size={24} className="fill-current" /> : <Play size={24} className="fill-current ml-1" />}</Button>
+                                    <Button onClick={playNext} variant="ghost" size="icon" className={`!rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`}><SkipForward size={22} /></Button>
+                                    <Button variant="ghost" size="icon" className={`!rounded-full relative ${isRepeat ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black')}`} onClick={toggleRepeat}>
+                                        {isRepeat ? <Repeat1 size={20} /> : <Repeat size={20} />}
+                                        {isRepeat && <div className="absolute bottom-1 h-1 w-1 bg-current rounded-full"></div>}
+                                    </Button>
                                 </div>
-
-                                <div className="my-2">
-                                    <div className="flex justify-center items-center gap-4">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className={`!rounded-full ${isShuffled ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black')}`}
-                                            onClick={() => setIsShuffled(prev => !prev)}
-                                        >
-                                            <Shuffle size={18} />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className={`!rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`}><SkipBack size={22} /></Button>
-                                        <Button
-                                            variant="secondary"
-                                            size="icon"
-                                            className={`!w-14 !h-14 !rounded-full transition-colors ${isDarkMode ? 'bg-white hover:bg-slate-200 text-slate-900' : 'bg-slate-900 hover:bg-slate-700 text-white'}`}
-                                        >
-                                            {isPlaying
-                                                ? <Pause size={24} className="fill-current" />
-                                                : <Play size={24} className="fill-current ml-1" />
-                                            }
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className={`!rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`}><SkipForward size={22} /></Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className={`!rounded-full relative ${repeatMode !== 'none' ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black')}`}
-                                            onClick={handleCycleRepeat}
-                                        >
-                                            {repeatMode === 'one' ? <Repeat1 size={20} /> : <Repeat size={20} />}
-                                            {repeatMode !== 'none' && <div className="absolute bottom-1 h-1 w-1 bg-current rounded-full"></div>}
-                                        </Button>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <span className={`text-xs font-mono ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{formatTime(currentTime)}</span>
+                                    <div ref={progressBarRef} onClick={handleSeek} className={`w-full group relative rounded-full h-1.5 cursor-pointer ${isDarkMode ? 'bg-white/10' : 'bg-black/10'}`}>
+                                        <div className={`h-1.5 rounded-full ${isDarkMode ? 'bg-white group-hover:bg-cyan-400' : 'bg-slate-800 group-hover:bg-blue-600'}`} style={{ width: `${progress}%` }}></div>
                                     </div>
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <span className={`text-xs font-mono ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{formattedDuration(song.duration * (progress / 100))}</span>
-                                        <div className={`w-full group relative rounded-full h-1.5 cursor-pointer ${isDarkMode ? 'bg-white/10' : 'bg-black/10'}`}>
-                                            <div className={`h-1.5 rounded-full ${isDarkMode ? 'bg-white group-hover:bg-cyan-400' : 'bg-slate-800 group-hover:bg-blue-600'}`} style={{ width: `${progress}%` }}></div>
-                                        </div>
-                                        <span className={`text-xs font-mono ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{formattedDuration(song.duration)}</span>
-                                    </div>
-                                </div>
-                                <div className={`flex justify-end items-center gap-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                    <Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white"><ListMusic size={18} /></Button>
-                                    <div className="relative">
-                                        <Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white" onClick={() => setIsVolumeOpen(v => !v)}><Volume2 size={18} /></Button>
-                                        {isVolumeOpen && (
-                                            <div className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-2 rounded-lg backdrop-blur-2xl border transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}>
-                                                <input type="range" min="0" max="100" value={volume} onChange={(e) => setVolume(e.target.value)} className="w-20 h-1 accent-cyan-400" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white"><MoreHorizontal size={18} /></Button>
+                                    <span className={`text-xs font-mono ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{formatTime(duration)}</span>
                                 </div>
                             </div>
+                            <div className={`flex justify-end items-center gap-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                <Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white"><ListMusic size={18} /></Button>
+                                <div className="relative"><Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white" onClick={() => setIsVolumeOpen(v => !v)}><VolumeIcon/></Button>{isVolumeOpen && (<div className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-2 rounded-lg backdrop-blur-2xl border transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => changeVolume(parseFloat(e.target.value))} className="w-20 h-1 accent-cyan-400" /></div>)}</div>
+                                <Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white"><MoreHorizontal size={18} /></Button>
+                            </div>
+                        </div>
 
-                            {(!user || !isPremium()) && <div className="mt-4"><PremiumUpsellCard /></div>}
-                        </>
-                    )}
+                        {(!user || !isPremium()) && <div className="mt-4"><PremiumUpsellCard /></div>}
+                    </div>
                 </div>
             </div>
 
