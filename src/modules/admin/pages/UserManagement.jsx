@@ -17,7 +17,7 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 0));
       
       const mockUsers = [
         {
