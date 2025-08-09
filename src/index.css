@@ -100,3 +100,6 @@
     to { height: 20px; }
   }
 }
+.text-stroke-blue-500 { -webkit-text-stroke: 1.5px #3b82f6; }
+.text-stroke-green-400 { -webkit-text-stroke: 1.5px #4ade80; }
+.text-stroke-red-400 { -webkit-text-stroke: 1.5px #f87171; }

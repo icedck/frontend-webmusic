@@ -1,48 +1,79 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import ChartItem from './ChartItem'; // Import component mới
+import { FaPlayCircle } from 'react-icons/fa'; // Import icon
 
-const ChartItem = ({ song, rank }) => {
-    // Logic để xác định màu sắc của thứ hạng
-    const getRankColor = (rank) => {
-        switch (rank) {
-            case 1: return 'text-yellow-400';
-            case 2: return 'text-slate-300';
-            case 3: return 'text-amber-500';
-            default: return 'text-slate-500';
-        }
-    };
-
-    return (
-        <div className="group flex items-center p-3 rounded-lg hover:bg-slate-800/50 transition-colors duration-200">
-            <div className={`w-12 text-3xl font-bold text-center ${getRankColor(rank)}`}>
-                {rank}
-            </div>
-            <div className="relative w-14 h-14 rounded-md overflow-hidden mx-4 flex-shrink-0">
-                <img src={song.imageUrl} alt={song.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                    <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white scale-0 group-hover:scale-100 transition-transform duration-300">
-                        <Play size={16} className="ml-0.5" />
+const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-lg">
+                <p className="label text-slate-300">{`${label}`}</p>
+                {payload.map((pld, index) => (
+                    <div key={index} style={{ color: pld.color }}>
+                        {`${pld.name}: ${pld.value}`}
                     </div>
-                </div>
+                ))}
             </div>
-            <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate text-white">{song.title}</p>
-                <p className="text-sm text-slate-400 truncate">{song.artist}</p>
-            </div>
-            <div className="ml-4 text-sm text-slate-400 font-mono">
-                {song.duration}
-            </div>
-        </div>
-    );
+        );
+    }
+    return null;
 };
 
-const ChartList = ({ chartData }) => {
+const ChartList = ({ chartData, graphData }) => {
+    // Chỉ lấy top 3 bài hát để hiển thị trong danh sách
+    const topSongs = chartData.slice(0, 3);
+
     return (
-        <div className="space-y-2">
-            {chartData.map((song, index) => (
-                <ChartItem key={song.id} song={song} rank={index + 1} />
-            ))}
+        // === DÒNG ĐƯỢC THAY ĐỔI ===
+        <div className="relative p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 overflow-hidden">
+            <div className="flex items-center gap-3 mb-5">
+                <a href="#" className="text-3xl font-bold text-white hover:text-sky-200 transition-colors">#WebMusicChart</a>
+                <FaPlayCircle className="text-white text-3xl cursor-pointer hover:scale-110 transition-transform" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Cột bên trái: Danh sách bài hát */}
+                <div className="space-y-2">
+                    {topSongs.map((song, index) => (
+                        <ChartItem key={song.id} song={song} rank={index + 1} />
+                    ))}
+                    <div className="pt-4 text-center">
+                        <button className="border border-white/50 rounded-full px-6 py-2 text-sm text-white font-semibold hover:bg-white/20 transition-colors">
+                            Xem thêm
+                        </button>
+                    </div>
+                </div>
+
+                {/* Cột bên phải: Biểu đồ */}
+                <div className="relative h-64 lg:h-full min-h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={graphData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                            <XAxis
+                                dataKey="name"
+                                tick={{ fill: 'rgba(255, 255, 255, 0.7)' }}
+                                tickLine={false}
+                                axisLine={false}
+                                fontSize={12}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+
+                            {/* Tạo các đường <Line> động từ chartData */}
+                            {chartData.slice(0, 3).map(song => (
+                                <Line
+                                    key={song.id}
+                                    type="monotone"
+                                    dataKey={song.id}
+                                    name={song.title}
+                                    stroke={song.color}
+                                    strokeWidth={2.5}
+                                    dot={false}
+                                    activeDot={{ r: 6, strokeWidth: 2, fill: song.color }}
+                                />
+                            ))}
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
         </div>
     );
 };

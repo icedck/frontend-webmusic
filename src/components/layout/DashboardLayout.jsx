@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import CommandPalette from './CommandPalette';
 import PlayerSidebar from './PlayerSidebar';
 import Button from '../common/Button';
+import ConfirmationModal from '../common/ConfirmationModal'; // Import ConfirmationModal
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Star, Heart, Shuffle, Repeat,
@@ -26,7 +27,7 @@ const adminNavItems = [
   { href: '/admin/submissions', icon: CheckSquare, label: 'Duyệt bài hát', roles: ['admin'] },
 ];
 
-const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
+const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   const { currentTheme, toggleDarkMode, isDarkMode } = useDarkMode();
   const { user, logout, isPremium, isAdmin, isCreator } = useAuth();
   const location = useLocation();
@@ -79,7 +80,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
   return (
       <header className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}>
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
-          {/* --- CỤM BÊN TRÁI: ĐIỀU HƯỚNG --- */}
           <div className="flex items-center gap-2 flex-1">
             <Link to="/dashboard" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -96,8 +96,8 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
                         <item.icon size={22} />
                       </div>
                       <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out text-slate-800 dark:text-white max-w-0 ml-0 opacity-0 group-hover:max-w-xs group-hover:ml-2 group-hover:opacity-100`}>
-                                        {item.label}
-                                    </span>
+                        {item.label}
+                      </span>
                     </>
                 );
                 return item.href ? (
@@ -112,11 +112,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
               })}
             </nav>
           </div>
-
-          {/* --- CỤM Ở GIỮA: TRỐNG --- */}
           <div className="flex-1"></div>
-
-          {/* --- CỤM BÊN PHẢI: PLAYER & USER ACTIONS --- */}
           <div className="flex items-center gap-4 flex-1 justify-end">
             {currentSong && (
                 <div className={`flex items-center gap-3 min-w-0 transition-all duration-500 ease-in-out ${!isPlayerVisible ? 'max-w-xl opacity-100' : 'max-w-0 opacity-0'}`}>
@@ -136,16 +132,15 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
             <div className="flex items-center gap-2">
               {user && !isPremium() && (
                   <Link to="/premium">
-                    <button className="hidden lg:inline-flex relative group items-center justify-center h-10 px-4 font-medium text-sm text-white rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700">
+                    <button className="hidden lg:inline-flex relative group items-center justify-center h-10 px-4 font-medium text-sm text-white rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 flex-shrink-0 whitespace-nowrap min-w-max">
                       <div className="absolute -inset-px rounded-lg bg-gradient-to-r from-cyan-400 to-blue-600 opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                      <span className="relative flex items-center gap-2"><Star size={16} className="text-yellow-300"/> Premium</span>
+                      <span className="relative flex items-center gap-2">Nâng cấp tài khoản</span>
                     </button>
                   </Link>
               )}
               <button onClick={toggleDarkMode} className="p-2 rounded-full text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
-
               <div className="relative" ref={settingsMenuRef}>
                 <button onClick={() => setIsSettingsOpen(prev => !prev)} className="p-2 rounded-full text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
                   <Settings size={20} />
@@ -164,7 +159,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
                     </div>
                 )}
               </div>
-
               {user ? (
                   <>
                     <Link to="/profile">
@@ -172,7 +166,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible }) => {
                         {user.photoURL ? <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" /> : <User size={20} />}
                       </div>
                     </Link>
-                    <button onClick={handleLogout} className="p-2 rounded-full text-red-500 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20 transition-colors">
+                    <button onClick={onConfirmLogout} className="p-2 rounded-full text-red-500 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20 transition-colors">
                       <LogOut size={20} />
                     </button>
                   </>
@@ -193,6 +187,7 @@ const DashboardLayout = () => {
   const { user, logout, isAdmin, isCreator, isPremium } = useAuth();
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isPlayerCollapsed, setIsPlayerCollapsed] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -212,6 +207,7 @@ const DashboardLayout = () => {
 
   const handleLogout = () => {
     logout();
+    setIsLogoutModalOpen(false);
     navigate('/login');
   };
 
@@ -247,7 +243,11 @@ const DashboardLayout = () => {
 
   return (
       <div className={`flex flex-col h-screen ${currentTheme.bg} ${currentTheme.text} font-sans`}>
-        <AppHeader onOpenPalette={() => setIsPaletteOpen(true)} isPlayerVisible={!isPlayerCollapsed} />
+        <AppHeader
+            onOpenPalette={() => setIsPaletteOpen(true)}
+            isPlayerVisible={!isPlayerCollapsed}
+            onConfirmLogout={() => setIsLogoutModalOpen(true)}
+        />
         <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:px-8 transition-all duration-300 ease-in-out">
             <Outlet />
@@ -258,6 +258,16 @@ const DashboardLayout = () => {
             isOpen={isPaletteOpen}
             onClose={() => setIsPaletteOpen(false)}
             navigationCommands={navigationCommands}
+        />
+        <ConfirmationModal
+            isOpen={isLogoutModalOpen}
+            onClose={() => setIsLogoutModalOpen(false)}
+            onConfirm={handleLogout}
+            title="Xác nhận Đăng xuất"
+            message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?"
+            confirmText="Đăng xuất"
+            cancelText="Hủy"
+            variant="danger"
         />
       </div>
   );
