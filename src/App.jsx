@@ -52,7 +52,6 @@ function AppContent() {
                             <Route path="/admin/submissions" element={<SubmissionManagement />} />
                             <Route path="/creator" element={<CreatorDashboard />} />
                             <Route path="/creator/my-submissions" element={<MySubmissions />} />
-                            {/* THÊM ROUTE MỚI */}
                             <Route path="/creator/my-submissions/:submissionId" element={<SubmissionDetail />} />
                             <Route path="/creator/submission/new" element={<SongSubmission />} />
                             <Route path="/creator/submission/edit/:submissionId" element={<SongSubmission />} />
