@@ -4,14 +4,15 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
 import { PlusCircle, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '../services/adminService';
+import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const StatusBadge = ({ status }) => {
     const statusStyles = {
-        PENDING: 'bg-yellow-100 text-yellow-800',
-        APPROVED: 'bg-green-100 text-green-800',
-        REJECTED: 'bg-red-100 text-red-800',
+        PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
+        APPROVED: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+        REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
     };
     return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
 }
@@ -20,7 +21,6 @@ const SongManagementAdmin = () => {
     const { currentTheme } = useDarkMode();
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [pageInfo, setPageInfo] = useState({
         pageNumber: 0,
         pageSize: 5,
@@ -34,18 +34,18 @@ const SongManagementAdmin = () => {
             const response = await adminService.getSongs(page, size);
             if (response.success && response.data && response.data.pageInfo) {
                 setSongs(Array.isArray(response.data.content) ? response.data.content : []);
-                setPageInfo(prevInfo => ({
-                    ...prevInfo,
+                setPageInfo({
                     pageNumber: response.data.pageInfo.page,
+                    pageSize: response.data.pageInfo.size,
                     totalPages: response.data.pageInfo.totalPages,
                     totalElements: response.data.pageInfo.totalElements,
-                }));
+                });
             } else {
                 setSongs([]);
-                setError("Dữ liệu không hợp lệ hoặc không có thông tin phân trang.");
+                toast.error(response.message || "Không thể tải danh sách bài hát.");
             }
         } catch (err) {
-            setError("Đã xảy ra lỗi khi tải danh sách bài hát.");
+            toast.error("Đã xảy ra lỗi khi tải danh sách bài hát.");
         } finally {
             setLoading(false);
         }
@@ -80,6 +80,7 @@ const SongManagementAdmin = () => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className={`${currentTheme.bg}`}>
                     <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ca sĩ</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trạng thái</th>
@@ -87,10 +88,13 @@ const SongManagementAdmin = () => {
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {loading && <tr><td colSpan="4" className="text-center py-4">Đang tải...</td></tr>}
-                    {error && <tr><td colSpan="4" className="text-center py-4 text-red-500">{error}</td></tr>}
-                    {!loading && !error && songs.map((song) => (
+                    {loading && <tr><td colSpan="5" className="text-center py-4">Đang tải...</td></tr>}
+                    {!loading && songs.length === 0 && (
+                        <tr><td colSpan="5" className="text-center py-4">Không có dữ liệu.</td></tr>
+                    )}
+                    {!loading && songs.map((song) => (
                         <tr key={song.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">{song.id}</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-10 w-10">

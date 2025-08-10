@@ -5,12 +5,11 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { Login, Register, Profile } from './modules/auth';
 import ForgotPassword from './modules/auth/pages/ForgotPassword';
-// XÓA DÒNG NÀY
-// import ResetPassword from './modules/auth/pages/ResetPassword';
 import MusicDiscoveryPage from './pages/MusicDiscoveryPage';
 import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
+import SubmissionDetail from './modules/creator/pages/SubmissionDetail'; // THÊM IMPORT
 import { PremiumUpgrade, TransactionHistory } from './modules/premium';
 import { SearchResults } from './modules/search';
 import { ToastContainer } from 'react-toastify';
@@ -33,8 +32,6 @@ function AppContent() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
-                    {/* XÓA DÒNG NÀY */}
-                    {/* <Route path="/reset-password" element={<ResetPassword />} /> */}
 
                     <Route element={<DashboardLayout />}>
                         <Route path="/dashboard" element={<MusicDiscoveryPage />} />
@@ -55,6 +52,8 @@ function AppContent() {
                             <Route path="/admin/submissions" element={<SubmissionManagement />} />
                             <Route path="/creator" element={<CreatorDashboard />} />
                             <Route path="/creator/my-submissions" element={<MySubmissions />} />
+                            {/* THÊM ROUTE MỚI */}
+                            <Route path="/creator/my-submissions/:submissionId" element={<SubmissionDetail />} />
                             <Route path="/creator/submission/new" element={<SongSubmission />} />
                             <Route path="/creator/submission/edit/:submissionId" element={<SongSubmission />} />
                         </Route>

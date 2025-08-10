@@ -2,8 +2,15 @@ import { apiService } from '../../../shared/services/apiService';
 
 const getSingers = async (page = 0, size = 5, search = '') => {
     try {
-        const timestamp = new Date().getTime();
-        const response = await apiService.get(`/api/v1/singers/admin/all?page=${page}&size=${size}&search=${search}&_=${timestamp}`);
+        const params = new URLSearchParams({
+            page: page,
+            size: size,
+            sort: 'id,desc'
+        });
+        if (search) {
+            params.append('search', search);
+        }
+        const response = await apiService.get(`/api/v1/singers/admin/all?${params.toString()}`);
         return response.data;
     } catch (error) {
         console.error("Failed to fetch singers:", error);
@@ -57,7 +64,15 @@ const createSongByAdmin = async (formData) => {
 
 const getSongs = async (page = 0, size = 5, search = '') => {
     try {
-        const response = await apiService.get(`/api/v1/songs/admin/all?page=${page}&size=${size}&search=${search}`);
+        const params = new URLSearchParams({
+            page: page,
+            size: size,
+            sort: 'id,desc'
+        });
+        if (search) {
+            params.append('search', search);
+        }
+        const response = await apiService.get(`/api/v1/songs/admin/all?${params.toString()}`);
         return response.data;
     } catch (error) {
         console.error("Failed to fetch songs:", error);

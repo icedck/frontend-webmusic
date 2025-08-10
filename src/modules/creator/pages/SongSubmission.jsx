@@ -4,8 +4,10 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import { submissionService } from '../services/submissionService';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
+import FileUpload from '../../../components/common/FileUpload';
+import MultiSelect from '../../../components/common/MultiSelect';
 import { toast } from 'react-toastify';
-import { Music, Upload, Tag, User as UserIcon, Type, Info, PlusCircle, Trash2 } from 'lucide-react';
+import { User as UserIcon, Mail, PlusCircle, Trash2 } from 'lucide-react';
 
 const SongSubmission = () => {
   const { submissionId } = useParams();
@@ -30,13 +32,10 @@ const SongSubmission = () => {
 
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState('');
 
   useEffect(() => {
     const loadInitialData = async () => {
       setPageLoading(true);
-      setServerError('');
       try {
         const formOptions = await submissionService.fetchFormData();
         setAvailableSingers(Array.isArray(formOptions?.singers) ? formOptions.singers : []);
@@ -47,43 +46,35 @@ const SongSubmission = () => {
           const submissionData = submissionResponse.data;
 
           if (submissionData) {
-            const approvedSingers = submissionData.singers.filter(s => s.status === 'APPROVED');
-            const pendingSingers = submissionData.singers.filter(s => s.status === 'PENDING');
+            const existingSingers = submissionData.singers.filter(s => s.status !== 'PENDING' || s.creatorId !== submissionData.creatorId);
+            const pendingSingers = submissionData.singers.filter(s => s.status === 'PENDING' && s.creatorId === submissionData.creatorId);
 
             setFormData({
               title: submissionData.title || '',
               description: submissionData.description || '',
-              existingSingerIds: approvedSingers.map(s => String(s.id)),
-              tagIds: submissionData.tags.map(t => String(t.id)),
+              existingSingerIds: existingSingers.map(s => s.id),
+              tagIds: submissionData.tags.map(t => t.id),
               isPremium: submissionData.isPremium || false,
             });
+
             setNewSingers(pendingSingers.map(s => ({ id: s.id, name: s.name, email: s.email })));
           } else {
-            setServerError("Không tìm thấy yêu cầu để chỉnh sửa.");
+            toast.error("Không tìm thấy yêu cầu để chỉnh sửa.");
+            navigate('/creator/my-submissions');
           }
         }
       } catch (error) {
-        console.error("Failed to load data:", error);
-        setServerError("Không thể tải dữ liệu. Vui lòng thử lại.");
+        toast.error("Không thể tải dữ liệu. Vui lòng thử lại.");
       } finally {
         setPageLoading(false);
       }
     };
     loadInitialData();
-  }, [submissionId, isEditMode]);
+  }, [submissionId, isEditMode, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-  };
-
-  const handleFileChange = (e, setFile) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      if (e.target.name === 'audioFile' && errors.audioFile) {
-        setErrors(prev => ({ ...prev, audioFile: '' }));
-      }
-    }
   };
 
   const handleAddNewSinger = () => setNewSingers([...newSingers, { name: '', email: '' }]);
@@ -100,34 +91,26 @@ const SongSubmission = () => {
     setNewSingers(updatedSingers);
   };
 
-  const handleNewSingerFileChange = (index, e) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewSingerFiles(prev => ({
-        ...prev,
-        [index]: e.target.files[0]
-      }));
-    }
+  const handleNewSingerFileChange = (index, file) => {
+    setNewSingerFiles(prev => ({
+      ...prev,
+      [index]: file
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setServerError('');
-    setErrors({});
 
     if (!isEditMode && !audioFile) {
-      setErrors({ audioFile: "Vui lòng chọn file audio." });
+      toast.error("Vui lòng chọn file audio.");
       setLoading(false);
       return;
     }
 
     const requestDto = {
-      title: formData.title,
-      description: formData.description,
-      existingSingerIds: formData.existingSingerIds.map(Number),
-      tagIds: formData.tagIds.map(Number),
-      isPremium: formData.isPremium,
-      newSingers: newSingers.filter(s => s.name && s.name.trim() !== '' && s.email && s.email.trim() !== ''),
+      ...formData,
+      newSingers: newSingers.filter(s => s.name?.trim() && s.email?.trim()),
     };
 
     try {
@@ -141,19 +124,15 @@ const SongSubmission = () => {
         if (thumbnailFile) {
           submissionFormData.append('thumbnailFile', thumbnailFile);
         }
-
-        requestDto.newSingers.forEach((singer, index) => {
-          if (newSingerFiles[index]) {
-            submissionFormData.append('newSingerAvatars', newSingerFiles[index]);
-          }
+        Object.values(newSingerFiles).forEach(file => {
+          submissionFormData.append('newSingerAvatars', file);
         });
-
         await submissionService.createSubmission(submissionFormData);
         toast.success('Đã gửi yêu cầu thành công!');
       }
       navigate('/creator/my-submissions');
     } catch (error) {
-      setServerError(error.response?.data?.message || 'Có lỗi xảy ra.');
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra.');
     } finally {
       setLoading(false);
     }
@@ -162,88 +141,75 @@ const SongSubmission = () => {
   if (pageLoading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-music-500"></div></div>;
 
   return (
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <h1 className={`text-3xl font-bold ${currentTheme.text}`}>{isEditMode ? 'Chỉnh sửa Yêu cầu' : 'Tạo Yêu cầu Đăng bài hát'}</h1>
-        <p className={`${currentTheme.textSecondary}`}>{isEditMode ? 'Cập nhật thông tin cho yêu cầu của bạn.' : 'Điền đầy đủ thông tin để gửi bài hát.'}</p>
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div>
+          <h1 className={`text-3xl font-bold ${currentTheme.text}`}>{isEditMode ? 'Chỉnh sửa Yêu cầu' : 'Tạo Yêu cầu Đăng bài hát'}</h1>
+          <p className={`${currentTheme.textSecondary}`}>{isEditMode ? 'Cập nhật thông tin cho yêu cầu của bạn.' : 'Điền đầy đủ thông tin để gửi bài hát.'}</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {serverError && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">{serverError}</div>}
-
-          <div className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            <h2 className="text-xl font-semibold mb-4">Thông tin cơ bản</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Type className="w-4 h-4 mr-2" />Tên bài hát *</label>
-                <Input name="title" value={formData.title} onChange={handleInputChange} required />
-              </div>
-              <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Info className="w-4 h-4 mr-2" />Mô tả</label>
-                <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className={`w-full p-2 border rounded ${currentTheme.bg} resize-y`}/>
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+            <h2 className="text-xl font-semibold">Thông tin cơ bản</h2>
+            <Input name="title" label="Tên bài hát *" value={formData.title} onChange={handleInputChange} required />
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mô tả</label>
+              <textarea id="description" name="description" rows={4} placeholder="Giới thiệu ngắn về bài hát..." value={formData.description} onChange={handleInputChange} className={`w-full p-2 border rounded-lg ${currentTheme.bg} ${currentTheme.border} focus:border-music-500 focus:ring-music-500`} />
             </div>
           </div>
 
-          <div className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            <h2 className="text-xl font-semibold mb-4">Ca sĩ & Thể loại</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="flex items-center text-sm font-medium mb-1"><UserIcon className="w-4 h-4 mr-2" />Ca sĩ bạn quản lý</label>
-                <select multiple name="existingSingerIds" value={formData.existingSingerIds} onChange={(e) => setFormData(p => ({...p, existingSingerIds: Array.from(e.target.selectedOptions, o => o.value)}))} className={`w-full h-32 p-2 border rounded ${currentTheme.bg}`}>
-                  {availableSingers.length > 0 ? (
-                      availableSingers.map(singer => <option key={singer.id} value={singer.id}>{singer.name}</option>)
-                  ) : (
-                      <option disabled>Bạn chưa quản lý ca sĩ nào.</option>
-                  )}
-                </select>
-              </div>
-              <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Tag className="w-4 h-4 mr-2" />Thể loại *</label>
-                <select multiple name="tagIds" value={formData.tagIds} onChange={(e) => setFormData(p => ({...p, tagIds: Array.from(e.target.selectedOptions, o => o.value)}))} className={`w-full h-32 p-2 border rounded ${currentTheme.bg}`} required>
-                  {availableTags.map(tag => <option key={tag.id} value={tag.id}>{tag.name}</option>)}
-                </select>
-              </div>
-            </div>
+          <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+            <h2 className="text-xl font-semibold">Ca sĩ & Thể loại</h2>
+            <MultiSelect label="Ca sĩ bạn quản lý" options={availableSingers} selected={formData.existingSingerIds} onChange={(ids) => setFormData({...formData, existingSingerIds: ids})} placeholder="Chọn từ danh sách ca sĩ..."/>
+            <MultiSelect label="Thể loại *" options={availableTags} selected={formData.tagIds} onChange={(ids) => setFormData({...formData, tagIds: ids})} placeholder="Chọn thể loại..."/>
           </div>
 
-          <div className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            <h2 className="text-xl font-semibold mb-4">Thêm ca sĩ mới</h2>
-            {newSingers.map((singer, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-center">
-                  <Input name="name" value={singer.name} onChange={(e) => handleNewSingerChange(index, e)} placeholder="Tên ca sĩ *" required />
-                  <Input name="email" type="email" value={singer.email} onChange={(e) => handleNewSingerChange(index, e)} placeholder="Email liên hệ *" required />
-                  <div className="flex items-center gap-2">
-                    <input type="file" accept="image/*" onChange={(e) => handleNewSingerFileChange(index, e)} className="text-sm w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold"/>
-                    <Button type="button" variant="danger" size="icon" onClick={() => handleRemoveNewSinger(index)}><Trash2 className="w-4 h-4"/></Button>
+          <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+            <h2 className="text-xl font-semibold">Thêm ca sĩ mới (nếu cần)</h2>
+            <div className="space-y-4">
+              {newSingers.map((singer, index) => (
+                  <div key={index} className={`p-4 border rounded-lg ${currentTheme.border} space-y-4`}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                      <div className="md:col-span-2 space-y-4">
+                        <Input label="Tên ca sĩ" value={singer.name} name="name" onChange={(e) => handleNewSingerChange(index, e)} Icon={UserIcon} placeholder="Tên ca sĩ mới" />
+                        <Input label="Email liên hệ" value={singer.email} name="email" type="email" onChange={(e) => handleNewSingerChange(index, e)} Icon={Mail} placeholder="Email ca sĩ" />
+                      </div>
+                      <div className="md:col-span-1">
+                        <FileUpload label="Ảnh đại diện" accept="image/*" onFileChange={(file) => handleNewSingerFileChange(index, file)} previewType="image"/>
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button type="button" variant="danger" size="sm" onClick={() => handleRemoveNewSinger(index)}><Trash2 className="w-4 h-4 mr-2"/>Xóa ca sĩ này</Button>
+                    </div>
                   </div>
-                </div>
-            ))}
-            <Button type="button" variant="outline" onClick={handleAddNewSinger} className="flex items-center"><PlusCircle className="w-4 h-4 mr-2"/>Thêm ca sĩ</Button>
+              ))}
+            </div>
+            <Button type="button" variant="outline" onClick={handleAddNewSinger} className="flex items-center"><PlusCircle className="w-4 h-4 mr-2"/>Thêm ca sĩ mới</Button>
           </div>
 
-          <div className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            <h2 className="text-xl font-semibold mb-4">Tệp tin</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Upload className="w-4 h-4 mr-2" />File audio *</label>
-                <input type="file" name="audioFile" accept="audio/*" onChange={(e) => handleFileChange(e, setAudioFile)} className={`w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-music-100 file:text-music-700 hover:file:bg-music-200`}/>
-                {errors.audioFile && <p className="text-red-500 text-sm mt-1">{errors.audioFile}</p>}
+          {!isEditMode && (
+              <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+                <h2 className="text-xl font-semibold">Tệp tin</h2>
+                <FileUpload label="File audio *" accept="audio/*" onFileChange={setAudioFile} />
+                <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={setThumbnailFile} previewType="image" />
               </div>
+          )}
+
+          <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard}`}>
+            <div className="flex items-center justify-between">
               <div>
-                <label className="flex items-center text-sm font-medium mb-1"><Music className="w-4 h-4 mr-2" />Ảnh bìa</label>
-                <input type="file" name="thumbnailFile" accept="image/*" onChange={(e) => handleFileChange(e, setThumbnailFile)} className={`w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200`}/>
+                <label htmlFor="isPremium" className="font-medium text-slate-900 dark:text-slate-100">Bài hát Premium</label>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Chỉ người dùng Premium mới có thể nghe.</p>
               </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="isPremium" name="isPremium" checked={formData.isPremium} onChange={handleInputChange} className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-music-300 dark:peer-focus:ring-music-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-music-600"></div>
+              </label>
             </div>
           </div>
 
-          <div className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}>
-            <div className="flex items-center">
-              <input type="checkbox" id="isPremium" name="isPremium" checked={formData.isPremium} onChange={handleInputChange} className="h-4 w-4 text-music-500 focus:ring-music-500 border-gray-300 rounded" />
-              <label htmlFor="isPremium" className="ml-3 block text-sm font-medium">Đây là bài hát Premium</label>
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <Button type="submit" size="lg" disabled={loading}>{loading ? 'Đang xử lý...' : (isEditMode ? 'Lưu thay đổi' : 'Gửi yêu cầu')}</Button>
+          <div className="flex justify-end gap-4">
+            <Button type="button" variant="ghost" onClick={() => navigate('/creator/my-submissions')}>Hủy</Button>
+            <Button type="submit" disabled={loading}>{loading ? 'Đang xử lý...' : (isEditMode ? 'Lưu thay đổi' : 'Gửi yêu cầu')}</Button>
           </div>
         </form>
       </div>

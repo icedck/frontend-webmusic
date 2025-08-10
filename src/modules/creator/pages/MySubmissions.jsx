@@ -4,9 +4,9 @@ import { submissionService } from '../services/submissionService';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
-import ConfirmationModal from '../../../components/common/ConfirmationModal'; // <<< THÊM IMPORT
-import { PlusCircle, Music, Search, Filter, Edit, Trash2 } from 'lucide-react'; // <<< THÊM IMPORT
-import { toast } from 'react-toastify'; // <<< THÊM IMPORT
+import ConfirmationModal from '../../../components/common/ConfirmationModal';
+import { PlusCircle, Music, Search, Filter, Edit, Trash2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const StatusBadge = ({ status }) => {
   const { currentTheme } = useDarkMode();
@@ -30,7 +30,6 @@ const MySubmissions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // <<< THÊM STATE CHO MODAL >>>
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -59,7 +58,6 @@ const MySubmissions = () => {
     fetchSubmissions();
   }, []);
 
-  // <<< THÊM CÁC HÀM XỬ LÝ VIỆC RÚT LẠI YÊU CẦU >>>
   const openWithdrawModal = (id) => {
     setSelectedSubmissionId(id);
     setIsModalOpen(true);
@@ -77,7 +75,6 @@ const MySubmissions = () => {
     try {
       await submissionService.withdrawSubmission(selectedSubmissionId);
       toast.success("Đã rút lại yêu cầu thành công!");
-      // Cập nhật lại danh sách trên UI bằng cách lọc bỏ submission đã xóa
       setSubmissions(prev => prev.filter(sub => sub.id !== selectedSubmissionId));
       closeWithdrawModal();
     } catch (err) {
@@ -128,7 +125,9 @@ const MySubmissions = () => {
             {submissions.map((submission) => (
                 <tr key={submission.id} className={`hover:${currentTheme.bgHover}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium">{submission.title}</div>
+                    <Link to={`/creator/my-submissions/${submission.id}`} className="font-medium hover:underline text-music-500">
+                      {submission.title}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {new Date(submission.submissionDate).toLocaleDateString('vi-VN')}
@@ -137,7 +136,6 @@ const MySubmissions = () => {
                     <StatusBadge status={submission.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {/* <<< SỬA ĐỔI: Thêm các nút hành động >>> */}
                     <div className="flex items-center justify-end space-x-4">
                       {submission.status === 'PENDING' ? (
                           <>
@@ -194,7 +192,6 @@ const MySubmissions = () => {
 
         {renderContent()}
 
-        {/* <<< THÊM MODAL VÀO CUỐI COMPONENT >>> */}
         <ConfirmationModal
             isOpen={isModalOpen}
             onClose={closeWithdrawModal}
