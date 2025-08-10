@@ -26,7 +26,6 @@ const Login = () => {
   useEffect(() => {
     if (location.state?.successMessage) {
       setSuccessMessage(location.state.successMessage);
-      // Xóa state khỏi location để không hiển thị lại khi refresh
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate]);
@@ -37,8 +36,8 @@ const Login = () => {
     setLoading(true);
     setServerError('');
     try {
-      const response = await authService.loginWithGoogle(credentialResponse.credential);
-      auth.login(response.user);
+      const { user } = await authService.loginWithGoogle(credentialResponse.credential);
+      auth.login(user);
       navigate(from, { replace: true });
     } catch (error) {
       setServerError('Đăng nhập với Google thất bại. Vui lòng thử lại.');
@@ -88,11 +87,11 @@ const Login = () => {
     setServerError('');
     setSuccessMessage('');
     try {
-      const response = await authService.login({
+      const { user } = await authService.login({
         email: formData.email.toLowerCase().trim(),
         password: formData.password
       });
-      auth.login(response.user);
+      auth.login(user);
       navigate(from, { replace: true });
     } catch (error) {
       console.error('Login error:', error);
@@ -142,7 +141,12 @@ const Login = () => {
                   {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
                 </div>
                 <div>
-                  <label htmlFor="password" className={`block text-sm font-medium ${currentTheme.text} mb-2`}>Mật khẩu</label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="password" className={`block text-sm font-medium ${currentTheme.text} mb-2`}>Mật khẩu</label>
+                    <div className="text-sm">
+                      <Link to="/forgot-password" className="font-medium text-music-500 hover:text-music-600">Quên mật khẩu?</Link>
+                    </div>
+                  </div>
                   <div className="relative">
                     <Lock className={`w-5 h-5 ${currentTheme.textSecondary} absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
                     <Input id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required value={formData.password} onChange={handleChange} className="pl-10 pr-10" placeholder="Nhập mật khẩu" />

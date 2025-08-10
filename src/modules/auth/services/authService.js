@@ -39,7 +39,8 @@ const login = async (credentials) => {
             throw new Error("Login failed: Token not found in response.");
         }
         return await handleLoginSuccess(token);
-    } catch (error) {
+    } catch (error)
+    {
         console.error("Login API call failed:", error);
         throw error;
     }
@@ -56,6 +57,36 @@ const loginWithGoogle = async (idToken) => {
         return await handleLoginSuccess(token);
     } catch (error) {
         console.error("Google Login API call failed:", error);
+        throw error;
+    }
+};
+
+const forgotPassword = async (email) => {
+    try {
+        const response = await apiService.post('/api/v1/auth/forgot-password', { email });
+        return response.data;
+    } catch (error) {
+        console.error("Forgot password API call failed:", error);
+        throw error;
+    }
+};
+
+const resetPassword = async (resetData) => {
+    try {
+        const response = await apiService.post('/api/v1/auth/reset-password', resetData);
+        return response.data;
+    } catch (error) {
+        console.error("Reset password API call failed:", error);
+        throw error;
+    }
+};
+
+const verifyOtp = async (verifyData) => {
+    try {
+        const response = await apiService.post('/api/v1/auth/verify-otp', verifyData);
+        return response.data;
+    } catch (error) {
+        console.error("Verify OTP API call failed:", error);
         throw error;
     }
 };
@@ -136,4 +167,7 @@ export const authService = {
     isPremium,
     isCreator,
     loginWithGoogle,
+    forgotPassword,
+    verifyOtp,
+    resetPassword
 };
