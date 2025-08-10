@@ -1,15 +1,4 @@
-// src/modules/auth/services/authService.js
 import { apiService } from "../../../shared/services/apiService.js";
-
-const register = async (userData) => {
-    try {
-        const response = await apiService.post('/api/v1/auth/register', userData);
-        return response.data;
-    } catch (error) {
-        console.error("Registration API call failed:", error);
-        throw error;
-    }
-};
 
 const getMe = async () => {
     try {
@@ -17,6 +6,9 @@ const getMe = async () => {
         return response.data;
     } catch (error) {
         console.error("Failed to fetch user profile:", error);
+        if (error.response?.status === 401) {
+            logout();
+        }
         throw error;
     }
 };
@@ -26,6 +18,16 @@ const handleLoginSuccess = async (token) => {
     const userProfileResponse = await getMe();
     localStorage.setItem('authUser', JSON.stringify(userProfileResponse.data));
     return { token, user: userProfileResponse.data };
+};
+
+const register = async (userData) => {
+    try {
+        const response = await apiService.post('/api/v1/auth/register', userData);
+        return response.data;
+    } catch (error) {
+        console.error("Registration API call failed:", error);
+        throw error;
+    }
 };
 
 const login = async (credentials) => {
@@ -39,6 +41,21 @@ const login = async (credentials) => {
         return await handleLoginSuccess(token);
     } catch (error) {
         console.error("Login API call failed:", error);
+        throw error;
+    }
+};
+
+const loginWithGoogle = async (idToken) => {
+    try {
+        const response = await apiService.post('/api/v1/auth/google', { idToken });
+        const token = response.data?.data?.token;
+
+        if (!token) {
+            throw new Error("Google login failed: Token not found in response.");
+        }
+        return await handleLoginSuccess(token);
+    } catch (error) {
+        console.error("Google Login API call failed:", error);
         throw error;
     }
 };
@@ -59,7 +76,6 @@ const updateProfile = async (profileData) => {
 
 const changePassword = async (passwordData) => {
     try {
-        // <<< SỬA LỖI TẠI ĐÂY: Thay đổi đường dẫn API cho đúng với backend
         const response = await apiService.patch('/api/v1/users/me/password', passwordData);
         return response.data;
     } catch (error) {
@@ -74,7 +90,6 @@ const logout = () => {
     window.location.href = '/login';
 };
 
-// ... (các hàm getStoredUser, getStoredToken, hasRole, ... giữ nguyên)
 const getStoredUser = () => {
     try {
         const user = localStorage.getItem('authUser')
@@ -83,25 +98,30 @@ const getStoredUser = () => {
         console.error('Error parsing stored user:', error)
         return null
     }
-}
+};
+
 const getStoredToken = () => {
-    return localStorage.getItem('authToken')
-}
+    return localStorage.getItem('authToken');
+};
+
 const hasRole = (role) => {
-    const user = getStoredUser()
-    if (!user || !user.roles) return false
-    return user.roles.some(userRole => userRole.toLowerCase() === role.toLowerCase() || userRole.toLowerCase() === `role_${role.toLowerCase()}`)
-}
+    const user = getStoredUser();
+    if (!user || !user.roles) return false;
+    return user.roles.some(userRole => userRole.toLowerCase() === role.toLowerCase() || userRole.toLowerCase() === `role_${role.toLowerCase()}`);
+};
+
 const isAdmin = () => {
-    return hasRole('ADMIN')
-}
+    return hasRole('ADMIN');
+};
+
 const isPremium = () => {
-    const user = getStoredUser()
-    return user?.isPremium || user?.subscription?.status === 'ACTIVE'
-}
+    const user = getStoredUser();
+    return user?.isPremium || user?.subscription?.status === 'ACTIVE';
+};
+
 const isCreator = () => {
-    return hasRole('CREATOR')
-}
+    return hasRole('CREATOR');
+};
 
 export const authService = {
     register,
@@ -115,5 +135,5 @@ export const authService = {
     isAdmin,
     isPremium,
     isCreator,
-    handleLoginSuccess,
+    loginWithGoogle,
 };

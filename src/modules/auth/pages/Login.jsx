@@ -1,32 +1,58 @@
-// src/modules/auth/pages/Login.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAuth } from '../../../hooks/useAuth.jsx';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import { Music, Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
-import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import { FaFacebook } from 'react-icons/fa';
 import { authService } from "../services/authService.js";
 import AuthBrandingPanel from '../components/AuthBrandingPanel';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentTheme } = useDarkMode();
+  const { isDarkMode, currentTheme } = useDarkMode();
   const auth = useAuth();
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState(location.state?.message || '');
+  const [serverError, setServerError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setSuccessMessage(location.state.successMessage);
+      // Xóa state khỏi location để không hiển thị lại khi refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // --- TOÀN BỘ LOGIC CỦA BẠN ĐƯỢC GIỮ NGUYÊN ---
-  const handleGoogleLogin = () => { console.log('Đăng nhập với Google'); };
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setServerError('');
+    try {
+      const response = await authService.loginWithGoogle(credentialResponse.credential);
+      auth.login(response.user);
+      navigate(from, { replace: true });
+    } catch (error) {
+      setServerError('Đăng nhập với Google thất bại. Vui lòng thử lại.');
+      console.error('Google Login Failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    setServerError('Quá trình đăng nhập với Google đã bị hủy hoặc có lỗi xảy ra.');
+    console.error('Google Login Error');
+  };
+
   const handleFacebookLogin = () => { console.log('Đăng nhập với Facebook'); };
 
   const handleGuestAccess = () => {
@@ -51,7 +77,8 @@ const Login = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-    if (serverError) setServerError('');
+    setServerError('');
+    setSuccessMessage('');
   };
 
   const handleSubmit = async (e) => {
@@ -59,6 +86,7 @@ const Login = () => {
     if (!validateForm()) return;
     setLoading(true);
     setServerError('');
+    setSuccessMessage('');
     try {
       const response = await authService.login({
         email: formData.email.toLowerCase().trim(),
@@ -78,12 +106,10 @@ const Login = () => {
       setLoading(false);
     }
   };
-  // --- KẾT THÚC LOGIC ---
 
   return (
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
         <AuthBrandingPanel />
-
         <div className={`relative w-full ${currentTheme.bg} flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8`}>
           <div className="max-w-md w-full space-y-8">
             <div className="text-center">
@@ -95,25 +121,23 @@ const Login = () => {
               <h2 className={`text-3xl font-bold ${currentTheme.text}`}>Đăng nhập</h2>
               <p className={`mt-2 ${currentTheme.textSecondary}`}>Chào mừng trở lại!</p>
             </div>
-
             <div className={`${currentTheme.bgCard} p-8 rounded-xl shadow-lg ${currentTheme.border} border`}>
-              {/* Cấu trúc form giữ nguyên */}
               <form className="space-y-6" onSubmit={handleSubmit}>
                 {serverError && (
                     <div className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 rounded-lg p-4">
                       <p className="text-red-600 dark:text-red-400 text-sm">{serverError}</p>
                     </div>
                 )}
+                {successMessage && (
+                    <div className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 rounded-lg p-4">
+                      <p className="text-green-600 dark:text-green-400 text-sm">{successMessage}</p>
+                    </div>
+                )}
                 <div>
                   <label htmlFor="email" className={`block text-sm font-medium ${currentTheme.text} mb-2`}>Email</label>
                   <div className="relative">
                     <Mail className={`w-5 h-5 ${currentTheme.textSecondary} absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
-                    <Input
-                        id="email" name="email" type="email" autoComplete="email" required
-                        value={formData.email} onChange={handleChange}
-                        className="pl-10"
-                        placeholder="Nhập email của bạn"
-                    />
+                    <Input id="email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange} className="pl-10" placeholder="Nhập email của bạn" />
                   </div>
                   {errors.email && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>}
                 </div>
@@ -121,12 +145,7 @@ const Login = () => {
                   <label htmlFor="password" className={`block text-sm font-medium ${currentTheme.text} mb-2`}>Mật khẩu</label>
                   <div className="relative">
                     <Lock className={`w-5 h-5 ${currentTheme.textSecondary} absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
-                    <Input
-                        id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required
-                        value={formData.password} onChange={handleChange}
-                        className="pl-10 pr-10"
-                        placeholder="Nhập mật khẩu"
-                    />
+                    <Input id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required value={formData.password} onChange={handleChange} className="pl-10 pr-10" placeholder="Nhập mật khẩu" />
                     <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? <EyeOff className={`w-5 h-5 ${currentTheme.textSecondary}`} /> : <Eye className={`w-5 h-5 ${currentTheme.textSecondary}`} />}
                     </button>
@@ -137,31 +156,20 @@ const Login = () => {
                   {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                 </Button>
               </form>
-
               <div className="flex items-center my-6">
                 <hr className={`flex-grow ${currentTheme.border}`} />
                 <span className={`mx-4 text-sm ${currentTheme.textSecondary}`}>hoặc</span>
                 <hr className={`flex-grow ${currentTheme.border}`} />
               </div>
-
               <div className="space-y-4">
-                <Button
-                    onClick={handleGoogleLogin}
-                    className="w-full flex items-center justify-center gap-3 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 dark:bg-transparent dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800"
-                    variant="secondary"
-                >
-                  <FaGoogle />
-                  <span>Tiếp tục với Google</span>
-                </Button>
-                <Button
-                    onClick={handleFacebookLogin}
-                    className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white"
-                >
+                <div className="flex justify-center">
+                  <GoogleLogin onSuccess={handleGoogleLoginSuccess} onError={handleGoogleLoginError} theme={isDarkMode ? 'filled_black' : 'outline'} text="continue_with" shape="pill" width="300px" />
+                </div>
+                <Button onClick={handleFacebookLogin} className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white">
                   <FaFacebook />
                   <span>Tiếp tục với Facebook</span>
                 </Button>
               </div>
-
               <div className="mt-8 text-center">
                 <p className={`text-sm ${currentTheme.textSecondary}`}>
                   Chưa có tài khoản?{' '}
@@ -171,31 +179,10 @@ const Login = () => {
             </div>
           </div>
         </div>
-
-        {/* === NÚT ĐƯỢC DI CHUYỂN LÊN TRÊN === */}
-        <button
-            onClick={handleGuestAccess}
-            className={`
-            fixed top-6 right-6 lg:top-8 lg:right-8
-            flex items-center gap-2.5
-            py-2.5 px-5 rounded-full
-            text-sm font-semibold
-            bg-white/10 dark:bg-slate-800/50
-            backdrop-blur-sm
-            border ${currentTheme.border}
-            shadow-lg
-            ${currentTheme.textSecondary}
-            hover:${currentTheme.text}
-            hover:shadow-xl hover:border-slate-400 dark:hover:border-slate-500
-            transition-all duration-300
-            transform hover:scale-105 active:scale-100
-          `}
-        >
+        <button onClick={handleGuestAccess} className={`fixed top-6 right-6 lg:top-8 lg:right-8 flex items-center gap-2.5 py-2.5 px-5 rounded-full text-sm font-semibold bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm border ${currentTheme.border} shadow-lg ${currentTheme.textSecondary} hover:${currentTheme.text} hover:shadow-xl hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-300 transform hover:scale-105 active:scale-100`}>
           <span>Khám phá ngay</span>
           <ArrowRight className="w-4 h-4" />
         </button>
-        {/* ================================== */}
-
       </div>
   );
 };
