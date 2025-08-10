@@ -5,7 +5,7 @@ import { useAuth } from '../../../hooks/useAuth.jsx';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import { Music, Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
-import { FaFacebook } from 'react-icons/fa';
+import { FaFacebook, FaGoogle } from 'react-icons/fa';
 import { authService } from "../services/authService.js";
 import AuthBrandingPanel from '../components/AuthBrandingPanel';
 import { GoogleLogin } from '@react-oauth/google';
@@ -19,6 +19,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -33,7 +34,7 @@ const Login = () => {
   const from = location.state?.from?.pathname || '/dashboard';
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
-    setLoading(true);
+    setGoogleLoading(true);
     setServerError('');
     try {
       const { user } = await authService.loginWithGoogle(credentialResponse.credential);
@@ -43,7 +44,7 @@ const Login = () => {
       setServerError('Đăng nhập với Google thất bại. Vui lòng thử lại.');
       console.error('Google Login Failed:', error);
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -166,9 +167,22 @@ const Login = () => {
                 <hr className={`flex-grow ${currentTheme.border}`} />
               </div>
               <div className="space-y-4">
-                <div className="flex justify-center">
-                  <GoogleLogin onSuccess={handleGoogleLoginSuccess} onError={handleGoogleLoginError} theme={isDarkMode ? 'filled_black' : 'outline'} text="continue_with" shape="pill" width="300px" />
-                </div>
+                <GoogleLogin
+                    onSuccess={handleGoogleLoginSuccess}
+                    onError={handleGoogleLoginError}
+                    useOneTap
+                    render={({ onClick, disabled }) => (
+                        <Button
+                            onClick={onClick}
+                            disabled={disabled || googleLoading}
+                            className="w-full flex items-center justify-center gap-3 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 dark:bg-transparent dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800"
+                            variant="secondary"
+                        >
+                          <FaGoogle />
+                          <span>{googleLoading ? 'Đang xử lý...' : 'Tiếp tục với Google'}</span>
+                        </Button>
+                    )}
+                />
                 <Button onClick={handleFacebookLogin} className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white">
                   <FaFacebook />
                   <span>Tiếp tục với Facebook</span>
