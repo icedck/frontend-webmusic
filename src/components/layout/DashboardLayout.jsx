@@ -152,9 +152,14 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                     </button>
                   </>
               ) : (
-                  <Link to="/login">
-                    <Button size="md">Đăng nhập</Button>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link to="/register">
+                      <Button variant="outline" size="md">Đăng ký</Button>
+                    </Link>
+                    <Link to="/login">
+                      <Button size="md">Đăng nhập</Button>
+                    </Link>
+                  </div>
               )}
             </div>
           </div>
@@ -210,7 +215,7 @@ const DashboardLayout = () => {
   ];
   const cmdUserNavItems = [
     { name: 'Thông tin cá nhân', href: '/profile', icon: User, category: 'Tài khoản' },
-    { name: 'Đăng xuất', href: '#', icon: LogOut, category: 'Tài khoản', action: handleLogout }
+    { name: 'Đăng xuất', href: '#', icon: LogOut, category: 'Tài khoản', action: () => setIsLogoutModalOpen(true) }
   ];
   const cmdPremiumNavItem = { name: 'Nâng cấp Premium', href: '/premium', icon: Crown, category: 'Tài khoản' };
 

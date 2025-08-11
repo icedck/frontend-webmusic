@@ -9,6 +9,8 @@ import MultiSelect from '../../../components/common/MultiSelect';
 import { toast } from 'react-toastify';
 import { User as UserIcon, Mail, PlusCircle, Trash2 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const SongSubmission = () => {
   const { submissionId } = useParams();
   const isEditMode = Boolean(submissionId);
@@ -22,6 +24,8 @@ const SongSubmission = () => {
     tagIds: [],
     isPremium: false,
   });
+
+  const [existingFiles, setExistingFiles] = useState({ audio: null, thumbnail: null });
   const [audioFile, setAudioFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [newSingers, setNewSingers] = useState([]);
@@ -57,6 +61,10 @@ const SongSubmission = () => {
               isPremium: submissionData.isPremium || false,
             });
 
+            setExistingFiles({
+              audio: submissionData.filePath,
+              thumbnail: submissionData.thumbnailPath,
+            });
             setNewSingers(pendingSingers.map(s => ({ id: s.id, name: s.name, email: s.email })));
           } else {
             toast.error("Không tìm thấy yêu cầu để chỉnh sửa.");
@@ -113,17 +121,16 @@ const SongSubmission = () => {
       newSingers: newSingers.filter(s => s.name?.trim() && s.email?.trim()),
     };
 
+    const submissionFormData = new FormData();
+    submissionFormData.append('submissionRequest', new Blob([JSON.stringify(requestDto)], { type: "application/json" }));
+    if (audioFile) submissionFormData.append('audioFile', audioFile);
+    if (thumbnailFile) submissionFormData.append('thumbnailFile', thumbnailFile);
+
     try {
       if (isEditMode) {
-        await submissionService.updateSubmission(submissionId, requestDto);
+        await submissionService.updateSubmission(submissionId, submissionFormData);
         toast.success('Đã cập nhật yêu cầu thành công!');
       } else {
-        const submissionFormData = new FormData();
-        submissionFormData.append('submissionRequest', new Blob([JSON.stringify(requestDto)], { type: "application/json" }));
-        submissionFormData.append('audioFile', audioFile);
-        if (thumbnailFile) {
-          submissionFormData.append('thumbnailFile', thumbnailFile);
-        }
         Object.values(newSingerFiles).forEach(file => {
           submissionFormData.append('newSingerAvatars', file);
         });
@@ -186,13 +193,11 @@ const SongSubmission = () => {
             <Button type="button" variant="outline" onClick={handleAddNewSinger} className="flex items-center"><PlusCircle className="w-4 h-4 mr-2"/>Thêm ca sĩ mới</Button>
           </div>
 
-          {!isEditMode && (
-              <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
-                <h2 className="text-xl font-semibold">Tệp tin</h2>
-                <FileUpload label="File audio *" accept="audio/*" onFileChange={setAudioFile} />
-                <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={setThumbnailFile} previewType="image" />
-              </div>
-          )}
+          <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+            <h2 className="text-xl font-semibold">Tệp tin {isEditMode && '(Chỉ chọn nếu muốn thay đổi)'}</h2>
+            <FileUpload label={`File audio ${!isEditMode ? '*' : ''}`} accept="audio/*" onFileChange={setAudioFile} fileName={existingFiles.audio?.split('/').pop()} />
+            <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={setThumbnailFile} previewType="image" existingFileUrl={existingFiles.thumbnail ? `${API_BASE_URL}${existingFiles.thumbnail}` : null} fileName={existingFiles.thumbnail?.split('/').pop()} />
+          </div>
 
           <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard}`}>
             <div className="flex items-center justify-between">

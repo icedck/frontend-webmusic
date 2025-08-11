@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
-import { Music, Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Music, Eye, EyeOff } from 'lucide-react';
 import { authService } from "../services/authService.js";
 import AuthBrandingPanel from '../components/AuthBrandingPanel';
 
@@ -12,7 +12,7 @@ const Register = () => {
   const { currentTheme } = useDarkMode();
 
   const [formData, setFormData] = useState({
-    displayName: '', email: '', password: '', confirmPassword: ''
+    displayName: '', email: '', phoneNumber: '', password: '', confirmPassword: ''
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -25,12 +25,19 @@ const Register = () => {
     const newErrors = {};
     if (!formData.displayName.trim()) newErrors.displayName = 'Tên hiển thị không được để trống';
     else if (formData.displayName.trim().length < 2) newErrors.displayName = 'Tên hiển thị phải có ít nhất 2 ký tự';
+
     if (!formData.email) newErrors.email = 'Email không được để trống';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Email không hợp lệ';
+
+    if (!formData.phoneNumber) newErrors.phoneNumber = 'Số điện thoại không được để trống';
+    else if (!/(84|0[3|5|7|8|9])+([0-9]{8})\b/.test(formData.phoneNumber)) newErrors.phoneNumber = 'Số điện thoại không hợp lệ';
+
     if (!formData.password) newErrors.password = 'Mật khẩu không được để trống';
-    else if (formData.password.length < 8) newErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+    else if (formData.password.length < 6 || formData.password.length > 32) newErrors.password = 'Mật khẩu phải có từ 6 đến 32 ký tự';
+
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -51,6 +58,7 @@ const Register = () => {
       const registerData = {
         displayName: formData.displayName.trim(),
         email: formData.email.toLowerCase().trim(),
+        phoneNumber: formData.phoneNumber.trim(),
         password: formData.password,
       };
       await authService.register(registerData);
@@ -65,7 +73,7 @@ const Register = () => {
     } catch (error) {
       console.error('Registration error:', error);
       const errorData = error.response?.data;
-      setServerError(errorData?.message || 'Có lỗi xảy ra hoặc email đã tồn tại.');
+      setServerError(errorData?.message || 'Có lỗi xảy ra hoặc email/số điện thoại đã tồn tại.');
     } finally {
       setLoading(false);
     }
@@ -92,16 +100,17 @@ const Register = () => {
                       <p className="text-red-600 dark:text-red-400 text-sm">{serverError}</p>
                     </div>
                 )}
-                <Input label="Tên hiển thị *" id="displayName" name="displayName" type="text" autoComplete="name" required value={formData.displayName} onChange={handleChange} placeholder="Nhập tên hiển thị của bạn" error={errors.displayName} />
-                <Input label="Email *" id="email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange} placeholder="Nhập email của bạn" error={errors.email} />
+                <Input label="Tên hiển thị" id="displayName" name="displayName" type="text" autoComplete="name" required value={formData.displayName} onChange={handleChange} placeholder="Nhập tên hiển thị của bạn" error={errors.displayName} />
+                <Input label="Email" id="email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange} placeholder="Nhập email của bạn" error={errors.email} />
+                <Input label="Số điện thoại" id="phoneNumber" name="phoneNumber" type="tel" autoComplete="tel" required value={formData.phoneNumber} onChange={handleChange} placeholder="Nhập số điện thoại" error={errors.phoneNumber} />
                 <div className="relative">
-                  <Input label="Mật khẩu *" id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required value={formData.password} onChange={handleChange} placeholder="Tối thiểu 8 ký tự" error={errors.password} />
+                  <Input label="Mật khẩu" id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required value={formData.password} onChange={handleChange} placeholder="Từ 6-32 ký tự" error={errors.password} />
                   <button type="button" className="absolute top-[42px] right-3 flex items-center" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className={`w-5 h-5 ${currentTheme.textSecondary}`} /> : <Eye className={`w-5 h-5 ${currentTheme.textSecondary}`} />}
                   </button>
                 </div>
                 <div className="relative">
-                  <Input label="Xác nhận mật khẩu *" id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" required value={formData.confirmPassword} onChange={handleChange} placeholder="Nhập lại mật khẩu" error={errors.confirmPassword} />
+                  <Input label="Xác nhận mật khẩu" id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" required value={formData.confirmPassword} onChange={handleChange} placeholder="Nhập lại mật khẩu" error={errors.confirmPassword} />
                   <button type="button" className="absolute top-[42px] right-3 flex items-center" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                     {showConfirmPassword ? <EyeOff className={`w-5 h-5 ${currentTheme.textSecondary}`} /> : <Eye className={`w-5 h-5 ${currentTheme.textSecondary}`} />}
                   </button>

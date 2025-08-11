@@ -51,9 +51,13 @@ const getSubmissionById = async (id) => {
     }
 };
 
-const updateSubmission = async (id, requestDto) => {
+const updateSubmission = async (id, formData) => {
     try {
-        const response = await apiService.put(`/api/v1/submissions/${id}`, requestDto);
+        const response = await apiService.put(`/api/v1/submissions/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
         return response;
     } catch (error) {
         console.error(`Failed to update submission ${id}:`, error);
