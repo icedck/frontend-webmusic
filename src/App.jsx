@@ -4,12 +4,13 @@ import LandingPage from './components/layout/LandingPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { Login, Register, Profile } from './modules/auth';
-import ChangePassword from './modules/auth/pages/ChangePassword'; // THÊM IMPORT
+import ChangePassword from './modules/auth/pages/ChangePassword';
 import ForgotPassword from './modules/auth/pages/ForgotPassword';
 import MusicDiscoveryPage from './pages/MusicDiscoveryPage';
 import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
+import MyPublishedSongs from './modules/creator/pages/MyPublishedSongs'; // THÊM IMPORT
 import SubmissionDetail from './modules/creator/pages/SubmissionDetail';
 import { PremiumUpgrade, TransactionHistory } from './modules/premium';
 import { SearchResults } from './modules/search';
@@ -45,7 +46,7 @@ function AppContent() {
                             <Route path="/premium" element={<PremiumUpgrade />} />
                             <Route path="/transactions" element={<TransactionHistory />} />
                             <Route path="/profile" element={<Profile />} />
-                            <Route path="/profile/change-password" element={<ChangePassword />} /> {/* THÊM ROUTE MỚI */}
+                            <Route path="/profile/change-password" element={<ChangePassword />} />
                             <Route path="/admin/users" element={<UserManagement />} />
                             <Route path="/admin/singers" element={<SingerManagement />} />
                             <Route path="/admin/songs" element={<SongManagementAdmin />} />
@@ -53,6 +54,7 @@ function AppContent() {
                             <Route path="/admin/songs/edit/:songId" element={<EditSongAdmin />} />
                             <Route path="/admin/submissions" element={<SubmissionManagement />} />
                             <Route path="/creator" element={<CreatorDashboard />} />
+                            <Route path="/creator/my-library" element={<MyPublishedSongs />} /> {/* THÊM ROUTE MỚI */}
                             <Route path="/creator/my-submissions" element={<MySubmissions />} />
                             <Route path="/creator/my-submissions/:submissionId" element={<SubmissionDetail />} />
                             <Route path="/creator/submission/new" element={<SongSubmission />} />

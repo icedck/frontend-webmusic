@@ -10,7 +10,7 @@ import ConfirmationModal from '../common/ConfirmationModal';
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat,
-  Repeat1, Briefcase, KeyRound, ChevronDown
+  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -50,8 +50,9 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   ];
 
   const creatorMenuItems = [
-    { href: '/creator/submission/new', icon: Upload, label: 'Tải lên bài hát' },
-    { href: '/creator/my-submissions', icon: SongIcon, label: 'Quản lý yêu cầu' }
+    { href: '/creator/my-library', icon: BookOpen, label: 'Thư viện bài hát' },
+    { href: '/creator/my-submissions', icon: SongIcon, label: 'Quản lý yêu cầu' },
+    { href: '/creator/submission/new', icon: Upload, label: 'Tải lên bài hát' }
   ];
 
   const adminMenuItems = [
