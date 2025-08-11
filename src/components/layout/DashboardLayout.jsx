@@ -10,58 +10,68 @@ import ConfirmationModal from '../common/ConfirmationModal';
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat,
-  Palette, Info, FileText, Shield, Phone, Repeat1
+  Repeat1, Briefcase, KeyRound, ChevronDown
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
-  const { currentTheme, toggleDarkMode, isDarkMode } = useDarkMode();
-  const { user, logout, isPremium, isAdmin, isCreator } = useAuth();
+  const { toggleDarkMode, isDarkMode } = useDarkMode();
+  const { user, isPremium, isAdmin, isCreator } = useAuth();
   const {
     currentSong, isPlaying, isRepeat, isShuffle,
     togglePlay, playNext, playPrevious, toggleRepeat, toggleShuffle
   } = useAudio();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const settingsMenuRef = useRef(null);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target)) {
-        setIsSettingsOpen(false);
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(event.target)) {
+        setIsAvatarMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [settingsMenuRef]);
+  }, [avatarMenuRef]);
 
-  const allNavItems = [
-    { href: '/dashboard', icon: Home, label: 'Trang chủ', roles: ['all'] },
-    { href: '/library', icon: Library, label: 'Thư viện', roles: ['user'] },
-    { href: '/charts', icon: BarChart3, label: 'Bảng xếp hạng', roles: ['all'] },
-    { type: 'button', action: onOpenPalette, icon: Search, label: 'Tìm kiếm', roles: ['all'] },
-    { href: '/creator/my-submissions', icon: SongIcon, label: 'Yêu cầu', roles: ['creator'] },
-    { href: '/admin/users', icon: AdminIcon, label: 'Người dùng', roles: ['admin'] },
-    { href: '/admin/songs', icon: Music, label: 'Bài hát', roles: ['admin'] },
-    { href: '/admin/singers', icon: Mic2, label: 'Ca sĩ', roles: ['admin'] },
-    { href: '/admin/submissions', icon: CheckSquare, label: 'Duyệt bài', roles: ['admin'] },
+  const mainNavItems = [
+    { href: '/dashboard', icon: Home, label: 'Trang chủ' },
+    { href: '/library', icon: Library, label: 'Thư viện' },
+    { href: '/charts', icon: BarChart3, label: 'Bảng xếp hạng' },
+    { type: 'button', action: onOpenPalette, icon: Search, label: 'Tìm kiếm' },
   ];
 
-  const visibleNavItems = allNavItems.filter(item => {
-    if (item.roles.includes('all')) return true;
-    if (!user) return false;
-    if (item.roles.includes('user')) return true;
-    if (item.roles.includes('creator') && isCreator()) return true;
-    if (item.roles.includes('admin') && isAdmin()) return true;
-    return false;
-  });
+  const userMenuItems = [
+    { href: '/profile', icon: User, label: 'Cập nhật thông tin' },
+    { href: '/profile/change-password', icon: KeyRound, label: 'Đổi mật khẩu' }
+  ];
+
+  const creatorMenuItems = [
+    { href: '/creator/submission/new', icon: Upload, label: 'Tải lên bài hát' },
+    { href: '/creator/my-submissions', icon: SongIcon, label: 'Quản lý yêu cầu' }
+  ];
+
+  const adminMenuItems = [
+    { href: '/admin/users', icon: AdminIcon, label: 'Quản lý người dùng' },
+    { href: '/admin/songs', icon: Music, label: 'Quản lý bài hát' },
+    { href: '/admin/singers', icon: Mic2, label: 'Quản lý ca sĩ' },
+    { href: '/admin/submissions', icon: CheckSquare, label: 'Duyệt bài hát' }
+  ];
+
+  const MenuLink = ({ to, icon: Icon, label, onClick }) => (
+      <Link to={to} onClick={onClick} className="flex items-center w-full px-3 py-2 text-sm rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50">
+        <Icon className="w-4 h-4 mr-3" />
+        <span>{label}</span>
+      </Link>
+  );
 
   return (
       <header className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}>
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+          {/* Left Side: Logo & Main Nav */}
           <div className="flex items-center gap-2">
             <Link to="/dashboard" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -70,7 +80,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
             </Link>
             <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 ml-2"></div>
             <nav className="hidden md:flex items-center gap-1 pl-2">
-              {visibleNavItems.map(item => {
+              {mainNavItems.map(item => {
                 const isActive = item.href && location.pathname.startsWith(item.href);
                 const commonContent = (
                     <>
@@ -94,6 +104,8 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
               })}
             </nav>
           </div>
+
+          {/* Right Side: Player & User Actions */}
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-3 transition-all duration-300 ease-in-out ${!isPlayerVisible && currentSong ? 'max-w-md opacity-100' : 'max-w-0 opacity-0'} overflow-hidden`}>
               {currentSong && (
@@ -112,6 +124,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                   </>
               )}
             </div>
+
             <div className="flex items-center gap-2">
               {user ? (
                   <>
@@ -123,33 +136,61 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                           </button>
                         </Link>
                     )}
+
                     <button onClick={toggleDarkMode} className="p-2 rounded-full text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
                       {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
-                    <div className="relative" ref={settingsMenuRef}>
-                      <button onClick={() => setIsSettingsOpen(prev => !prev)} className="p-2 rounded-full text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
-                        <Settings size={20} />
+
+                    <div className="relative" ref={avatarMenuRef}>
+                      <button onClick={() => setIsAvatarMenuOpen(prev => !prev)} className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer">
+                          {user.photoURL ? <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" /> : <User size={18} />}
+                        </div>
+                        <ChevronDown size={16} className={`transition-transform ${isAvatarMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
-                      {isSettingsOpen && (
-                          <div className={`absolute top-full right-0 mt-2 w-64 p-2 rounded-xl shadow-lg border backdrop-blur-xl ${isDarkMode ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-slate-200/50'}`}>
-                            <div className="text-sm font-semibold px-3 py-1 mb-1">Cài đặt</div>
-                            <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><Palette size={16} /> Giao diện</Link>
-                            <hr className={`my-2 ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`} />
-                            <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><Info size={16} /> Giới thiệu</Link>
-                            <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><FileText size={16} /> Thỏa thuận sử dụng</Link>
-                            <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><Shield size={16} /> Chính sách bảo mật</Link>
-                            <Link to="#" className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}><Phone size={16} /> Liên hệ</Link>
+
+                      {isAvatarMenuOpen && (
+                          <div className="absolute top-full right-0 mt-2 w-72 p-2 rounded-xl shadow-lg border backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 border-slate-200/50 dark:border-slate-700/50">
+                            <div className="flex items-center gap-3 p-2 mb-2">
+                              <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex-shrink-0">
+                                {user.photoURL && <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" />}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold truncate text-slate-800 dark:text-slate-100">{user.displayName}</p>
+                                <p className="text-sm truncate text-slate-500 dark:text-slate-400">{user.email}</p>
+                              </div>
+                            </div>
+
+                            <hr className="my-1 border-slate-200 dark:border-slate-700" />
+
+                            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Tài khoản</div>
+                            {userMenuItems.map(item => <MenuLink key={item.label} to={item.href} icon={item.icon} label={item.label} onClick={() => setIsAvatarMenuOpen(false)} />)}
+
+                            {isCreator() && (
+                                <>
+                                  <hr className="my-1 border-slate-200 dark:border-slate-700" />
+                                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Công cụ Creator</div>
+                                  {creatorMenuItems.map(item => <MenuLink key={item.label} to={item.href} icon={item.icon} label={item.label} onClick={() => setIsAvatarMenuOpen(false)} />)}
+                                </>
+                            )}
+
+                            {isAdmin() && (
+                                <>
+                                  <hr className="my-1 border-slate-200 dark:border-slate-700" />
+                                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Quản trị viên</div>
+                                  {adminMenuItems.map(item => <MenuLink key={item.label} to={item.href} icon={item.icon} label={item.label} onClick={() => setIsAvatarMenuOpen(false)} />)}
+                                </>
+                            )}
+
+                            <hr className="my-1 border-slate-200 dark:border-slate-700" />
+
+                            <button onClick={() => { setIsAvatarMenuOpen(false); onConfirmLogout(); }} className="flex items-center w-full px-3 py-2 text-sm rounded-md text-red-600 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20">
+                              <LogOut className="w-4 h-4 mr-3" />
+                              <span>Đăng xuất</span>
+                            </button>
                           </div>
                       )}
                     </div>
-                    <Link to="/profile">
-                      <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer">
-                        {user.photoURL ? <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" /> : <User size={20} />}
-                      </div>
-                    </Link>
-                    <button onClick={onConfirmLogout} className="p-2 rounded-full text-red-500 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20 transition-colors">
-                      <LogOut size={20} />
-                    </button>
                   </>
               ) : (
                   <div className="flex items-center gap-2">

@@ -4,8 +4,11 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import { adminService } from '../services/adminService';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
+import FileUpload from '../../../components/common/FileUpload';
+import MultiSelect from '../../../components/common/MultiSelect';
 import { toast } from 'react-toastify';
-import { Upload, Music, User as UserIcon, Tag, Type, Info } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const EditSongAdmin = () => {
     const { songId } = useParams();
@@ -19,8 +22,10 @@ const EditSongAdmin = () => {
         tagIds: [],
         isPremium: false
     });
+
     const [audioFile, setAudioFile] = useState(null);
     const [thumbnailFile, setThumbnailFile] = useState(null);
+    const [existingFiles, setExistingFiles] = useState({ audio: null, thumbnail: null });
 
     const [availableSingers, setAvailableSingers] = useState([]);
     const [availableTags, setAvailableTags] = useState([]);
@@ -36,6 +41,7 @@ const EditSongAdmin = () => {
                 setPageLoading(false);
                 return;
             }
+            setPageLoading(true);
             try {
                 const [singersRes, tagsRes, songRes] = await Promise.all([
                     adminService.getAllApprovedSingers(),
@@ -44,10 +50,10 @@ const EditSongAdmin = () => {
                 ]);
 
                 if (singersRes.success && Array.isArray(singersRes.data)) {
-                    setAvailableSingers(singersRes.data);
+                    setAvailableSingers(singersRes.data.map(s => ({ id: s.id, name: s.name })));
                 }
                 if (tagsRes.success && Array.isArray(tagsRes.data)) {
-                    setAvailableTags(tagsRes.data);
+                    setAvailableTags(tagsRes.data.map(t => ({ id: t.id, name: t.name })));
                 }
 
                 if (songRes.success && songRes.data) {
@@ -59,32 +65,35 @@ const EditSongAdmin = () => {
                         tagIds: songData.tags.map(t => t.id),
                         isPremium: songData.isPremium || false
                     });
+                    setExistingFiles({
+                        audio: songData.filePath,
+                        thumbnail: songData.thumbnailPath
+                    });
                 } else {
-                    setError(songRes.message || "Không tìm thấy bài hát.");
+                    toast.error(songRes.message || "Không tìm thấy bài hát.");
+                    navigate('/admin/songs');
                 }
 
             } catch (err) {
-                setError('Không thể tải dữ liệu bài hát.');
+                toast.error('Không thể tải dữ liệu bài hát.');
                 console.error(err);
+                navigate('/admin/songs');
             } finally {
                 setPageLoading(false);
             }
         };
         fetchData();
-    }, [songId]);
+    }, [songId, navigate]);
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
-    const handleMultiSelect = (e, field) => setFormData({ ...formData, [field]: Array.from(e.target.selectedOptions, option => Number(option.value)) });
-    const handleFileChange = (e, setFile) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
-        }
+
+    const handleSelectionChange = (field, ids) => {
+        setFormData(prev => ({ ...prev, [field]: ids }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         const updateData = {
             title: formData.title,
@@ -99,69 +108,58 @@ const EditSongAdmin = () => {
             toast.success('Cập nhật bài hát thành công!');
             navigate('/admin/songs');
         } catch (err) {
-            setError(err.response?.data?.message || "Đã có lỗi xảy ra khi cập nhật.");
+            toast.error(err.response?.data?.message || "Đã có lỗi xảy ra khi cập nhật.");
         } finally {
             setLoading(false);
         }
     };
 
-    if (pageLoading) return <div className="text-center py-10">Đang tải dữ liệu chỉnh sửa...</div>;
+    if (pageLoading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-music-500"></div></div>;
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
-            <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Chỉnh sửa bài hát (Admin)</h1>
-            {error && <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>}
+        <div className="max-w-4xl mx-auto space-y-8">
+            <div>
+                <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Chỉnh sửa bài hát (Admin)</h1>
+                <p className={`${currentTheme.textSecondary}`}>Cập nhật thông tin chi tiết cho bài hát.</p>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                <div className={`${currentTheme.bgCard} p-6 rounded-xl border ${currentTheme.border}`}>
-                    <h2 className="text-xl font-semibold mb-4">Thông tin cơ bản</h2>
+                <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+                    <h2 className="text-xl font-semibold">Thông tin cơ bản</h2>
+                    <Input name="title" label="Tên bài hát *" value={formData.title} onChange={handleChange} required />
                     <div>
-                        <label className="flex items-center text-sm font-medium mb-1"><Type className="w-4 h-4 mr-2" />Tên bài hát *</label>
-                        <Input name="title" value={formData.title} onChange={handleChange} required />
-                    </div>
-                    <div className="mt-4">
-                        <label className="flex items-center text-sm font-medium mb-1"><Info className="w-4 h-4 mr-2" />Mô tả</label>
-                        <textarea name="description" value={formData.description} onChange={handleChange} className={`w-full p-2 border rounded ${currentTheme.bg}`} rows="4" />
+                        <label htmlFor="description" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mô tả</label>
+                        <textarea id="description" name="description" rows={4} placeholder="Giới thiệu ngắn về bài hát..." value={formData.description} onChange={handleChange} className={`w-full p-2 border rounded-lg ${currentTheme.bg} ${currentTheme.border} focus:border-music-500 focus:ring-music-500`} />
                     </div>
                 </div>
 
-                <div className={`${currentTheme.bgCard} p-6 rounded-xl border ${currentTheme.border}`}>
-                    <h2 className="text-xl font-semibold mb-4">Ca sĩ & Thể loại</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
+                <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+                    <h2 className="text-xl font-semibold">Ca sĩ & Thể loại</h2>
+                    <MultiSelect label="Ca sĩ * (Chỉ hiển thị ca sĩ đã duyệt)" options={availableSingers} selected={formData.singerIds} onChange={(ids) => handleSelectionChange('singerIds', ids)} placeholder="Chọn ca sĩ..."/>
+                    <MultiSelect label="Thể loại" options={availableTags} selected={formData.tagIds} onChange={(ids) => handleSelectionChange('tagIds', ids)} placeholder="Chọn thể loại..."/>
+                </div>
+
+                <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
+                    <h2 className="text-xl font-semibold">Tệp tin (Chỉ chọn nếu muốn thay đổi)</h2>
+                    <FileUpload label="File audio" accept="audio/*" onFileChange={setAudioFile} fileName={existingFiles.audio?.split('/').pop()} />
+                    <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={setThumbnailFile} previewType="image" existingFileUrl={existingFiles.thumbnail ? `${API_BASE_URL}${existingFiles.thumbnail}` : null} fileName={existingFiles.thumbnail?.split('/').pop()} />
+                </div>
+
+                <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard}`}>
+                    <div className="flex items-center justify-between">
                         <div>
-                            <label>Ca sĩ * (Chỉ hiển thị ca sĩ đã duyệt)</label>
-                            <select multiple value={formData.singerIds} onChange={(e) => handleMultiSelect(e, 'singerIds')} className={`w-full h-40 p-2 border rounded ${currentTheme.bg}`} required>
-                                {availableSingers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                            </select>
+                            <label htmlFor="isPremium" className="font-medium text-slate-900 dark:text-slate-100">Bài hát Premium</label>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Chỉ người dùng Premium mới có thể nghe.</p>
                         </div>
-                        <div>
-                            <label>Thể loại</label>
-                            <select multiple value={formData.tagIds} onChange={(e) => handleMultiSelect(e, 'tagIds')} className={`w-full h-40 p-2 border rounded ${currentTheme.bg}`}>
-                                {availableTags.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                            </select>
-                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="isPremium" name="isPremium" checked={formData.isPremium} onChange={handleChange} className="sr-only peer" />
+                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-music-300 dark:peer-focus:ring-music-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-music-600"></div>
+                        </label>
                     </div>
                 </div>
 
-                <div className={`${currentTheme.bgCard} p-6 rounded-xl border ${currentTheme.border}`}>
-                    <h2 className="text-xl font-semibold mb-4">Tệp tin (Để trống nếu không thay đổi)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="flex items-center text-sm font-medium mb-1"><Upload className="w-4 h-4 mr-2" />File audio</label>
-                            <input type="file" accept="audio/*" onChange={(e) => handleFileChange(e, setAudioFile)} className={`w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-music-100 file:text-music-700 hover:file:bg-music-200`}/>
-                        </div>
-                        <div>
-                            <label className="flex items-center text-sm font-medium mb-1"><Music className="w-4 h-4 mr-2" />Ảnh bìa</label>
-                            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, setThumbnailFile)} className={`w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200`}/>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <label className="flex items-center space-x-2">
-                        <input type="checkbox" name="isPremium" checked={formData.isPremium} onChange={handleChange} className="h-4 w-4 text-music-500 rounded focus:ring-music-500" />
-                        <span>Premium</span>
-                    </label>
+                <div className="flex justify-end gap-4">
+                    <Button type="button" variant="ghost" onClick={() => navigate('/admin/songs')}>Hủy</Button>
                     <Button type="submit" disabled={loading}>{loading ? 'Đang cập nhật...' : 'Lưu thay đổi'}</Button>
                 </div>
             </form>
