@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 
-const AudioContext = createContext();
+export const AudioContext = createContext();
 
 export const useAudio = () => {
   const context = useContext(AudioContext);
@@ -23,10 +23,72 @@ export const AudioProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const audioRef = useRef(null);
+  const fadeIntervalRef = useRef(null);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-  const playSong = useCallback(async (song, playlist = []) => {
+  const FADE_DURATION = 300;
+  const FADE_INTERVAL = 30;
+
+  const clearFadeInterval = () => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+  };
+
+  const fadeIn = useCallback(async () => {
+    clearFadeInterval();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0;
     try {
+      await audio.play();
+    } catch (e) {
+      console.error("Error on play attempt:", e);
+      return;
+    }
+
+    const targetVolume = volume;
+    const step = targetVolume / (FADE_DURATION / FADE_INTERVAL);
+
+    fadeIntervalRef.current = setInterval(() => {
+      const currentVolume = audio.volume;
+      if (currentVolume < targetVolume) {
+        audio.volume = Math.min(currentVolume + step, targetVolume);
+      } else {
+        audio.volume = targetVolume;
+        clearFadeInterval();
+      }
+    }, FADE_INTERVAL);
+  }, [volume]);
+
+  const fadeOut = useCallback((onComplete) => {
+    clearFadeInterval();
+    const audio = audioRef.current;
+    if (!audio || audio.volume === 0) {
+      if(onComplete) onComplete();
+      return;
+    }
+    const startVolume = audio.volume;
+    const step = startVolume / (FADE_DURATION / FADE_INTERVAL);
+    fadeIntervalRef.current = setInterval(() => {
+      const currentVolume = audio.volume;
+      if (currentVolume > 0) {
+        audio.volume = Math.max(currentVolume - step, 0);
+      } else {
+        clearFadeInterval();
+        if (onComplete) onComplete();
+      }
+    }, FADE_INTERVAL);
+  }, []);
+
+  const playSong = useCallback((song, playlist = []) => {
+    clearFadeInterval();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const executePlay = () => {
       setLoading(true);
       setCurrentSong(song);
 
@@ -35,64 +97,63 @@ export const AudioProvider = ({ children }) => {
         const index = playlist.findIndex(s => s.id === song.id);
         setCurrentIndex(index >= 0 ? index : 0);
       } else {
-        const currentQueue = queue.length > 0 ? queue : [song];
-        setQueue(currentQueue);
-        const index = currentQueue.findIndex(s => s.id === song.id);
-        if (index !== -1) {
-          setCurrentIndex(index);
+        const queueExists = queue.length > 0;
+        const songInQueueIndex = queue.findIndex(s => s.id === song.id);
+        if (queueExists && songInQueueIndex > -1) {
+          setCurrentIndex(songInQueueIndex);
         } else {
-          setQueue(prev => [...prev, song]);
-          setCurrentIndex(prev => prev.length);
+          const newQueue = queueExists ? [...queue, song] : [song];
+          setQueue(newQueue);
+          setCurrentIndex(newQueue.length - 1);
         }
       }
 
-      if (audioRef.current) {
-        audioRef.current.src = `${API_BASE_URL}${song.filePath}`;
-        await audioRef.current.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('Error playing song:', error);
-      setIsPlaying(false);
-    } finally {
-      setLoading(false);
+      audio.src = `${API_BASE_URL}${song.filePath}`;
+
+      const onCanPlay = () => {
+        fadeIn();
+        audio.removeEventListener('canplaythrough', onCanPlay);
+      };
+      audio.addEventListener('canplaythrough', onCanPlay);
+      audio.load();
+    };
+
+    if (isPlaying) {
+      fadeOut(executePlay);
+    } else {
+      executePlay();
     }
-  }, [API_BASE_URL, queue]);
+  }, [API_BASE_URL, queue, isPlaying, fadeIn, fadeOut]);
 
   const playNext = useCallback(() => {
     if (queue.length === 0) return;
-
     let nextIndex;
     if (isShuffle) {
       nextIndex = Math.floor(Math.random() * queue.length);
-      // Avoid playing the same song again in shuffle mode if queue is > 1
       if (queue.length > 1 && nextIndex === currentIndex) {
         nextIndex = (currentIndex + 1) % queue.length;
       }
     } else {
       nextIndex = (currentIndex + 1) % queue.length;
     }
-
     playSong(queue[nextIndex], queue);
   }, [queue, isShuffle, currentIndex, playSong]);
-
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
     const handleEnded = () => {
       if (isRepeat) {
         audio.currentTime = 0;
-        audio.play();
+        fadeIn();
       } else {
         playNext();
       }
     };
     const handleLoadStart = () => setLoading(true);
-    const handleCanPlay = () => setLoading(false);
+    const handleCanPlayThrough = () => setLoading(false);
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
@@ -100,7 +161,7 @@ export const AudioProvider = ({ children }) => {
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('loadstart', handleLoadStart);
-    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
 
@@ -109,37 +170,48 @@ export const AudioProvider = ({ children }) => {
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('loadstart', handleLoadStart);
-      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
+      clearFadeInterval();
     };
-  }, [isRepeat, playNext]);
+  }, [isRepeat, playNext, fadeIn]);
 
-  const togglePlay = async () => {
+  const togglePlay = () => {
     if (!audioRef.current || !currentSong) return;
-    try {
-      if (isPlaying) {
+    if (isPlaying) {
+      fadeOut(() => {
         audioRef.current.pause();
-      } else {
-        await audioRef.current.play();
-      }
-    } catch (error) {
-      console.error('Error toggling play:', error);
+      });
+    } else {
+      fadeIn();
     }
   };
 
   const playPrevious = useCallback(() => {
     if (queue.length === 0) return;
-
     let prevIndex;
     if (isShuffle) {
       prevIndex = Math.floor(Math.random() * queue.length);
     } else {
       prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
     }
-
     playSong(queue[prevIndex], queue);
   }, [queue, isShuffle, currentIndex, playSong]);
+
+  const stopAndClearPlayer = () => {
+    fadeOut(() => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+      setCurrentSong(null);
+      setQueue([]);
+      setCurrentIndex(-1);
+      setCurrentTime(0);
+      setDuration(0);
+    });
+  };
 
   const seekTo = (time) => {
     if (audioRef.current) {
@@ -149,28 +221,17 @@ export const AudioProvider = ({ children }) => {
   };
 
   const changeVolume = (newVolume) => {
+    setVolume(newVolume);
     if (audioRef.current) {
+      clearFadeInterval();
       audioRef.current.volume = newVolume;
-      setVolume(newVolume);
     }
   };
 
-  const toggleRepeat = () => {
-    setIsRepeat(prev => !prev);
-  };
-
-  const toggleShuffle = () => {
-    setIsShuffle(prev => !prev);
-  };
-
-  const addToQueue = (song) => {
-    setQueue(prev => [...prev, song]);
-  };
-
-  const removeFromQueue = (songId) => {
-    setQueue(prev => prev.filter(song => song.id !== songId));
-  };
-
+  const toggleRepeat = () => setIsRepeat(prev => !prev);
+  const toggleShuffle = () => setIsShuffle(prev => !prev);
+  const addToQueue = (song) => setQueue(prev => [...prev, song]);
+  const removeFromQueue = (songId) => setQueue(prev => prev.filter(song => song.id !== songId));
   const clearQueue = () => {
     setQueue([]);
     setCurrentIndex(-1);
@@ -184,35 +245,16 @@ export const AudioProvider = ({ children }) => {
   };
 
   const value = {
-    currentSong,
-    isPlaying,
-    currentTime,
-    duration,
-    volume,
-    isRepeat,
-    isShuffle,
-    queue,
-    currentIndex,
-    loading,
-    audioRef,
-    playSong,
-    togglePlay,
-    playNext,
-    playPrevious,
-    seekTo,
-    changeVolume,
-    toggleRepeat,
-    toggleShuffle,
-    addToQueue,
-    removeFromQueue,
-    clearQueue,
-    formatTime
+    currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle,
+    queue, currentIndex, loading, audioRef, playSong, togglePlay, playNext,
+    playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle,
+    addToQueue, removeFromQueue, clearQueue, formatTime, stopAndClearPlayer
   };
 
   return (
       <AudioContext.Provider value={value}>
         {children}
-        <audio ref={audioRef} preload="metadata" />
+        <audio ref={audioRef} crossOrigin="anonymous" preload="metadata" />
       </AudioContext.Provider>
   );
 };
