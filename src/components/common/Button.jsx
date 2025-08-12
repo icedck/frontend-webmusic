@@ -1,5 +1,3 @@
-// src/components/common/Button.jsx
-
 import React from 'react';
 import { useDarkMode } from '../../hooks/useDarkMode';
 
@@ -10,14 +8,13 @@ const Button = ({
                     type = 'button',
                     layout = 'horizontal',
                     disabled = false,
-                    loading = false,
+                    isLoading = false,
                     className = '',
                     onClick,
                     ...props
                 }) => {
-    const { currentTheme, isDarkMode } = useDarkMode();
+    const { currentTheme } = useDarkMode();
 
-    // <<< THAY ĐỔI: Đã loại bỏ focus:ring-2 và focus:ring-offset-2 >>>
     const baseClasses = `
     inline-flex justify-center font-medium
     transition-all duration-300 ease-in-out
@@ -30,7 +27,6 @@ const Button = ({
         ? 'flex-col space-y-2'
         : 'flex-row items-center space-x-2';
 
-    // <<< THAY ĐỔI: Đã loại bỏ currentTheme.focusRing, thay bằng hiệu ứng border khi focus >>>
     const variants = {
         primary: `
       text-white border border-transparent
@@ -87,17 +83,17 @@ const Button = ({
     return (
         <button
             type={type}
-            disabled={disabled || loading}
+            disabled={disabled || isLoading}
             onClick={onClick}
             className={buttonClasses}
             {...props}
         >
-            {loading && (
+            {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className={`w-5 h-5 border-2 ${spinnerColor}/30 border-t-${spinnerColor} rounded-full animate-spin`} />
                 </div>
             )}
-            <span className={`flex h-full w-full items-center justify-center ${layoutClasses} ${loading ? 'opacity-0' : 'opacity-100'}`}>
+            <span className={`flex h-full w-full items-center justify-center ${layoutClasses} ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
         {children}
       </span>
         </button>

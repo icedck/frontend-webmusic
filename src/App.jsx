@@ -1,3 +1,5 @@
+// frontend/src/App.jsx
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/layout/LandingPage';
@@ -37,9 +39,7 @@ function AppContent() {
 
                     {/* Main Application Layout */}
                     <Route element={<DashboardLayout />}>
-                        {/* SỬA LỖI: Đổi trang chủ về URL gốc */}
                         <Route path="/" element={<MusicDiscoveryPage />} />
-                        {/* SỬA LỖI: Thêm điều hướng từ /dashboard về / để đảm bảo link cũ hoạt động */}
                         <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
                         <Route path="/search" element={<SearchResults />} />
@@ -49,7 +49,10 @@ function AppContent() {
                         <Route element={<ProtectedRoute />}>
                             {/* General User Routes */}
                             <Route path="/songs" element={<SongManagement />} />
-                            <Route path="/playlists" element={<PlaylistManagement />} />
+
+                            {/* COMMENT: Thay đổi route từ /playlists thành /my-playlists để đồng bộ với sidebar */}
+                            <Route path="/my-playlists" element={<PlaylistManagement />} />
+
                             <Route path="/premium" element={<PremiumUpgrade />} />
                             <Route path="/transactions" element={<TransactionHistory />} />
                             <Route path="/profile" element={<Profile />} />
@@ -73,7 +76,6 @@ function AppContent() {
                         </Route>
                     </Route>
 
-                    {/* SỬA LỖI: Điều hướng các link không tồn tại về trang chủ mới */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
                 <Tooltip id="global-tooltip" style={{ backgroundColor: isDarkMode ? 'rgb(6, 182, 212)' : 'rgb(8, 145, 178)', color: "#FFFFFF", borderRadius: "8px" }} opacity={1} offset={10}/>

@@ -1,3 +1,5 @@
+// frontend/src/components/layout/DashboardLayout.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
@@ -37,9 +39,10 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [avatarMenuRef]);
 
+  // COMMENT: Cập nhật mục "Thư viện" để trỏ đến '/my-playlists'
   const mainNavItems = [
     { href: '/dashboard', icon: Home, label: 'Trang chủ' },
-    { href: '/library', icon: Library, label: 'Thư viện' },
+    { href: '/my-playlists', icon: Library, label: 'Thư viện' },
     { href: '/charts', icon: BarChart3, label: 'Bảng xếp hạng' },
     { type: 'button', action: onOpenPalette, icon: Search, label: 'Tìm kiếm' },
   ];
@@ -242,7 +245,7 @@ const DashboardLayout = () => {
   const cmdMainNavItems = [
     { name: 'Trang chủ', href: '/dashboard', icon: Home, category: 'Menu' },
     { name: 'Tìm kiếm', href: '/search', icon: Search, category: 'Menu' },
-    { name: 'Thư viện', href: '/songs', icon: Music, category: 'Menu' },
+    { name: 'Thư viện', href: '/my-playlists', icon: Library, category: 'Menu' },
   ];
   const cmdCreatorNavItems = [
     { name: 'Tải lên bài hát', href: '/creator/submission/new', icon: Upload, category: 'Creator' },

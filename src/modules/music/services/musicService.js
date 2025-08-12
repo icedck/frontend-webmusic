@@ -10,10 +10,8 @@ const getSongById = async (songId) => {
     }
 };
 
-// <<< HÀM MỚI: Lấy dữ liệu đầy đủ cho trang PlayerPage >>>
 const getSongDetails = async (songId) => {
     try {
-        // API này nên trả về đầy đủ thông tin: audioUrl, lyrics, artist, album...
         const response = await apiService.get(`/api/v1/songs/details/${songId}`);
         return response.data;
     } catch (error) {
@@ -22,7 +20,6 @@ const getSongDetails = async (songId) => {
     }
 };
 
-// <<< HÀM MỚI: Lấy danh sách phát tiếp theo >>>
 const getQueue = async () => {
     try {
         const response = await apiService.get(`/api/v1/queue`);
@@ -51,7 +48,7 @@ const fetchSongSubmissionData = async () => {
 
 const submitNewSong = async (submissionData) => {
     try {
-        const response = await apiService.upload('/api/v1/submissions', submissionData);
+        const response = await apiService.post('/api/v1/submissions', submissionData);
         return response.data;
     } catch (error) {
         console.error("Failed to submit new song:", error);
@@ -59,10 +56,44 @@ const submitNewSong = async (submissionData) => {
     }
 };
 
+const createPlaylist = async (formData) => {
+    try {
+        const response = await apiService.post('/api/v1/playlists', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const getMyPlaylists = async () => {
+    try {
+        const response = await apiService.get('/api/v1/playlists/my-playlists');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const searchSongsForPlaylist = async (keyword) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/search-for-playlist`, { params: { keyword } });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const musicService = {
     getSongById,
     fetchSongSubmissionData,
     submitNewSong,
-    getSongDetails, // <<< Thêm hàm mới vào export
-    getQueue,       // <<< Thêm hàm mới vào export
+    getSongDetails,
+    getQueue,
+    createPlaylist,
+    getMyPlaylists,
+    searchSongsForPlaylist
 };
