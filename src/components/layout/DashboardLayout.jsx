@@ -10,7 +10,7 @@ import ConfirmationModal from '../common/ConfirmationModal';
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat,
-  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen
+  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen, Tags
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -60,6 +60,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
     { href: '/admin/creators', icon: Briefcase, label: 'Quản lý NPT' },
     { href: '/admin/songs', icon: Music, label: 'Quản lý bài hát' },
     { href: '/admin/singers', icon: Mic2, label: 'Quản lý ca sĩ' },
+    { href: '/admin/tags', icon: Tags, label: 'Quản lý Tags' },
     { href: '/admin/submissions', icon: CheckSquare, label: 'Duyệt bài hát' }
   ];
 
@@ -253,6 +254,7 @@ const DashboardLayout = () => {
     { name: 'Quản lý NPT', href: '/admin/creators', icon: Briefcase, category: 'Admin' },
     { name: 'Quản lý ca sĩ', href: '/admin/singers', icon: Mic2, category: 'Admin' },
     { name: 'Quản lý bài hát', href: '/admin/songs', icon: SongIcon, category: 'Admin' },
+    { name: 'Quản lý Tags', href: '/admin/tags', icon: Tags, category: 'Admin' },
     { name: 'Duyệt bài hát', href: '/admin/submissions', icon: CheckSquare, category: 'Admin' }
   ];
   const cmdUserNavItems = [

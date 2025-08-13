@@ -6,3 +6,4 @@ export { default as SongManagementAdmin } from './pages/SongManagementAdmin';
 export { default as CreateSongAdmin } from './pages/CreateSongAdmin';
 export { default as EditSongAdmin } from './pages/EditSongAdmin';
 export { default as SubmissionManagement } from './pages/SubmissionManagement';
+export { default as TagManagement } from './pages/TagManagement';

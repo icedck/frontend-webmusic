@@ -68,6 +68,31 @@ const createSingerByAdmin = async (formData) => {
     }
 };
 
+const updateSingerByAdmin = async (singerId, singerRequest, avatarFile) => {
+    const formData = new FormData();
+    formData.append('singerRequest', new Blob([JSON.stringify(singerRequest)], { type: 'application/json' }));
+    if (avatarFile) {
+        formData.append('avatarFile', avatarFile);
+    }
+    try {
+        const response = await apiService.put(`/api/v1/singers/admin/${singerId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const deleteSingerByAdmin = async (singerId) => {
+    try {
+        const response = await apiService.delete(`/api/v1/singers/admin/${singerId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const getAllApprovedSingers = async () => {
     try {
         const response = await apiService.get('/api/v1/singers/list');
@@ -78,12 +103,50 @@ const getAllApprovedSingers = async () => {
     }
 };
 
+const getTagsForAdmin = async (page = 0, size = 5) => {
+    try {
+        const params = { page, size };
+        const response = await apiService.get('/api/v1/tags/admin', { params });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Hàm mới được thêm vào
 const getAllTags = async () => {
     try {
         const response = await apiService.get('/api/v1/tags');
         return response.data;
     } catch (error) {
-        console.error("Failed to fetch tags:", error);
+        console.error("Failed to fetch all tags:", error);
+        throw error;
+    }
+};
+
+const createTag = async (data) => {
+    try {
+        const response = await apiService.post('/api/v1/tags/admin', data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const updateTag = async (tagId, data) => {
+    try {
+        const response = await apiService.put(`/api/v1/tags/admin/${tagId}`, data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const deleteTag = async (tagId) => {
+    try {
+        const response = await apiService.delete(`/api/v1/tags/admin/${tagId}`);
+        return response.data;
+    } catch (error) {
         throw error;
     }
 };
@@ -199,8 +262,14 @@ export const adminService = {
     getCreatorDetails,
     getSingers,
     createSingerByAdmin,
-    getAllApprovedSingers,
-    getAllTags,
+    updateSingerByAdmin,
+    deleteSingerByAdmin,
+    getAllApprovedSingers, // <--- Đã thêm vào
+    getTagsForAdmin,
+    getAllTags, // <--- Đã thêm vào
+    createTag,
+    updateTag,
+    deleteTag,
     createSongByAdmin,
     getSongs,
     getSongByIdForAdmin,

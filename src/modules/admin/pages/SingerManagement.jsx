@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
-import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import ConfirmationModal from '../../../components/common/ConfirmationModal';
+import { PlusCircle, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import CreateSingerModal from '../components/CreateSingerModal';
+import UpdateSingerModal from '../components/UpdateSingerModal';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -21,7 +23,11 @@ const SingerManagement = () => {
     const { currentTheme } = useDarkMode();
     const [singers, setSingers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedSinger, setSelectedSinger] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [pageInfo, setPageInfo] = useState({
         pageNumber: 0,
         pageSize: 5,
@@ -56,10 +62,39 @@ const SingerManagement = () => {
         fetchSingers(pageInfo.pageNumber, pageInfo.pageSize);
     }, []);
 
-    const handleSuccess = () => {
-        setIsModalOpen(false);
+    const handleCreateSuccess = () => {
+        setIsCreateModalOpen(false);
         toast.success("Thêm ca sĩ mới thành công!");
         fetchSingers(0, pageInfo.pageSize);
+    };
+
+    const handleUpdateSuccess = (updatedSinger) => {
+        setIsUpdateModalOpen(false);
+        setSingers(prev => prev.map(s => s.id === updatedSinger.id ? updatedSinger : s));
+    };
+
+    const handleDeleteClick = (singer) => {
+        setSelectedSinger(singer);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedSinger) return;
+        setIsProcessing(true);
+        try {
+            const response = await adminService.deleteSingerByAdmin(selectedSinger.id);
+            if (response.success) {
+                toast.success(response.message || "Xóa ca sĩ thành công!");
+                setSingers(prev => prev.filter(s => s.id !== selectedSinger.id));
+                setIsDeleteModalOpen(false);
+            } else {
+                toast.error(response.message || "Xóa ca sĩ thất bại.");
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Đã có lỗi xảy ra khi xóa ca sĩ.");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const handlePageChange = (newPage) => {
@@ -75,8 +110,9 @@ const SingerManagement = () => {
                     <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Quản lý ca sĩ</h1>
                     <p className={`mt-2 ${currentTheme.textSecondary}`}>Thêm, sửa, và quản lý các ca sĩ trong hệ thống.</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)} size="icon" data-tooltip-id="global-tooltip" data-tooltip-content="Thêm ca sĩ">
+                <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
                     <PlusCircle className="w-5 h-5" />
+                    <span>Thêm ca sĩ</span>
                 </Button>
             </div>
 
@@ -88,12 +124,13 @@ const SingerManagement = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ca sĩ</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trạng thái</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {loading && <tr><td colSpan="4" className="text-center py-4">Đang tải...</td></tr>}
+                    {loading && <tr><td colSpan="5" className="text-center py-4">Đang tải...</td></tr>}
                     {!loading && singers.length === 0 && (
-                        <tr><td colSpan="4" className="text-center py-4">Không có dữ liệu.</td></tr>
+                        <tr><td colSpan="5" className="text-center py-4">Không có dữ liệu.</td></tr>
                     )}
                     {!loading && singers.map((singer) => (
                         <tr key={singer.id}>
@@ -108,6 +145,14 @@ const SingerManagement = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">{singer.email}</td>
                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={singer.status} /></td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                                <Button variant="ghost" size="icon" onClick={() => { setSelectedSinger(singer); setIsUpdateModalOpen(true); }}>
+                                    <Edit className="w-5 h-5 text-blue-500" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(singer)}>
+                                    <Trash2 className="w-5 h-5 text-red-500" />
+                                </Button>
+                            </td>
                         </tr>
                     ))}
                     </tbody>
@@ -131,9 +176,27 @@ const SingerManagement = () => {
             )}
 
             <CreateSingerModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSuccess={handleSuccess}
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={handleCreateSuccess}
+            />
+
+            <UpdateSingerModal
+                isOpen={isUpdateModalOpen}
+                onClose={() => setIsUpdateModalOpen(false)}
+                singer={selectedSinger}
+                onSingerUpdated={handleUpdateSuccess}
+            />
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title={`Xác nhận xóa ca sĩ`}
+                message={`Bạn có chắc chắn muốn xóa ca sĩ "${selectedSinger?.name}"? Hành động này không thể hoàn tác.`}
+                confirmText="Xóa"
+                variant="danger"
+                isLoading={isProcessing}
             />
         </div>
     );

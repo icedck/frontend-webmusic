@@ -8,7 +8,7 @@ import ChangePassword from './modules/auth/pages/ChangePassword';
 import ForgotPassword from './modules/auth/pages/ForgotPassword';
 import MusicDiscoveryPage from './pages/MusicDiscoveryPage';
 import ArtistDetailPage from './modules/music/pages/ArtistDetailPage';
-import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement, CreatorManagement, CreatorDetailPage } from './modules/admin';
+import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement, CreatorManagement, CreatorDetailPage, TagManagement } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail, PlaylistDetailPage } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
 import MyPublishedSongs from './modules/creator/pages/MyPublishedSongs';
@@ -59,6 +59,7 @@ function AppContent() {
                             <Route path="/admin/songs/new" element={<CreateSongAdmin />} />
                             <Route path="/admin/songs/edit/:songId" element={<EditSongAdmin />} />
                             <Route path="/admin/submissions" element={<SubmissionManagement />} />
+                            <Route path="/admin/tags" element={<TagManagement />} />
 
                             <Route path="/creator" element={<CreatorDashboard />} />
                             <Route path="/creator/my-library" element={<MyPublishedSongs />} />
