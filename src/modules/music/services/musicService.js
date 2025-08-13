@@ -78,6 +78,16 @@ const getMyPlaylists = async () => {
     }
 };
 
+const getPlaylistById = async (id) => {
+    try {
+        const response = await apiService.get(`/api/v1/playlists/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to fetch playlist with id ${id}:`, error);
+        throw error;
+    }
+};
+
 const searchSongsForPlaylist = async (keyword) => {
     try {
         const response = await apiService.get(`/api/v1/songs/search-for-playlist`, { params: { keyword } });
@@ -85,7 +95,47 @@ const searchSongsForPlaylist = async (keyword) => {
     } catch (error) {
         throw error;
     }
-}
+};
+
+const addSongsToPlaylist = async (playlistId, songIds) => {
+    try {
+        const response = await apiService.post(`/api/v1/playlists/${playlistId}/songs`, { songIds });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const updatePlaylist = async (playlistId, formData) => {
+    try {
+        const response = await apiService.put(`/api/v1/playlists/${playlistId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const deletePlaylist = async (playlistId) => {
+    try {
+        const response = await apiService.delete(`/api/v1/playlists/${playlistId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const removeSongFromPlaylist = async (playlistId, songId) => {
+    try {
+        const response = await apiService.delete(`/api/v1/playlists/${playlistId}/songs/${songId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
 
 export const musicService = {
     getSongById,
@@ -95,5 +145,10 @@ export const musicService = {
     getQueue,
     createPlaylist,
     getMyPlaylists,
-    searchSongsForPlaylist
+    getPlaylistById,
+    searchSongsForPlaylist,
+    addSongsToPlaylist,
+    updatePlaylist,
+    deletePlaylist,
+    removeSongFromPlaylist
 };

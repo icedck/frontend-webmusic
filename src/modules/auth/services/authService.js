@@ -16,8 +16,10 @@ const getMe = async () => {
 const handleLoginSuccess = async (token) => {
     localStorage.setItem('authToken', token);
     const userProfileResponse = await getMe();
-    localStorage.setItem('authUser', JSON.stringify(userProfileResponse.data));
-    return { token, user: userProfileResponse.data };
+    // FIX: Get the user data from the 'data' property of the BaseResponse
+    const user = userProfileResponse.data;
+    localStorage.setItem('authUser', JSON.stringify(user));
+    return { token, user };
 };
 
 const register = async (userData) => {
@@ -38,7 +40,9 @@ const login = async (credentials) => {
         if (!token) {
             throw new Error("Login failed: Token not found in response.");
         }
-        return await handleLoginSuccess(token);
+        // The user object is now returned directly from handleLoginSuccess
+        const { user } = await handleLoginSuccess(token);
+        return { user }; // Return the user object to Login.jsx
     } catch (error)
     {
         console.error("Login API call failed:", error);
@@ -54,7 +58,8 @@ const loginWithGoogle = async (idToken) => {
         if (!token) {
             throw new Error("Google login failed: Token not found in response.");
         }
-        return await handleLoginSuccess(token);
+        const { user } = await handleLoginSuccess(token);
+        return { user };
     } catch (error) {
         console.error("Google Login API call failed:", error);
         throw error;

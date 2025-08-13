@@ -1,14 +1,11 @@
-// frontend/src/components/music/PlaylistListItem.jsx
-
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Play, Clock } from 'lucide-react';
 
-const PlaylistListItem = ({ playlist }) => {
+const PlaylistListItem = ({ playlist, onSelect }) => {
     return (
-        <Link
-            to={`/playlist/${playlist.id}`}
-            className="block group p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200"
+        <div
+            onClick={() => onSelect(playlist.id)}
+            className="block group p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 cursor-pointer"
         >
             <div className="flex items-center gap-4">
                 <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
@@ -26,7 +23,7 @@ const PlaylistListItem = ({ playlist }) => {
                     <span>{new Date(playlist.createdAt).toLocaleDateString()}</span>
                 </div>
             </div>
-        </Link>
+        </div>
     );
 };
 

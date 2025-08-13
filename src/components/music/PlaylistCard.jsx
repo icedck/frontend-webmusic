@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+// Bỏ import Link vì không còn dùng nữa
 import { Play } from 'lucide-react';
 
 const PlaylistCard = ({ playlist }) => {
     return (
-        <Link to={`/playlist/${playlist.id}`} className="block group">
+        // Thay thế thẻ <Link> bằng thẻ <div>
+        // Thêm `cursor-pointer` để người dùng biết có thể click vào
+        <div className="block group cursor-pointer">
             <div className="relative w-full aspect-square rounded-xl overflow-hidden shadow-lg">
                 <img src={playlist.imageUrl} alt={playlist.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
@@ -17,7 +19,7 @@ const PlaylistCard = ({ playlist }) => {
                 <h3 className="font-semibold truncate">{playlist.title}</h3>
                 <p className="text-sm text-slate-400 truncate">{playlist.description}</p>
             </div>
-        </Link>
+        </div>
     );
 };
 

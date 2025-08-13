@@ -1,98 +1,95 @@
-import React from 'react';
-import { useDarkMode } from '../../../hooks/useDarkMode';
+import React, { useState } from 'react';
+import { premiumService } from '../services/premiumService';
+import { toast } from 'react-toastify';
 import Button from '../../../components/common/Button';
-import { Check, Star, Zap, Download, Headphones, X } from 'lucide-react';
+import { Crown, Zap, CheckCircle } from 'lucide-react';
 
-// --- COMPONENT THẺ GIÁ ĐÃ ĐƯỢC THIẾT KẾ LẠI HOÀN TOÀN ---
-const PricingCard = ({ plan, price, description, features, isFeatured = false }) => {
-    const { isDarkMode } = useDarkMode();
+const PackageCard = ({ title, price, period, features, packageId, onPay }) => {
+    const [loading, setLoading] = useState(false);
 
-    // Logic màu sắc thông minh cho cả 2 chế độ
-    const cardStyles = isFeatured
-        ? (isDarkMode ? 'bg-amber-950/30 border-amber-400/50' : 'bg-amber-50 border-amber-200 text-amber-900')
-        : (isDarkMode ? 'bg-indigo-950/30 border-slate-700/50' : 'bg-indigo-50 border-indigo-200 text-indigo-900');
-
-    const buttonStyles = isFeatured
-        ? (isDarkMode ? '!bg-amber-500 !text-amber-950 hover:!bg-amber-600' : '!bg-amber-400 !text-amber-950 hover:!bg-amber-500')
-        : (isDarkMode ? '!bg-indigo-500 hover:!bg-indigo-600' : '!bg-indigo-500 hover:!bg-indigo-600 text-white');
-
-    const checkmarkStyles = isFeatured
-        ? (isDarkMode ? 'text-amber-400' : 'text-amber-500')
-        : (isDarkMode ? 'text-indigo-400' : 'text-indigo-500');
-
-    const priceSubtextStyles = isDarkMode ? 'text-slate-400' : 'text-slate-500';
+    const handlePayment = async () => {
+        setLoading(true);
+        try {
+            const response = await premiumService.createMomoPayment(packageId);
+            if (response.success && response.data.paymentUrl) {
+                // Chuyển hướng người dùng đến trang thanh toán của MoMo
+                window.location.href = response.data.paymentUrl;
+            } else {
+                toast.error(response.message || "Không thể tạo yêu cầu thanh toán.");
+            }
+        } catch (error) {
+            toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.");
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className={`flex flex-col p-8 rounded-2xl border backdrop-blur-sm ${cardStyles}`}>
-            <div className="flex-grow">
-                <h3 className="text-2xl font-semibold">{plan}</h3>
-                <p className={`mt-2 h-10 ${isDarkMode ? 'text-slate-400' : ''}`}>{description}</p>
-                <div className="mt-6">
-                    <span className="text-5xl font-bold">{price}</span>
-                    <span className={priceSubtextStyles}>/tháng</span>
-                </div>
-                <Button size="lg" className={`w-full mt-8 ${buttonStyles}`}>
-                    Đăng ký gói
-                </Button>
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 flex flex-col shadow-lg">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h3>
+            <div className="my-4">
+                <span className="text-4xl font-extrabold text-slate-900 dark:text-white">{price}</span>
+                <span className="text-slate-500 dark:text-slate-400"> / {period}</span>
             </div>
-            <div className="mt-8 pt-8 border-t border-slate-700/50 dark:border-slate-700/50">
-                <h4 className="font-semibold mb-4">Đặc quyền đặc biệt:</h4>
-                <ul className="space-y-4 text-sm text-left">
-                    {features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3">
-                            <Check className={`w-5 h-5 flex-shrink-0 ${checkmarkStyles}`} />
-                            <span className={isDarkMode ? 'text-slate-300' : ''}>{feature}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            <ul className="space-y-3 mb-6 flex-grow">
+                {features.map((feature, index) => (
+                    <li key={index} className="flex items-center">
+                        <CheckCircle className="w-5 h-5 text-cyan-500 mr-3 flex-shrink-0" />
+                        <span className="text-slate-600 dark:text-slate-300">{feature}</span>
+                    </li>
+                ))}
+            </ul>
+            <Button size="lg" onClick={handlePayment} disabled={loading}>
+                {loading ? 'Đang xử lý...' : 'Thanh toán với MoMo'}
+            </Button>
         </div>
     );
 };
 
-const FeatureShowcaseCard = ({ icon, title, description }) => (
-    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50 text-center flex flex-col items-center">
-        <div className="w-12 h-12 mb-4 rounded-lg flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
-            {icon}
-        </div>
-        <h3 className="font-semibold mb-2">{title}</h3>
-        <p className="text-sm text-slate-400">{description}</p>
-    </div>
-);
-
-
-const PremiumUpgrade = () => {
-    const { currentTheme } = useDarkMode();
-
-    const plusFeatures = [ "Nghe nhạc không quảng cáo", "Nghe và tải nhạc Lossless", "Lưu trữ nhạc không giới hạn", "Tính năng nghe nhạc nâng cao", "Mở rộng khả năng Upload" ];
-    const premiumFeatures = [ "Kho nhạc Premium", "Nghe nhạc không quảng cáo", "Nghe và tải nhạc Lossless", "Lưu trữ nhạc không giới hạn", "Tính năng nghe nhạc nâng cao", "Mở rộng khả năng Upload" ];
+export const PremiumUpgrade = () => {
+    const packages = [
+        {
+            packageId: "monthly_premium",
+            title: "Gói Tháng",
+            price: "49.000đ",
+            period: "tháng",
+            features: [
+                "Nghe nhạc không quảng cáo",
+                "Chất lượng âm thanh cao nhất",
+                "Tải nhạc không giới hạn (sắp ra mắt)",
+                "Tạo và chia sẻ playlist",
+            ]
+        },
+        {
+            packageId: "yearly_premium",
+            title: "Gói Năm",
+            price: "499.000đ",
+            period: "năm",
+            features: [
+                "Tất cả quyền lợi của Gói Tháng",
+                "Tiết kiệm hơn 2 tháng so với gói tháng",
+                "Ưu tiên hỗ trợ khách hàng",
+                "Nhận các tính năng mới sớm nhất",
+            ]
+        }
+    ];
 
     return (
-        <div className="max-w-5xl mx-auto space-y-20 py-12">
-            <section className="text-center px-4">
-                <h1 className="text-6xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent">
-                    Âm nhạc không giới hạn
+        <div className="max-w-4xl mx-auto py-8 px-4">
+            <div className="text-center mb-10">
+                <Crown className="mx-auto w-12 h-12 text-yellow-400 mb-2" />
+                <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    Nâng cấp lên Premium
                 </h1>
-                <p className={`mt-4 text-xl max-w-2xl mx-auto ${currentTheme.textSecondary}`}>
-                    Nâng cấp tài khoản để trải nghiệm các tính năng và nội dung cao cấp, độc quyền từ WebMusic.
+                <p className="mt-3 max-w-2xl mx-auto text-lg text-slate-500 dark:text-slate-400">
+                    Mở khóa toàn bộ tiềm năng nghe nhạc của bạn với các tính năng độc quyền.
                 </p>
-            </section>
+            </div>
 
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4">
-                <PricingCard
-                    plan="WebMusic PLUS"
-                    price="13.000đ"
-                    description="Nghe nhạc với chất lượng cao nhất, không quảng cáo."
-                    features={plusFeatures}
-                />
-                <PricingCard
-                    plan="WebMusic PREMIUM"
-                    price="41.000đ"
-                    description="Toàn bộ đặc quyền Plus cùng kho nhạc Premium độc quyền."
-                    features={premiumFeatures}
-                    isFeatured={true}
-                />
-            </section>
+            <div className="grid md:grid-cols-2 gap-8">
+                {packages.map(pkg => <PackageCard key={pkg.packageId} {...pkg} />)}
+            </div>
         </div>
     );
 };

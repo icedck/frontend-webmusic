@@ -1,6 +1,6 @@
-// src/hooks/useAuth.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService } from "../modules/auth/services/authService.js";
+import { apiService } from '../shared/services/apiService.js'; // Import apiService
 
 const AuthContext = createContext();
 
@@ -17,6 +17,25 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const revalidateUser = useCallback(async () => {
+    try {
+      const token = authService.getStoredToken();
+      if (!token) return;
+
+      const response = await apiService.get('/api/v1/users/me');
+      if (response.data?.success) {
+        const freshUser = response.data.data;
+        setUser(freshUser);
+        authService.updateProfile(freshUser); // Cập nhật lại localStorage
+      }
+    } catch (error) {
+      console.error("Failed to revalidate user:", error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        logout();
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const token = authService.getStoredToken();
     const storedUser = authService.getStoredUser();
@@ -24,9 +43,10 @@ export const AuthProvider = ({ children }) => {
     if (token && storedUser) {
       setUser(storedUser);
       setIsAuthenticated(true);
+      revalidateUser(); // Kiểm tra lại thông tin user mỗi khi tải lại trang
     }
     setLoading(false);
-  }, []);
+  }, [revalidateUser]);
 
   const login = (userData) => {
     setUser(userData);
@@ -39,17 +59,13 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
-  const updateUser = (newUserData) => {
-    setUser(newUserData);
-  };
-
   const value = {
     user,
     isAuthenticated,
     loading,
     login,
     logout,
-    updateUser, // <<< THÊM MỚI
+    revalidateUser, // <<< THÊM MỚI
     isAdmin: authService.isAdmin,
     isCreator: authService.isCreator,
     isPremium: authService.isPremium,
