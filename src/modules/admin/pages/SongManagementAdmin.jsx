@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
-import { PlusCircle, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, Edit, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import { toast } from 'react-toastify';
 
@@ -13,6 +13,7 @@ const StatusBadge = ({ status }) => {
         PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
         APPROVED: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
         REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+        HIDDEN: 'bg-gray-100 text-gray-800 dark:bg-gray-700/40 dark:text-gray-400',
     };
     return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
 }
@@ -27,6 +28,7 @@ const SongManagementAdmin = () => {
         totalPages: 0,
         totalElements: 0,
     });
+    const [processingId, setProcessingId] = useState(null);
 
     const fetchSongs = async (page, size) => {
         try {
@@ -58,6 +60,23 @@ const SongManagementAdmin = () => {
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < pageInfo.totalPages) {
             fetchSongs(newPage, pageInfo.pageSize);
+        }
+    };
+
+    const handleToggleVisibility = async (songId) => {
+        setProcessingId(songId);
+        try {
+            const response = await adminService.toggleSongVisibility(songId);
+            if (response.success) {
+                toast.success(response.message);
+                setSongs(songs.map(s => s.id === songId ? response.data : s));
+            } else {
+                toast.error(response.message || "Thay đổi trạng thái thất bại.");
+            }
+        } catch (error) {
+            toast.error("Đã xảy ra lỗi khi thay đổi trạng thái bài hát.");
+        } finally {
+            setProcessingId(null);
         }
     };
 
@@ -109,9 +128,23 @@ const SongManagementAdmin = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">{song.singers?.map(s => s.name).join(', ') || 'N/A'}</td>
                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={song.status} /></td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                                <Link to={`/admin/songs/edit/${song.id}`} className="text-music-500 hover:text-music-600">
-                                    <Edit className="w-5 h-5" />
+                            <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                                {(song.status === 'APPROVED' || song.status === 'HIDDEN') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleToggleVisibility(song.id)}
+                                        disabled={processingId === song.id}
+                                        data-tooltip-id="global-tooltip"
+                                        data-tooltip-content={song.status === 'APPROVED' ? 'Ẩn bài hát' : 'Hiện bài hát'}
+                                    >
+                                        {song.status === 'APPROVED' ? <EyeOff className="w-5 h-5 text-yellow-500" /> : <Eye className="w-5 h-5 text-green-500" />}
+                                    </Button>
+                                )}
+                                <Link to={`/admin/songs/edit/${song.id}`}>
+                                    <Button variant="ghost" size="icon" data-tooltip-id="global-tooltip" data-tooltip-content="Chỉnh sửa">
+                                        <Edit className="w-5 h-5 text-blue-500" />
+                                    </Button>
                                 </Link>
                             </td>
                         </tr>

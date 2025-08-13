@@ -1,3 +1,4 @@
+// src/modules/music/components/EditPlaylistModal.jsx
 import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal';
 import Input from '../../../components/common/Input';
@@ -49,7 +50,6 @@ export const EditPlaylistModal = ({ isOpen, onClose, playlist, onPlaylistUpdated
         try {
             const response = await musicService.updatePlaylist(playlist.id, formData);
             if (response.success) {
-                toast.success("Cập nhật playlist thành công!");
                 onPlaylistUpdated(response.data);
                 onClose();
             } else {

@@ -151,6 +151,15 @@ const updateSongByAdmin = async (songId, songData, audioFile, thumbnailFile) => 
     }
 };
 
+const toggleSongVisibility = async (songId) => {
+    try {
+        const response = await apiService.post(`/api/v1/songs/${songId}/toggle-visibility`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const getPendingSubmissions = async (page = 0, size = 10) => {
     try {
         const response = await apiService.get(`/api/v1/submissions/pending?page=${page}&size=${size}`);
@@ -196,6 +205,7 @@ export const adminService = {
     getSongs,
     getSongByIdForAdmin,
     updateSongByAdmin,
+    toggleSongVisibility,
     getPendingSubmissions,
     approveSubmission,
     rejectSubmission,

@@ -9,7 +9,7 @@ import ForgotPassword from './modules/auth/pages/ForgotPassword';
 import MusicDiscoveryPage from './pages/MusicDiscoveryPage';
 import ArtistDetailPage from './modules/music/pages/ArtistDetailPage';
 import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement, CreatorManagement, CreatorDetailPage } from './modules/admin';
-import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
+import { SongManagement, PlaylistManagement, SongDetail, PlaylistDetailPage } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
 import MyPublishedSongs from './modules/creator/pages/MyPublishedSongs';
 import SubmissionDetail from './modules/creator/pages/SubmissionDetail';
@@ -45,6 +45,7 @@ function AppContent() {
                         <Route element={<ProtectedRoute />}>
                             <Route path="/songs" element={<SongManagement />} />
                             <Route path="/my-playlists" element={<PlaylistManagement />} />
+                            <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
                             <Route path="/premium" element={<PremiumUpgrade />} />
                             <Route path="/transactions" element={<TransactionHistory />} />
                             <Route path="/profile" element={<Profile />} />

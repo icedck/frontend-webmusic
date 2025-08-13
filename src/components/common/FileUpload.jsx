@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UploadCloud, File, Image as ImageIcon, X } from 'lucide-react';
 
-const FileUpload = ({ label, accept, onFileChange, previewType = 'icon', existingFileUrl = null, fileName = '' }) => {
+const FileUpload = ({ label, accept, onFileSelect, previewType = 'icon', existingFileUrl = null, fileName = '' }) => {
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState(existingFileUrl);
     const [currentFileName, setCurrentFileName] = useState(fileName);
@@ -17,7 +17,7 @@ const FileUpload = ({ label, accept, onFileChange, previewType = 'icon', existin
         if (selectedFile) {
             setFile(selectedFile);
             setCurrentFileName(selectedFile.name);
-            onFileChange(selectedFile);
+            onFileSelect(selectedFile);
             if (previewType === 'image' && selectedFile.type.startsWith('image/')) {
                 const newPreviewUrl = URL.createObjectURL(selectedFile);
                 setPreview(newPreviewUrl);
@@ -29,7 +29,7 @@ const FileUpload = ({ label, accept, onFileChange, previewType = 'icon', existin
         setFile(null);
         setPreview(null);
         setCurrentFileName('');
-        onFileChange(null);
+        onFileSelect(null);
         if (inputRef.current) {
             inputRef.current.value = '';
         }

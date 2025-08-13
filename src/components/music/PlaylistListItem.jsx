@@ -1,17 +1,19 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Play, Clock, PlusCircle } from 'lucide-react';
 import Button from '../common/Button';
 
-const PlaylistListItem = ({ playlist, onSelect, onAddSongs }) => {
+const PlaylistListItem = ({ playlist, onAddSongs }) => {
     const handleAddClick = (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        onAddSongs(playlist);
+        onAddSongs();
     };
 
     return (
-        <div
-            onClick={() => onSelect(playlist.id)}
-            className="block group p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 cursor-pointer"
+        <Link
+            to={`/playlist/${playlist.id}`}
+            className="block group p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200"
         >
             <div className="flex items-center gap-4">
                 <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
@@ -40,7 +42,7 @@ const PlaylistListItem = ({ playlist, onSelect, onAddSongs }) => {
                     </Button>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 };
 

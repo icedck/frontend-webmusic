@@ -88,7 +88,7 @@ const getMyPlaylists = async () => {
     }
 };
 
-const getPlaylistById = async (id) => {
+const getPlaylistDetails = async (id) => {
     try {
         const response = await apiService.get(`/api/v1/playlists/${id}`);
         return response.data;
@@ -167,6 +167,16 @@ const createComment = async (type, id, data) => {
     }
 };
 
+const deleteComment = async (type, commentId) => {
+    const endpoint = type === 'SONG' ? 'songs' : 'playlists';
+    try {
+        const response = await apiService.delete(`/api/v1/${endpoint}/comments/${commentId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -176,12 +186,13 @@ export const musicService = {
     getQueue,
     createPlaylist,
     getMyPlaylists,
-    getPlaylistById,
+    getPlaylistDetails,
     getAllSongsForPlaylist,
     addSongsToPlaylist,
     updatePlaylist,
     deletePlaylist,
     removeSongFromPlaylist,
     getComments,
-    createComment
+    createComment,
+    deleteComment
 };
