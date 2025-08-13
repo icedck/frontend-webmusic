@@ -177,6 +177,24 @@ const deleteComment = async (type, commentId) => {
     }
 };
 
+const toggleSongLike = async (songId) => {
+    try {
+        const response = await apiService.post(`/api/v1/likes/songs/${songId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const togglePlaylistLike = async (playlistId) => {
+    try {
+        const response = await apiService.post(`/api/v1/likes/playlists/${playlistId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -194,5 +212,7 @@ export const musicService = {
     removeSongFromPlaylist,
     getComments,
     createComment,
-    deleteComment
+    deleteComment,
+    toggleSongLike,
+    togglePlaylistLike
 };

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAudio } from '../../../hooks/useAudio';
 import { musicService } from '../services/musicService';
 import Button from '../../../components/common/Button';
-import { Play, Pause, Heart, Plus, Download, BarChart3, User, CalendarDays } from 'lucide-react';
+import { Play, Pause, Plus, Download, BarChart3, User, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 import CommentSection from '../components/CommentSection';
+import { LikeButton } from '../components/LikeButton'; // <--- ĐÃ SỬA LỖI ĐƯỜNG DẪN
 
 const SongDetail = () => {
     const { songId } = useParams();
@@ -20,26 +21,27 @@ const SongDetail = () => {
     const [error, setError] = useState(null);
     const [isAddToPlaylistModalOpen, setIsAddToPlaylistModalOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchSong = async () => {
-            if (!songId) return;
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await musicService.getSongById(songId);
-                if (response.success) {
-                    setSong(response.data);
-                } else {
-                    setError(response.message || "Không tìm thấy bài hát.");
-                }
-            } catch (err) {
-                setError(err.response?.data?.message || "Đã có lỗi xảy ra khi tải thông tin bài hát.");
-            } finally {
-                setLoading(false);
+    const fetchSong = useCallback(async () => {
+        if (!songId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await musicService.getSongById(songId);
+            if (response.success) {
+                setSong(response.data);
+            } else {
+                setError(response.message || "Không tìm thấy bài hát.");
             }
-        };
-        fetchSong();
+        } catch (err) {
+            setError(err.response?.data?.message || "Đã có lỗi xảy ra khi tải thông tin bài hát.");
+        } finally {
+            setLoading(false);
+        }
     }, [songId]);
+
+    useEffect(() => {
+        fetchSong();
+    }, [fetchSong]);
 
     const handlePlayPause = () => {
         if (song) {
@@ -50,6 +52,21 @@ const SongDetail = () => {
             }
         }
     };
+
+    const handleToggleLike = useCallback(async () => {
+        if (!song) return;
+        try {
+            await musicService.toggleSongLike(song.id);
+            setSong(prevSong => ({
+                ...prevSong,
+                isLikedByCurrentUser: !prevSong.isLikedByCurrentUser,
+                likeCount: prevSong.isLikedByCurrentUser ? prevSong.likeCount - 1 : prevSong.likeCount + 1
+            }));
+        } catch (error) {
+            console.error("Failed to toggle like:", error);
+            throw error;
+        }
+    }, [song]);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -95,7 +112,13 @@ const SongDetail = () => {
                                 {isCurrentlyPlaying ? <Pause className="w-6 h-6"/> : <Play className="w-6 h-6"/>}
                                 <span>{isCurrentlyPlaying ? 'Tạm dừng' : 'Phát'}</span>
                             </Button>
-                            <Button variant="outline" size="icon"><Heart className="w-5 h-5"/></Button>
+                            <LikeButton
+                                initialIsLiked={song.isLikedByCurrentUser}
+                                initialLikeCount={song.likeCount}
+                                onToggleLike={handleToggleLike}
+                                showCount={false}
+                                size={22}
+                            />
                             <Button variant="outline" size="icon" onClick={() => setIsAddToPlaylistModalOpen(true)}>
                                 <Plus className="w-5 h-5"/>
                             </Button>
@@ -128,11 +151,12 @@ const SongDetail = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Heart className={`w-5 h-5 ${currentTheme.textSecondary}`} />
-                                <div>
-                                    <div className={`text-sm ${currentTheme.textSecondary}`}>Lượt thích</div>
-                                    <div className="font-semibold">{song.likeCount.toLocaleString('vi-VN')}</div>
-                                </div>
+                                <LikeButton
+                                    initialIsLiked={song.isLikedByCurrentUser}
+                                    initialLikeCount={song.likeCount}
+                                    onToggleLike={handleToggleLike}
+                                    size={18}
+                                />
                             </div>
                             <div className="flex items-center gap-3">
                                 <User className={`w-5 h-5 ${currentTheme.textSecondary}`} />
