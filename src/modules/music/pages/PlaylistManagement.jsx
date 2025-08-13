@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CreatePlaylistModal } from '../components/CreatePlaylistModal';
 import { EditPlaylistModal } from '../components/EditPlaylistModal';
+import AddSongsToPlaylistModal from '../components/AddSongsToPlaylistModal';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 import Button from '../../../components/common/Button';
 import PlaylistCard from '../../../components/music/PlaylistCard';
@@ -87,6 +88,8 @@ const ViewModeToggle = ({ viewMode, setViewMode }) => {
 const PlaylistManagement = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddSongsModalOpen, setIsAddSongsModalOpen] = useState(false);
+    const [playlistToAddSongs, setPlaylistToAddSongs] = useState(null);
     const [isConfirmDeletePlaylistOpen, setIsConfirmDeletePlaylistOpen] = useState(false);
     const [isConfirmRemoveSongOpen, setIsConfirmRemoveSongOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -216,6 +219,27 @@ const PlaylistManagement = () => {
         }
     };
 
+    const handleOpenAddSongsModal = async (playlist) => {
+        setIsProcessing(true);
+        try {
+            const response = await musicService.getPlaylistById(playlist.id);
+            if (response.success) {
+                setPlaylistToAddSongs(response.data);
+                setIsAddSongsModalOpen(true);
+            } else {
+                toast.error(response.message || "Không thể lấy thông tin playlist.");
+            }
+        } catch (error) {
+            toast.error("Lỗi khi lấy thông tin chi tiết playlist.");
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleSongsAdded = (updatedPlaylist) => {
+        setPlaylists(prev => prev.map(p => p.id === updatedPlaylist.id ? updatedPlaylist : p));
+    };
+
     const renderPlaylistList = () => {
         if (isLoading) return <p className="col-span-full text-center py-10 text-gray-400">Đang tải...</p>;
         if (playlists.length === 0) {
@@ -256,9 +280,23 @@ const PlaylistManagement = () => {
                         const handleSelect = () => handlePlaylistSelect(p.id);
 
                         if (viewMode === 'grid') {
-                            return <div key={p.id} onClick={handleSelect}><PlaylistCard playlist={itemData} /></div>;
+                            return (
+                                <PlaylistCard
+                                    key={p.id}
+                                    playlist={itemData}
+                                    onSelect={handleSelect}
+                                    onAddSongs={handleOpenAddSongsModal}
+                                />
+                            );
                         }
-                        return <PlaylistListItem key={p.id} playlist={itemData} onSelect={handleSelect} />;
+                        return (
+                            <PlaylistListItem
+                                key={p.id}
+                                playlist={itemData}
+                                onSelect={handleSelect}
+                                onAddSongs={handleOpenAddSongsModal}
+                            />
+                        );
                     })}
                 </div>
             </>
@@ -267,8 +305,8 @@ const PlaylistManagement = () => {
 
     return (
         <div className="p-4 sm:p-6">
-            {isDetailLoading ? (
-                <p className="col-span-full text-center py-10 text-gray-400">Đang tải chi tiết playlist...</p>
+            {isDetailLoading || isProcessing ? (
+                <p className="col-span-full text-center py-10 text-gray-400">Đang tải...</p>
             ) : selectedPlaylist ? (
                 <PlaylistDetailView
                     playlist={selectedPlaylist}
@@ -287,6 +325,12 @@ const PlaylistManagement = () => {
                 onClose={() => setIsEditModalOpen(false)}
                 playlist={playlistToEdit}
                 onPlaylistUpdated={handlePlaylistUpdated}
+            />
+            <AddSongsToPlaylistModal
+                isOpen={isAddSongsModalOpen}
+                onClose={() => setIsAddSongsModalOpen(false)}
+                playlist={playlistToAddSongs}
+                onSuccess={handleSongsAdded}
             />
             <ConfirmationModal
                 isOpen={isConfirmDeletePlaylistOpen}

@@ -1,7 +1,13 @@
 import React from 'react';
-import { Play, Clock } from 'lucide-react';
+import { Play, Clock, PlusCircle } from 'lucide-react';
+import Button from '../common/Button';
 
-const PlaylistListItem = ({ playlist, onSelect }) => {
+const PlaylistListItem = ({ playlist, onSelect, onAddSongs }) => {
+    const handleAddClick = (e) => {
+        e.stopPropagation();
+        onAddSongs(playlist);
+    };
+
     return (
         <div
             onClick={() => onSelect(playlist.id)}
@@ -18,9 +24,20 @@ const PlaylistListItem = ({ playlist, onSelect }) => {
                     <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">{playlist.title}</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{playlist.description}</p>
                 </div>
-                <div className="hidden md:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Clock size={16} />
-                    <span>{new Date(playlist.createdAt).toLocaleDateString()}</span>
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                        <Clock size={16} />
+                        <span>{new Date(playlist.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={handleAddClick}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 dark:text-slate-400 hover:text-blue-500"
+                        aria-label="Thêm bài hát"
+                    >
+                        <PlusCircle size={20} />
+                    </Button>
                 </div>
             </div>
         </div>
