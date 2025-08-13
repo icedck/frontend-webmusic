@@ -10,6 +10,16 @@ const getSongById = async (songId) => {
     }
 };
 
+const getSingerDetail = async (singerId) => {
+    try {
+        const response = await apiService.get(`/api/v1/singers/${singerId}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to fetch singer with id ${singerId}:`, error);
+        throw error;
+    }
+};
+
 const getSongDetails = async (songId) => {
     try {
         const response = await apiService.get(`/api/v1/songs/details/${songId}`);
@@ -139,6 +149,7 @@ const removeSongFromPlaylist = async (playlistId, songId) => {
 
 export const musicService = {
     getSongById,
+    getSingerDetail,
     fetchSongSubmissionData,
     submitNewSong,
     getSongDetails,

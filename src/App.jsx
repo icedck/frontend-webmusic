@@ -9,6 +9,7 @@ import { Login, Register, Profile } from './modules/auth';
 import ChangePassword from './modules/auth/pages/ChangePassword';
 import ForgotPassword from './modules/auth/pages/ForgotPassword';
 import MusicDiscoveryPage from './pages/MusicDiscoveryPage';
+import ArtistDetailPage from './modules/music/pages/ArtistDetailPage';
 import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
@@ -73,6 +74,7 @@ function AppContent() {
                             <Route path="/creator/my-submissions/:submissionId" element={<SubmissionDetail />} />
                             <Route path="/creator/submission/new" element={<SongSubmission />} />
                             <Route path="/creator/submission/edit/:submissionId" element={<SongSubmission />} />
+                            <Route path="/singer/:id" element={<ArtistDetailPage />} />
                         </Route>
                     </Route>
 
