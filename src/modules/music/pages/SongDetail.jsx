@@ -4,10 +4,11 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAudio } from '../../../hooks/useAudio';
 import { musicService } from '../services/musicService';
 import Button from '../../../components/common/Button';
-import { Play, Pause, Heart, Plus, Download, Music, BarChart3, User, CalendarDays } from 'lucide-react';
+import { Play, Pause, Heart, Plus, Download, BarChart3, User, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
+import CommentSection from '../components/CommentSection';
 
 const SongDetail = () => {
     const { songId } = useParams();
@@ -64,7 +65,7 @@ const SongDetail = () => {
 
     return (
         <>
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="max-w-7xl mx-auto space-y-8 p-4">
                 <div className={`relative flex flex-col md:flex-row items-center md:items-end gap-8 p-8 rounded-xl border ${currentTheme.border} overflow-hidden`}>
                     <div
                         className="absolute inset-0 bg-cover bg-center opacity-10 dark:opacity-20 blur-xl scale-110"
@@ -113,6 +114,7 @@ const SongDetail = () => {
                                 </p>
                             </div>
                         )}
+                        <CommentSection commentableId={song.id} commentableType="SONG" />
                     </div>
 
                     <div className="lg:col-span-1">

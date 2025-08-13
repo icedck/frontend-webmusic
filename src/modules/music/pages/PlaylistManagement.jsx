@@ -11,63 +11,67 @@ import { musicService } from '../services/musicService';
 import { toast } from 'react-toastify';
 import { Music, LayoutGrid, List, Play, ChevronLeft, Edit, Trash2 } from 'lucide-react';
 import { useAudio } from '../../../hooks/useAudio';
+import CommentSection from '../components/CommentSection';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const PlaylistDetailView = ({ playlist, onBack, onPlaySongFromPlaylist, onEdit, onDeletePlaylist, onRemoveSong }) => {
     return (
-        <div>
-            <div className="flex items-center justify-between mb-6 gap-4">
-                <div className="flex items-center flex-1 min-w-0">
-                    <Button variant="ghost" size="icon" onClick={onBack} className="mr-4 flex-shrink-0">
-                        <ChevronLeft size={24} />
-                    </Button>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate" title={playlist.name}>
-                        {playlist.name}
-                    </h2>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                    <Button variant="outline" onClick={onEdit} className="flex items-center gap-2">
-                        <Edit size={16} />
-                        <span>Chỉnh sửa</span>
-                    </Button>
-                    <Button variant="danger_outline" onClick={onDeletePlaylist} className="flex items-center gap-2">
-                        <Trash2 size={16} />
-                        <span>Xóa</span>
-                    </Button>
-                </div>
-            </div>
-            <div className="flex flex-col space-y-2">
-                {playlist.songs && playlist.songs.length > 0 ? (
-                    playlist.songs.map((song, index) => (
-                        <div key={song.id} className="group flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200">
-                            <div className="text-sm text-slate-400 w-6 text-center">{index + 1}</div>
-                            <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} alt={song.title} className="w-12 h-12 rounded-md object-cover" />
-                            <div className="flex-1 min-w-0">
-                                <Link to={`/song/${song.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate hover:underline">
-                                    {song.title}
-                                </Link>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                                    {song.singers.map(s => s.name).join(', ')}
-                                </p>
-                            </div>
-                            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button size="icon" variant="ghost" onClick={() => onPlaySongFromPlaylist(song)}>
-                                    <Play size={20} />
-                                </Button>
-                                <Button size="icon" variant="ghost" onClick={() => onRemoveSong(song)} className="text-red-500 hover:text-red-700">
-                                    <Trash2 size={18} />
-                                </Button>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="text-center py-10">
-                        <Music className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-slate-500">Playlist này chưa có bài hát nào.</p>
+        <div className="space-y-8">
+            <div>
+                <div className="flex items-center justify-between mb-6 gap-4">
+                    <div className="flex items-center flex-1 min-w-0">
+                        <Button variant="ghost" size="icon" onClick={onBack} className="mr-4 flex-shrink-0">
+                            <ChevronLeft size={24} />
+                        </Button>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate" title={playlist.name}>
+                            {playlist.name}
+                        </h2>
                     </div>
-                )}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <Button variant="outline" onClick={onEdit} className="flex items-center gap-2">
+                            <Edit size={16} />
+                            <span>Chỉnh sửa</span>
+                        </Button>
+                        <Button variant="danger_outline" onClick={onDeletePlaylist} className="flex items-center gap-2">
+                            <Trash2 size={16} />
+                            <span>Xóa</span>
+                        </Button>
+                    </div>
+                </div>
+                <div className="flex flex-col space-y-2">
+                    {playlist.songs && playlist.songs.length > 0 ? (
+                        playlist.songs.map((song, index) => (
+                            <div key={song.id} className="group flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                                <div className="text-sm text-slate-400 w-6 text-center">{index + 1}</div>
+                                <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} alt={song.title} className="w-12 h-12 rounded-md object-cover" />
+                                <div className="flex-1 min-w-0">
+                                    <Link to={`/song/${song.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate hover:underline">
+                                        {song.title}
+                                    </Link>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                                        {song.singers.map(s => s.name).join(', ')}
+                                    </p>
+                                </div>
+                                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button size="icon" variant="ghost" onClick={() => onPlaySongFromPlaylist(song)}>
+                                        <Play size={20} />
+                                    </Button>
+                                    <Button size="icon" variant="ghost" onClick={() => onRemoveSong(song)} className="text-red-500 hover:text-red-700">
+                                        <Trash2 size={18} />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center py-10">
+                            <Music className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                            <p className="text-slate-500">Playlist này chưa có bài hát nào.</p>
+                        </div>
+                    )}
+                </div>
             </div>
+            <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />
         </div>
     );
 };

@@ -147,6 +147,26 @@ const removeSongFromPlaylist = async (playlistId, songId) => {
     }
 };
 
+const getComments = async (type, id, pageable) => {
+    const endpoint = type === 'SONG' ? 'songs' : 'playlists';
+    try {
+        const response = await apiService.get(`/api/v1/${endpoint}/${id}/comments`, { params: pageable });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const createComment = async (type, id, data) => {
+    const endpoint = type === 'SONG' ? 'songs' : 'playlists';
+    try {
+        const response = await apiService.post(`/api/v1/${endpoint}/${id}/comments`, data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -161,5 +181,7 @@ export const musicService = {
     addSongsToPlaylist,
     updatePlaylist,
     deletePlaylist,
-    removeSongFromPlaylist
+    removeSongFromPlaylist,
+    getComments,
+    createComment
 };
