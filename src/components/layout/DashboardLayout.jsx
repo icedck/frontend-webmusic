@@ -1,5 +1,3 @@
-// frontend/src/components/layout/DashboardLayout.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
@@ -39,7 +37,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [avatarMenuRef]);
 
-  // COMMENT: Cập nhật mục "Thư viện" để trỏ đến '/my-playlists'
   const mainNavItems = [
     { href: '/dashboard', icon: Home, label: 'Trang chủ' },
     { href: '/my-playlists', icon: Library, label: 'Thư viện' },
@@ -60,6 +57,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
 
   const adminMenuItems = [
     { href: '/admin/users', icon: AdminIcon, label: 'Quản lý người dùng' },
+    { href: '/admin/creators', icon: Briefcase, label: 'Quản lý NPT' },
     { href: '/admin/songs', icon: Music, label: 'Quản lý bài hát' },
     { href: '/admin/singers', icon: Mic2, label: 'Quản lý ca sĩ' },
     { href: '/admin/submissions', icon: CheckSquare, label: 'Duyệt bài hát' }
@@ -75,7 +73,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   return (
       <header className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}>
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
-          {/* Left Side: Logo & Main Nav */}
           <div className="flex items-center gap-2">
             <Link to="/dashboard" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -109,7 +106,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
             </nav>
           </div>
 
-          {/* Right Side: Player & User Actions */}
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-3 transition-all duration-300 ease-in-out ${!isPlayerVisible && currentSong ? 'max-w-md opacity-100' : 'max-w-0 opacity-0'} overflow-hidden`}>
               {currentSong && (
@@ -254,6 +250,7 @@ const DashboardLayout = () => {
   ];
   const cmdAdminNavItems = [
     { name: 'Quản lý người dùng', href: '/admin/users', icon: AdminIcon, category: 'Admin' },
+    { name: 'Quản lý NPT', href: '/admin/creators', icon: Briefcase, category: 'Admin' },
     { name: 'Quản lý ca sĩ', href: '/admin/singers', icon: Mic2, category: 'Admin' },
     { name: 'Quản lý bài hát', href: '/admin/songs', icon: SongIcon, category: 'Admin' },
     { name: 'Duyệt bài hát', href: '/admin/submissions', icon: CheckSquare, category: 'Admin' }

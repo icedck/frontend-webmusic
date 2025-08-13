@@ -1,5 +1,3 @@
-// frontend/src/App.jsx
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/layout/LandingPage';
@@ -10,7 +8,7 @@ import ChangePassword from './modules/auth/pages/ChangePassword';
 import ForgotPassword from './modules/auth/pages/ForgotPassword';
 import MusicDiscoveryPage from './pages/MusicDiscoveryPage';
 import ArtistDetailPage from './modules/music/pages/ArtistDetailPage';
-import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement } from './modules/admin';
+import { UserManagement, SingerManagement, SongManagementAdmin, CreateSongAdmin, EditSongAdmin, SubmissionManagement, CreatorManagement, CreatorDetailPage } from './modules/admin';
 import { SongManagement, PlaylistManagement, SongDetail } from './modules/music';
 import { CreatorDashboard, MySubmissions, SongSubmission } from './modules/creator';
 import MyPublishedSongs from './modules/creator/pages/MyPublishedSongs';
@@ -32,13 +30,11 @@ function AppContent() {
         <>
             <Router>
                 <Routes>
-                    {/* Public Routes */}
                     <Route path="/landing" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                    {/* Main Application Layout */}
                     <Route element={<DashboardLayout />}>
                         <Route path="/" element={<MusicDiscoveryPage />} />
                         <Route path="/dashboard" element={<Navigate to="/" replace />} />
@@ -46,28 +42,23 @@ function AppContent() {
                         <Route path="/search" element={<SearchResults />} />
                         <Route path="/song/:songId" element={<SongDetail />} />
 
-                        {/* Protected Routes (cần đăng nhập) */}
                         <Route element={<ProtectedRoute />}>
-                            {/* General User Routes */}
                             <Route path="/songs" element={<SongManagement />} />
-
-                            {/* COMMENT: Thay đổi route từ /playlists thành /my-playlists để đồng bộ với sidebar */}
                             <Route path="/my-playlists" element={<PlaylistManagement />} />
-
                             <Route path="/premium" element={<PremiumUpgrade />} />
                             <Route path="/transactions" element={<TransactionHistory />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/profile/change-password" element={<ChangePassword />} />
 
-                            {/* Admin Routes */}
                             <Route path="/admin/users" element={<UserManagement />} />
+                            <Route path="/admin/creators" element={<CreatorManagement />} />
+                            <Route path="/admin/creators/:creatorId" element={<CreatorDetailPage />} />
                             <Route path="/admin/singers" element={<SingerManagement />} />
                             <Route path="/admin/songs" element={<SongManagementAdmin />} />
                             <Route path="/admin/songs/new" element={<CreateSongAdmin />} />
                             <Route path="/admin/songs/edit/:songId" element={<EditSongAdmin />} />
                             <Route path="/admin/submissions" element={<SubmissionManagement />} />
 
-                            {/* Creator Routes */}
                             <Route path="/creator" element={<CreatorDashboard />} />
                             <Route path="/creator/my-library" element={<MyPublishedSongs />} />
                             <Route path="/creator/my-submissions" element={<MySubmissions />} />

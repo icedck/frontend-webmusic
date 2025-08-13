@@ -1,5 +1,43 @@
 import { apiService } from '../../../shared/services/apiService';
 
+const getUsers = async (page = 0, size = 5, search = '') => {
+    try {
+        const params = { page, size, search };
+        const response = await apiService.get('/api/v1/users/admin', { params });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const updateUser = async (userId, data) => {
+    try {
+        const response = await apiService.put(`/api/v1/users/admin/${userId}`, data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const getCreators = async (page = 0, size = 10, search = '') => {
+    try {
+        const params = { page, size, search };
+        const response = await apiService.get('/api/v1/admin/creators', { params });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const getCreatorDetails = async (creatorId) => {
+    try {
+        const response = await apiService.get(`/api/v1/admin/creators/${creatorId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const getSingers = async (page = 0, size = 5, search = '') => {
     try {
         const params = new URLSearchParams({
@@ -146,6 +184,10 @@ const rejectSubmission = async (submissionId, reason) => {
 };
 
 export const adminService = {
+    getUsers,
+    updateUser,
+    getCreators,
+    getCreatorDetails,
     getSingers,
     createSingerByAdmin,
     getAllApprovedSingers,
