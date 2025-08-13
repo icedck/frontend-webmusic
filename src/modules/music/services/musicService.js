@@ -88,9 +88,9 @@ const getPlaylistById = async (id) => {
     }
 };
 
-const searchSongsForPlaylist = async (keyword) => {
+const getAllSongsForPlaylist = async () => {
     try {
-        const response = await apiService.get(`/api/v1/songs/search-for-playlist`, { params: { keyword } });
+        const response = await apiService.get('/api/v1/songs/all-for-playlist');
         return response.data;
     } catch (error) {
         throw error;
@@ -146,7 +146,7 @@ export const musicService = {
     createPlaylist,
     getMyPlaylists,
     getPlaylistById,
-    searchSongsForPlaylist,
+    getAllSongsForPlaylist,
     addSongsToPlaylist,
     updatePlaylist,
     deletePlaylist,

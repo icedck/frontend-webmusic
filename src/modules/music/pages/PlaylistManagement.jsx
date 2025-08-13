@@ -138,10 +138,10 @@ const PlaylistManagement = () => {
         setSelectedPlaylist(null);
     };
 
-    const handlePlaylistCreated = () => {
+    const handlePlaylistCreated = (newPlaylist) => {
         toast.success("Tạo playlist thành công!");
         setIsCreateModalOpen(false);
-        fetchPlaylists();
+        setPlaylists(prevPlaylists => [newPlaylist, ...prevPlaylists]);
     };
 
     const handleOpenEditModal = () => {
@@ -195,7 +195,6 @@ const PlaylistManagement = () => {
             if (response.success) {
                 toast.success(`Đã xóa "${songToRemove.title}" khỏi playlist.`);
                 setIsConfirmRemoveSongOpen(false);
-                // Cập nhật UI ngay lập tức
                 setSelectedPlaylist(prev => ({
                     ...prev,
                     songs: prev.songs.filter(s => s.id !== songToRemove.id)
@@ -225,6 +224,9 @@ const PlaylistManagement = () => {
                     <Music className="w-16 h-16 text-gray-400 dark:text-gray-500 mb-4" />
                     <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Chưa có playlist nào</h3>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Hãy tạo một playlist để bắt đầu!</p>
+                    <Button onClick={() => setIsCreateModalOpen(true)} className="mt-6">
+                        Tạo playlist mới
+                    </Button>
                 </div>
             );
         }

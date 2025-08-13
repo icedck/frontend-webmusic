@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal';
 import Input from '../../../components/common/Input';
 import FileUpload from '../../../components/common/FileUpload';
@@ -6,11 +6,10 @@ import Button from '../../../components/common/Button';
 import { musicService } from '../services/musicService';
 import { toast } from 'react-toastify';
 import { Search, Plus, X, Music } from 'lucide-react';
-import { useDebounce } from 'use-debounce';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-const SearchResultItem = ({ song, onAdd }) => (
+const SongItem = ({ song, onAdd }) => (
     <div className="flex items-center justify-between p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700/50">
         <div className="flex items-center gap-3 min-w-0">
             <img
@@ -52,36 +51,56 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
     const [name, setName] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-
     const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
-    const [searchResults, setSearchResults] = useState([]);
     const [selectedSongs, setSelectedSongs] = useState([]);
-    const [isSearching, setIsSearching] = useState(false);
 
-    React.useEffect(() => {
-        if (debouncedSearchTerm) {
-            setIsSearching(true);
-            musicService.searchSongsForPlaylist(debouncedSearchTerm)
+    const [allSongs, setAllSongs] = useState([]);
+    const [displayedSongs, setDisplayedSongs] = useState([]);
+    const [isSongListLoading, setIsSongListLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setIsSongListLoading(true);
+            musicService.getAllSongsForPlaylist()
                 .then(response => {
                     if (response.success) {
-                        const availableSongs = response.data.filter(song =>
-                            !selectedSongs.some(selected => selected.id === song.id)
-                        );
-                        setSearchResults(availableSongs);
+                        setAllSongs(response.data || []);
+                    } else {
+                        toast.error(response.message || "Không thể tải danh sách bài hát.");
                     }
                 })
-                .catch(() => toast.error("Tìm kiếm bài hát thất bại."))
-                .finally(() => setIsSearching(false));
+                .catch(() => toast.error("Lỗi khi tải danh sách bài hát."))
+                .finally(() => setIsSongListLoading(false));
         } else {
-            setSearchResults([]);
+            setName('');
+            setImageFile(null);
+            setSearchTerm('');
+            setSelectedSongs([]);
+            setAllSongs([]);
+            setDisplayedSongs([]);
         }
-    }, [debouncedSearchTerm, selectedSongs]);
+    }, [isOpen]);
+
+    useEffect(() => {
+        let filtered = allSongs;
+        if (searchTerm.trim()) {
+            const lowercasedFilter = searchTerm.toLowerCase();
+            filtered = allSongs.filter(song =>
+                song.title.toLowerCase().includes(lowercasedFilter) ||
+                song.singers.some(singer => singer.name.toLowerCase().includes(lowercasedFilter))
+            );
+        }
+
+        const availableSongs = filtered.filter(song =>
+            !selectedSongs.some(selected => selected.id === song.id)
+        );
+
+        setDisplayedSongs(availableSongs);
+    }, [searchTerm, allSongs, selectedSongs]);
 
 
     const addSong = (song) => {
         setSelectedSongs(prev => [...prev, song]);
-        setSearchResults(prev => prev.filter(s => s.id !== song.id));
     };
 
     const removeSong = (songId) => {
@@ -127,11 +146,23 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
         }
     };
 
+    const renderSongList = () => {
+        if (isSongListLoading) {
+            return <p className="text-center text-slate-400 py-4">Đang tải danh sách bài hát...</p>;
+        }
+        if (displayedSongs.length > 0) {
+            return displayedSongs.map(song => <SongItem key={song.id} song={song} onAdd={addSong} />);
+        }
+        if (searchTerm) {
+            return <p className="text-center text-slate-400 py-4">Không tìm thấy kết quả.</p>;
+        }
+        return <p className="text-center text-slate-400 py-4">Không có bài hát nào.</p>;
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Tạo playlist mới" size="lg">
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-                    {/* Cột trái: Thông tin playlist & Bài hát đã chọn */}
                     <div className="space-y-6">
                         <Input
                             label="Tên playlist"
@@ -160,40 +191,27 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
                             </div>
                         </div>
                     </div>
-                    {/* Cột phải: Tìm kiếm và thêm bài hát */}
                     <div className="space-y-4">
                         <Input
                             label="Thêm bài hát vào playlist"
                             id="song-search"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Tìm kiếm theo tên bài hát..."
+                            placeholder="Tìm kiếm theo tên bài hát, ca sĩ..."
                             icon={<Search size={18} />}
                         />
                         <div className="h-80 overflow-y-auto space-y-2 p-2 border dark:border-slate-700 rounded-lg">
-                            {isSearching && <p className="text-center text-slate-400">Đang tìm...</p>}
-                            {!isSearching && searchResults.length > 0 && (
-                                searchResults.map(song => <SearchResultItem key={song.id} song={song} onAdd={addSong} />)
-                            )}
-                            {!isSearching && debouncedSearchTerm && searchResults.length === 0 && (
-                                <p className="text-center text-slate-400">Không tìm thấy kết quả.</p>
-                            )}
-                            {!isSearching && !debouncedSearchTerm && (
-                                <div className="flex flex-col items-center justify-center h-full text-center text-slate-400">
-                                    <Music size={32} />
-                                    <p className="mt-2">Nhập để tìm kiếm bài hát</p>
-                                </div>
-                            )}
+                            {renderSongList()}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-                    <Button type="submit" isLoading={isLoading} disabled={isLoading}>
-                        Lưu playlist
-                    </Button>
+                <div className="flex items-center justify-end p-4 border-t border-gray-200 rounded-b dark:border-gray-600 space-x-2">
                     <Button type="button" variant="secondary" onClick={onClose}>
                         Hủy
+                    </Button>
+                    <Button type="submit" isLoading={isLoading} disabled={isLoading}>
+                        Lưu playlist
                     </Button>
                 </div>
             </form>
