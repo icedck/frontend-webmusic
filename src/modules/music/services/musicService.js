@@ -195,6 +195,24 @@ const togglePlaylistLike = async (playlistId) => {
     }
 };
 
+const getAdminPlaylistManagement = async () => {
+    try {
+        const response = await apiService.get('/api/v1/playlists/admin/management');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const togglePlaylistVisibility = async (playlistId) => {
+    try {
+        const response = await apiService.post(`/api/v1/playlists/${playlistId}/toggle-visibility`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -214,5 +232,7 @@ export const musicService = {
     createComment,
     deleteComment,
     toggleSongLike,
-    togglePlaylistLike
+    togglePlaylistLike,
+    getAdminPlaylistManagement,
+    togglePlaylistVisibility
 };

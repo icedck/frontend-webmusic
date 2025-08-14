@@ -4,13 +4,13 @@ import { musicService } from '../services/musicService';
 import { useAudio } from '../../../hooks/useAudio';
 import { useAuth } from '../../../hooks/useAuth';
 import { toast } from 'react-toastify';
-import { Loader2, Music, Trash2, Play, Edit, PlusCircle } from 'lucide-react';
+import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff } from 'lucide-react';
 import Button from '../../../components/common/Button';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 import CommentSection from '../components/CommentSection';
 import { EditPlaylistModal } from '../components/EditPlaylistModal';
 import AddSongsToPlaylistModal from '../components/AddSongsToPlaylistModal';
-import { LikeButton } from '../components/LikeButton'; // <--- ĐÃ SỬA LỖI ĐƯỜNG DẪN
+import { LikeButton } from '../components/LikeButton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -18,7 +18,7 @@ const PlaylistDetailPage = () => {
     const { playlistId } = useParams();
     const navigate = useNavigate();
     const { playSong } = useAudio();
-    const { user, isAdmin, isCreator } = useAuth();
+    const { user } = useAuth();
     const [playlist, setPlaylist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -26,8 +26,7 @@ const PlaylistDetailPage = () => {
     const [isAddSongsModalOpen, setIsAddSongsModalOpen] = useState(false);
     const [songToRemove, setSongToRemove] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
-
-    const canShowDetails = user;
+    const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
 
     const fetchPlaylistDetails = useCallback(async () => {
         try {
@@ -36,11 +35,11 @@ const PlaylistDetailPage = () => {
                 setPlaylist(response.data);
             } else {
                 toast.error(response.message || 'Không thể tải chi tiết playlist.');
-                navigate('/my-playlists');
+                navigate('/');
             }
         } catch (error) {
-            toast.error('Đã xảy ra lỗi khi tải dữ liệu playlist.');
-            navigate('/my-playlists');
+            toast.error(error.response?.data?.message || 'Đã xảy ra lỗi khi tải dữ liệu playlist.');
+            navigate('/');
         } finally {
             setLoading(false);
         }
@@ -101,6 +100,24 @@ const PlaylistDetailPage = () => {
     const handlePlaylistUpdated = () => {
         toast.success("Cập nhật playlist thành công!");
         fetchPlaylistDetails();
+    };
+
+    const handleToggleVisibility = async () => {
+        if (!playlist || !playlist.canToggleVisibility) return;
+        setIsTogglingVisibility(true);
+        try {
+            const response = await musicService.togglePlaylistVisibility(playlist.id);
+            if (response.success) {
+                toast.success(response.message);
+                setPlaylist(prev => ({ ...prev, visibility: response.data.visibility }));
+            } else {
+                toast.error(response.message || "Thay đổi trạng thái thất bại.");
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Đã có lỗi xảy ra.");
+        } finally {
+            setIsTogglingVisibility(false);
+        }
     };
 
     const handleConfirmRemoveSong = async () => {
@@ -166,16 +183,21 @@ const PlaylistDetailPage = () => {
                     <p className="text-sm font-semibold uppercase text-cyan-500 tracking-wider">Playlist</p>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white break-words">{playlist.name}</h1>
                     <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                        {canShowDetails && <span>Tạo bởi <strong>{playlist.creatorName}</strong></span>}
-                        {canShowDetails && <span>•</span>}
+                        <span>Tạo bởi <strong>{playlist.creatorName}</strong></span>
+                        <span>•</span>
                         <span>{playlist.songCount} bài hát</span>
                     </div>
-                    <div className="flex items-center gap-4 pt-4">
+                    <div className="flex items-center flex-wrap gap-2 pt-4">
                         <Button onClick={() => handlePlaySongFromPlaylist(playlist.songs[0])} disabled={!playlist.songs || playlist.songs.length === 0}><Play size={18} className="mr-2" />Phát</Button>
                         <LikeButton initialIsLiked={playlist.isLikedByCurrentUser} initialLikeCount={playlist.likeCount} onToggleLike={handleTogglePlaylistLike} size={18}/>
-                        <Button variant="outline" onClick={() => setIsAddSongsModalOpen(true)}><PlusCircle size={16} /></Button>
-                        <Button variant="outline" onClick={() => setIsEditModalOpen(true)}><Edit size={16} /></Button>
-                        <Button variant="danger_outline" onClick={() => setIsConfirmDeleteOpen(true)}><Trash2 size={16} /></Button>
+                        {playlist.canEdit && <Button variant="outline" onClick={() => setIsAddSongsModalOpen(true)}><PlusCircle size={16} /></Button>}
+                        {playlist.canEdit && <Button variant="outline" onClick={() => setIsEditModalOpen(true)}><Edit size={16} /></Button>}
+                        {playlist.canToggleVisibility && (
+                            <Button variant="outline" onClick={handleToggleVisibility} disabled={isTogglingVisibility}>
+                                {playlist.visibility === 'PUBLIC' ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </Button>
+                        )}
+                        {playlist.canDelete && <Button variant="danger_outline" onClick={() => setIsConfirmDeleteOpen(true)}><Trash2 size={16} /></Button>}
                     </div>
                 </div>
             </div>
@@ -193,7 +215,7 @@ const PlaylistDetailPage = () => {
                             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <LikeButton initialIsLiked={song.isLikedByCurrentUser} initialLikeCount={song.likeCount} onToggleLike={() => handleToggleSongLike(song.id)} showCount={false} />
                                 <Button size="icon" variant="ghost" onClick={() => handlePlaySongFromPlaylist(song)}><Play size={20} /></Button>
-                                <Button size="icon" variant="ghost" onClick={() => setSongToRemove(song)} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></Button>
+                                {playlist.canEdit && <Button size="icon" variant="ghost" onClick={() => setSongToRemove(song)} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></Button>}
                             </div>
                         </div>
                     ))
@@ -202,7 +224,7 @@ const PlaylistDetailPage = () => {
                 )}
             </div>
 
-            {canShowDetails && <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />}
+            {user && <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />}
 
             <ConfirmationModal isOpen={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)} onConfirm={handleConfirmDeletePlaylist} title="Xác nhận xóa playlist" message={`Bạn có chắc chắn muốn xóa vĩnh viễn playlist "${playlist?.name}"? Hành động này không thể hoàn tác.`} confirmText="Xóa" isLoading={isProcessing}/>
             <ConfirmationModal isOpen={!!songToRemove} onClose={() => setSongToRemove(null)} onConfirm={handleConfirmRemoveSong} title="Xác nhận xóa bài hát" message={`Bạn có chắc chắn muốn xóa bài hát "${songToRemove?.title}" khỏi playlist này?`} confirmText="Xóa" isLoading={isProcessing}/>
