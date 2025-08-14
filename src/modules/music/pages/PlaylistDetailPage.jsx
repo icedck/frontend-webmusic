@@ -4,7 +4,9 @@ import { musicService } from '../services/musicService';
 import { useAudio } from '../../../hooks/useAudio';
 import { useAuth } from '../../../hooks/useAuth';
 import { toast } from 'react-toastify';
-import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff, Headphones, CalendarDays } from 'lucide-react';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import Button from '../../../components/common/Button';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 import CommentSection from '../components/CommentSection';
@@ -89,7 +91,7 @@ const PlaylistDetailPage = () => {
 
     const handlePlaySongFromPlaylist = (song) => {
         if (playlist && playlist.songs) {
-            playSong(song, playlist.songs);
+            playSong(song, playlist.songs, { playlistId: playlist.id });
         }
     };
 
@@ -182,14 +184,21 @@ const PlaylistDetailPage = () => {
                 <div className="flex-grow space-y-4">
                     <p className="text-sm font-semibold uppercase text-cyan-500 tracking-wider">Playlist</p>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white break-words">{playlist.name}</h1>
-                    <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
                         <span>Tạo bởi <strong>{playlist.creatorName}</strong></span>
+                        <span className="flex items-center gap-1.5"><CalendarDays size={14} /> {format(new Date(playlist.createdAt), 'dd/MM/yyyy', { locale: vi })}</span>
                         <span>•</span>
                         <span>{playlist.songCount} bài hát</span>
+                        {playlist.visibility !== 'PRIVATE' && (
+                            <span className="flex items-center gap-1.5"><Headphones size={14} /> {playlist.listenCount?.toLocaleString('vi-VN') || 0}</span>
+                        )}
                     </div>
                     <div className="flex items-center flex-wrap gap-2 pt-4">
                         <Button onClick={() => handlePlaySongFromPlaylist(playlist.songs[0])} disabled={!playlist.songs || playlist.songs.length === 0}><Play size={18} className="mr-2" />Phát</Button>
-                        <LikeButton initialIsLiked={playlist.isLikedByCurrentUser} initialLikeCount={playlist.likeCount} onToggleLike={handleTogglePlaylistLike} size={18}/>
+                        {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+                        {playlist.visibility !== 'PRIVATE' && (
+                            <LikeButton initialIsLiked={playlist.isLikedByCurrentUser} initialLikeCount={playlist.likeCount} onToggleLike={handleTogglePlaylistLike} size={18}/>
+                        )}
                         {playlist.canEdit && <Button variant="outline" onClick={() => setIsAddSongsModalOpen(true)}><PlusCircle size={16} /></Button>}
                         {playlist.canEdit && <Button variant="outline" onClick={() => setIsEditModalOpen(true)}><Edit size={16} /></Button>}
                         {playlist.canToggleVisibility && (
@@ -198,6 +207,7 @@ const PlaylistDetailPage = () => {
                             </Button>
                         )}
                         {playlist.canDelete && <Button variant="danger_outline" onClick={() => setIsConfirmDeleteOpen(true)}><Trash2 size={16} /></Button>}
+                        {/* --- KẾT THÚC SỬA ĐỔI --- */}
                     </div>
                 </div>
             </div>
@@ -212,6 +222,10 @@ const PlaylistDetailPage = () => {
                                 <Link to={`/song/${song.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate hover:underline">{song.title}</Link>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{song.singers && song.singers.map(s => s.name).join(', ')}</p>
                             </div>
+                            <div className="hidden md:flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                                <Headphones size={16} />
+                                <span>{song.listenCount.toLocaleString('vi-VN')}</span>
+                            </div>
                             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <LikeButton initialIsLiked={song.isLikedByCurrentUser} initialLikeCount={song.likeCount} onToggleLike={() => handleToggleSongLike(song.id)} showCount={false} />
                                 <Button size="icon" variant="ghost" onClick={() => handlePlaySongFromPlaylist(song)}><Play size={20} /></Button>
@@ -224,7 +238,11 @@ const PlaylistDetailPage = () => {
                 )}
             </div>
 
-            {user && <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />}
+            {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+            {user && playlist.visibility !== 'PRIVATE' && (
+                <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />
+            )}
+            {/* --- KẾT THÚC SỬA ĐỔI --- */}
 
             <ConfirmationModal isOpen={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)} onConfirm={handleConfirmDeletePlaylist} title="Xác nhận xóa playlist" message={`Bạn có chắc chắn muốn xóa vĩnh viễn playlist "${playlist?.name}"? Hành động này không thể hoàn tác.`} confirmText="Xóa" isLoading={isProcessing}/>
             <ConfirmationModal isOpen={!!songToRemove} onClose={() => setSongToRemove(null)} onConfirm={handleConfirmRemoveSong} title="Xác nhận xóa bài hát" message={`Bạn có chắc chắn muốn xóa bài hát "${songToRemove?.title}" khỏi playlist này?`} confirmText="Xóa" isLoading={isProcessing}/>

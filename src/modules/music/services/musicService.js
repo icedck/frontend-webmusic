@@ -213,6 +213,22 @@ const togglePlaylistVisibility = async (playlistId) => {
     }
 };
 
+const incrementSongListenCount = async (songId) => {
+    try {
+        await apiService.post(`/api/v1/songs/${songId}/listen`);
+    } catch (error) {
+        console.error(`Failed to increment listen count for song ${songId}:`, error);
+    }
+};
+
+const incrementPlaylistListenCount = async (playlistId) => {
+    try {
+        await apiService.post(`/api/v1/playlists/${playlistId}/increment-listen-count`);
+    } catch (error) {
+        console.error(`Failed to increment listen count for playlist ${playlistId}:`, error);
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -234,5 +250,7 @@ export const musicService = {
     toggleSongLike,
     togglePlaylistLike,
     getAdminPlaylistManagement,
-    togglePlaylistVisibility
+    togglePlaylistVisibility,
+    incrementSongListenCount,
+    incrementPlaylistListenCount
 };

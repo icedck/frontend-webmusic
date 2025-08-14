@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { musicService } from '../modules/music/services/musicService';
 
 export const AudioContext = createContext();
 
@@ -21,6 +22,7 @@ export const AudioProvider = ({ children }) => {
   const [queue, setQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [playContext, setPlayContext] = useState({});
 
   const audioRef = useRef(null);
   const fadeIntervalRef = useRef(null);
@@ -83,14 +85,20 @@ export const AudioProvider = ({ children }) => {
     }, FADE_INTERVAL);
   }, []);
 
-  const playSong = useCallback((song, playlist = []) => {
+  const playSong = useCallback((song, playlist = [], context = {}) => {
     clearFadeInterval();
     const audio = audioRef.current;
     if (!audio) return;
 
+    musicService.incrementSongListenCount(song.id);
+    if (context.playlistId) {
+      musicService.incrementPlaylistListenCount(context.playlistId);
+    }
+
     const executePlay = () => {
       setLoading(true);
       setCurrentSong(song);
+      setPlayContext(context);
 
       if (playlist.length > 0) {
         setQueue(playlist);
@@ -136,8 +144,8 @@ export const AudioProvider = ({ children }) => {
     } else {
       nextIndex = (currentIndex + 1) % queue.length;
     }
-    playSong(queue[nextIndex], queue);
-  }, [queue, isShuffle, currentIndex, playSong]);
+    playSong(queue[nextIndex], queue, playContext);
+  }, [queue, isShuffle, currentIndex, playSong, playContext]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -196,8 +204,8 @@ export const AudioProvider = ({ children }) => {
     } else {
       prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
     }
-    playSong(queue[prevIndex], queue);
-  }, [queue, isShuffle, currentIndex, playSong]);
+    playSong(queue[prevIndex], queue, playContext);
+  }, [queue, isShuffle, currentIndex, playSong, playContext]);
 
   const stopAndClearPlayer = () => {
     fadeOut(() => {
