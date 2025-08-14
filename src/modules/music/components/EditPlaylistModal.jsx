@@ -1,4 +1,3 @@
-// src/modules/music/components/EditPlaylistModal.jsx
 import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal';
 import Input from '../../../components/common/Input';
@@ -10,25 +9,19 @@ import { toast } from 'react-toastify';
 export const EditPlaylistModal = ({ isOpen, onClose, playlist, onPlaylistUpdated }) => {
     const [name, setName] = useState('');
     const [thumbnailFile, setThumbnailFile] = useState(null);
-    const [thumbnailPreview, setThumbnailPreview] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+    const [previewUrl, setPreviewUrl] = useState('');
+
     useEffect(() => {
         if (playlist) {
             setName(playlist.name);
-            setThumbnailPreview(playlist.thumbnailPath ? `${API_BASE_URL}${playlist.thumbnailPath}` : '');
+            setPreviewUrl(playlist.thumbnailPath ? `${API_BASE_URL}${playlist.thumbnailPath}` : '');
             setThumbnailFile(null);
         }
     }, [playlist, isOpen]);
-
-    const handleFileChange = (file) => {
-        if (file) {
-            setThumbnailFile(file);
-            setThumbnailPreview(URL.createObjectURL(file));
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,7 +34,7 @@ export const EditPlaylistModal = ({ isOpen, onClose, playlist, onPlaylistUpdated
         const formData = new FormData();
         const requestData = { name };
 
-        formData.append('request', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
+        formData.append('playlistRequest', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
 
         if (thumbnailFile) {
             formData.append('thumbnailFile', thumbnailFile);
@@ -66,27 +59,32 @@ export const EditPlaylistModal = ({ isOpen, onClose, playlist, onPlaylistUpdated
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Chỉnh sửa playlist">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex flex-col sm:flex-row gap-6 items-center">
-                    <FileUpload
-                        onFileSelect={handleFileChange}
-                        previewUrl={thumbnailPreview}
-                        placeholderText="Chọn ảnh"
-                        className="w-32 h-32 flex-shrink-0"
-                    />
-                    <div className="w-full">
-                        <Input
-                            label="Tên playlist"
-                            id="playlistName"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Nhập tên playlist..."
-                            required
-                        />
+            <form onSubmit={handleSubmit}>
+                <div className="p-6">
+                    {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                        <div className="flex-shrink-0 w-32 h-32">
+                            <FileUpload
+                                onFileChange={setThumbnailFile}
+                                previewType="image"
+                                existingFileUrl={previewUrl}
+                                className="w-full h-full"
+                            />
+                        </div>
+                        <div className="w-full">
+                            <Input
+                                label="Tên playlist"
+                                id="playlistName"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Nhập tên playlist..."
+                                required
+                            />
+                        </div>
                     </div>
+                    {/* --- KẾT THÚC SỬA ĐỔI --- */}
                 </div>
-
-                <div className="flex justify-end gap-4 pt-4">
+                <div className="flex justify-end gap-4 p-4 border-t border-slate-200 dark:border-slate-700">
                     <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
                         Hủy
                     </Button>

@@ -1,74 +1,107 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, File, Image as ImageIcon, X } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { UploadCloud, File as FileIcon, Image as ImageIcon, X } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
 
-const FileUpload = ({ label, accept, onFileSelect, previewType = 'icon', existingFileUrl = null, fileName = '' }) => {
-    const [file, setFile] = useState(null);
-    const [preview, setPreview] = useState(existingFileUrl);
-    const [currentFileName, setCurrentFileName] = useState(fileName);
-    const inputRef = useRef(null);
+const FileUpload = ({
+                        onFileChange, // Prop chính thức
+                        onFileSelect, // Prop cũ để tương thích ngược
+                        previewType = 'none',
+                        existingFileUrl = null,
+                        className = '',
+                        accept = 'audio/*, image/*',
+                        placeholderText = 'Kéo thả file hoặc nhấn để chọn'
+                    }) => {
+    const [preview, setPreview] = useState(null);
+    const [fileName, setFileName] = useState('');
 
     useEffect(() => {
         setPreview(existingFileUrl);
-        setCurrentFileName(fileName);
-    }, [existingFileUrl, fileName]);
-
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        if (selectedFile) {
-            setFile(selectedFile);
-            setCurrentFileName(selectedFile.name);
-            onFileSelect(selectedFile);
-            if (previewType === 'image' && selectedFile.type.startsWith('image/')) {
-                const newPreviewUrl = URL.createObjectURL(selectedFile);
-                setPreview(newPreviewUrl);
+        if (existingFileUrl) {
+            try {
+                const url = new URL(existingFileUrl);
+                setFileName(decodeURIComponent(url.pathname.split('/').pop()));
+            } catch (e) {
+                setFileName(existingFileUrl.split('/').pop());
             }
+        } else {
+            setFileName('');
         }
-    };
+    }, [existingFileUrl]);
 
-    const handleRemoveFile = () => {
-        setFile(null);
+    const handleFileChangeInternal = useCallback((acceptedFiles) => {
+        if (acceptedFiles && acceptedFiles.length > 0) {
+            const file = acceptedFiles[0];
+            setFileName(file.name);
+            if (previewType !== 'none') {
+                setPreview(URL.createObjectURL(file));
+            }
+
+            // --- BẮT ĐẦU SỬA ĐỔI ---
+            // Gọi hàm callback chuẩn (onFileChange) nếu nó tồn tại
+            if (typeof onFileChange === 'function') {
+                onFileChange(file);
+            }
+            // Nếu không, gọi hàm callback cũ (onFileSelect) để đảm bảo tương thích
+            else if (typeof onFileSelect === 'function') {
+                onFileSelect(file);
+            }
+            // --- KẾT THÚC SỬA ĐỔI ---
+
+        }
+    }, [onFileChange, onFileSelect, previewType]);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop: handleFileChangeInternal,
+        accept: accept.split(',').reduce((acc, type) => ({ ...acc, [type.trim()]: [] }), {}),
+        multiple: false
+    });
+
+    const clearFile = (e) => {
+        e.stopPropagation();
         setPreview(null);
-        setCurrentFileName('');
-        onFileSelect(null);
-        if (inputRef.current) {
-            inputRef.current.value = '';
+        setFileName('');
+        if (typeof onFileChange === 'function') {
+            onFileChange(null);
+        } else if (typeof onFileSelect === 'function') {
+            onFileSelect(null);
         }
     };
 
     const renderPreview = () => {
-        if (previewType === 'image' && preview) {
-            return <img src={preview} alt="Preview" className="w-20 h-20 rounded-lg object-cover" />;
+        if (!preview) return null;
+
+        if (previewType === 'image') {
+            return <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg" />;
         }
-        return file?.type.startsWith('image/') || currentFileName.match(/\.(jpg|jpeg|png|gif)$/i) ?
-            <ImageIcon className="w-10 h-10 text-slate-500" /> :
-            <File className="w-10 h-10 text-slate-500" />;
+        if (previewType === 'audio' || fileName.match(/\.(mp3|wav|ogg)$/i)) {
+            return <audio controls src={preview} className="w-full" />;
+        }
+        return <FileIcon className="w-12 h-12 text-slate-500" />;
     };
 
     return (
-        <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{label}</label>
-            {!file && !currentFileName ? (
-                <div
-                    onClick={() => inputRef.current?.click()}
-                    className="relative block w-full rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 p-8 text-center hover:border-music-500 dark:hover:border-music-400 cursor-pointer transition-colors"
-                >
-                    <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
-                    <span className="mt-2 block text-sm font-semibold text-slate-900 dark:text-slate-100">Kéo thả hoặc nhấn để chọn file</span>
-                    <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">{accept}</span>
-                    <input ref={inputRef} type="file" accept={accept} onChange={handleFileChange} className="sr-only" />
-                </div>
-            ) : (
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                        {renderPreview()}
-                        <div className="min-w-0">
-                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{currentFileName}</p>
-                            {file && <p className="text-xs text-slate-500 dark:text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>}
-                        </div>
-                    </div>
-                    <button type="button" onClick={handleRemoveFile} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex-shrink-0">
-                        <X className="w-5 h-5" />
+        <div {...getRootProps()} className={`relative flex flex-col items-center justify-center w-full p-4 border-2 border-dashed rounded-lg cursor-pointer
+            ${isDragActive ? 'border-music-500 bg-music-50 dark:bg-music-900/20' : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'}
+            ${className}`}>
+            <input {...getInputProps()} />
+
+            {preview ? (
+                <>
+                    {renderPreview()}
+                    <button onClick={clearFile} className="absolute top-2 right-2 p-1 bg-white/50 dark:bg-black/50 rounded-full hover:bg-red-500 hover:text-white transition-colors">
+                        <X size={16} />
                     </button>
+                    {fileName && (
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/50 text-white text-xs text-center truncate">
+                            {fileName}
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="text-center text-slate-500 dark:text-slate-400">
+                    <UploadCloud className="w-10 h-10 mx-auto mb-2" />
+                    <p className="text-sm font-semibold">{placeholderText}</p>
+                    <p className="text-xs">{accept.replace(/\/\*/g, '').replace(/,/g, ', ')}</p>
                 </div>
             )}
         </div>

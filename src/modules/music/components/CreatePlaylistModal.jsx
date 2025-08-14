@@ -5,7 +5,7 @@ import FileUpload from '../../../components/common/FileUpload';
 import Button from '../../../components/common/Button';
 import { musicService } from '../services/musicService';
 import { toast } from 'react-toastify';
-import { Search, Plus, X, Music } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -107,10 +107,6 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
         setSelectedSongs(prev => prev.filter(s => s.id !== songId));
     };
 
-    const handleFileChange = (file) => {
-        setImageFile(file);
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!name.trim()) {
@@ -123,7 +119,11 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
             const formData = new FormData();
             const songIds = selectedSongs.map(s => s.id);
             const requestData = { name, songIds };
-            formData.append('request', JSON.stringify(requestData));
+
+            // --- BẮT ĐẦU SỬA ĐỔI ---
+            // Đổi tên 'request' thành 'playlistRequest' cho khớp với backend
+            formData.append('playlistRequest', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
+            // --- KẾT THÚC SỬA ĐỔI ---
 
             if (imageFile) {
                 formData.append('thumbnailFile', imageFile);
@@ -176,7 +176,7 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Ảnh đại diện (không bắt buộc)
                             </label>
-                            <FileUpload onFileChange={handleFileChange} />
+                            <FileUpload onFileChange={setImageFile} />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-900 dark:text-white">
