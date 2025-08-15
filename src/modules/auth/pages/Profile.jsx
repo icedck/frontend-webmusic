@@ -34,6 +34,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({ displayName: '', phoneNumber: '', dateOfBirth: '', gender: '' });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
+  const [wantsToRemoveAvatar, setWantsToRemoveAvatar] = useState(false);
 
   const resetFormData = useCallback(() => {
     if (user) {
@@ -45,6 +46,7 @@ const Profile = () => {
       });
       setAvatarFile(null);
       setAvatarPreview(user.avatarPath ? `${API_BASE_URL}${user.avatarPath}` : '');
+      setWantsToRemoveAvatar(false);
     }
   }, [user]);
 
@@ -59,10 +61,13 @@ const Profile = () => {
 
   const handleFileChange = (file) => {
     setAvatarFile(file);
+    setWantsToRemoveAvatar(false); // Nếu chọn file mới, không xóa nữa
     if (file) {
       setAvatarPreview(URL.createObjectURL(file));
     } else {
-      setAvatarPreview(user.avatarPath ? `${API_BASE_URL}${user.avatarPath}` : '');
+      // Khi nhấn nút X trên FileUpload, file là null
+      setAvatarPreview('');
+      setWantsToRemoveAvatar(true); // Đánh dấu là muốn xóa
     }
   };
 
@@ -80,6 +85,7 @@ const Profile = () => {
       phoneNumber: formData.phoneNumber || null,
       dateOfBirth: formData.dateOfBirth || null,
       gender: formData.gender || null,
+      removeAvatar: wantsToRemoveAvatar,
     };
 
     try {
@@ -89,6 +95,8 @@ const Profile = () => {
       setIsEditing(false);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+      // Nếu có lỗi, reset lại form để tránh hiển thị sai
+      resetFormData();
     } finally {
       setProfileLoading(false);
     }
@@ -115,7 +123,7 @@ const Profile = () => {
                 />
               </div>
               <div className="w-full space-y-4">
-                <Input label="Tên hiển thị" icon={User} name="displayName" value={formData.displayName} onChange={handleProfileChange} disabled={!isEditing} required />
+                <Input label="Tên hiển thị *" icon={User} name="displayName" value={formData.displayName} onChange={handleProfileChange} disabled={!isEditing} required />
                 <Input label="Email" icon={Mail} name="email" value={user?.email || ''} disabled />
               </div>
             </div>
