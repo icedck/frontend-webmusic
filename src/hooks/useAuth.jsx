@@ -63,6 +63,25 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('authUser', JSON.stringify(updatedUserData));
   }
 
+  const revalidateUser = useCallback(async () => {
+    try {
+      const token = authService.getStoredToken();
+      if (!token) return;
+
+      apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const response = await apiService.get('/api/v1/users/me');
+      if (response.data?.success) {
+        const freshUser = response.data.data;
+        setUser(freshUser);
+        localStorage.setItem('authUser', JSON.stringify(freshUser));
+      }
+    } catch (error) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        logout();
+      }
+    }
+  }, []);
+
   const value = {
     user,
     isAuthenticated,
@@ -73,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin: authService.isAdmin,
     isCreator: authService.isCreator,
     isPremium: authService.isPremium,
+    revalidateUser,
   };
 
   if (loading) {

@@ -10,7 +10,7 @@ import ConfirmationModal from '../common/ConfirmationModal';
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat,
-  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen, Tags
+  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen, Tags, History // <<< THÊM ICON MỚI
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -44,10 +44,13 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
     { type: 'button', action: onOpenPalette, icon: Search, label: 'Tìm kiếm' },
   ];
 
+  // --- BẮT ĐẦU SỬA ĐỔI ---
   const userMenuItems = [
     { href: '/profile', icon: User, label: 'Cập nhật thông tin' },
+    { href: '/profile/transactions', icon: History, label: 'Lịch sử giao dịch' },
     { href: '/profile/change-password', icon: KeyRound, label: 'Đổi mật khẩu' }
   ];
+  // --- KẾT THÚC SỬA ĐỔI ---
 
   const creatorMenuItems = [
     { href: '/creator/my-library', icon: BookOpen, label: 'Thư viện bài hát' },
@@ -259,6 +262,7 @@ const DashboardLayout = () => {
   ];
   const cmdUserNavItems = [
     { name: 'Thông tin cá nhân', href: '/profile', icon: User, category: 'Tài khoản' },
+    { name: 'Lịch sử giao dịch', href: '/profile/transactions', icon: History, category: 'Tài khoản' },
     { name: 'Đăng xuất', href: '#', icon: LogOut, category: 'Tài khoản', action: () => setIsLogoutModalOpen(true) }
   ];
   const cmdPremiumNavItem = { name: 'Nâng cấp Premium', href: '/premium', icon: Crown, category: 'Tài khoản' };

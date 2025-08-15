@@ -55,123 +55,123 @@ function AppContent() {
   const { isDarkMode } = useDarkMode();
 
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/landing" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+      <>
+        <Router>
+          <Routes>
+            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          <Route element={<DashboardLayout />}>
-            <Route path="/" element={<MusicDiscoveryPage />} />
-            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            <Route element={<DashboardLayout />}>
+              <Route path="/" element={<MusicDiscoveryPage />} />
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+              <Route path="/search" element={<SearchResults />} />
+              <Route path="/song/:songId" element={<SongDetail />} />
+              <Route path="/payment/result" element={<PaymentResult />} />
 
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/song/:songId" element={<SongDetail />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/songs" element={<SongManagement />} />
+                <Route path="/my-playlists" element={<PlaylistManagement />} />
+                <Route
+                    path="/playlist/:playlistId"
+                    element={<PlaylistDetailPage />}
+                />
+                <Route path="/premium" element={<PremiumUpgrade />} />
 
-            {/* ===Dòng mới thêm để test vnpayt === */}
-            <Route path="/payment/result" element={<PaymentResult />} />
+                {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/transactions" element={<TransactionHistory />} />
+                <Route
+                    path="/profile/change-password"
+                    element={<ChangePassword />}
+                />
+                {/* --- KẾT THÚC SỬA ĐỔI --- */}
 
-            <Route element={<ProtectedRoute />}>
-              <Route path="/songs" element={<SongManagement />} />
-              <Route path="/my-playlists" element={<PlaylistManagement />} />
-              <Route
-                path="/playlist/:playlistId"
-                element={<PlaylistDetailPage />}
-              />
-              <Route path="/premium" element={<PremiumUpgrade />} />
-              <Route path="/transactions" element={<TransactionHistory />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route
-                path="/profile/change-password"
-                element={<ChangePassword />}
-              />
+                <Route path="/admin/users" element={<UserManagement />} />
+                <Route path="/admin/creators" element={<CreatorManagement />} />
+                <Route
+                    path="/admin/creators/:creatorId"
+                    element={<CreatorDetailPage />}
+                />
+                <Route path="/admin/singers" element={<SingerManagement />} />
+                <Route path="/admin/songs" element={<SongManagementAdmin />} />
+                <Route path="/admin/songs/new" element={<CreateSongAdmin />} />
+                <Route
+                    path="/admin/songs/edit/:songId"
+                    element={<EditSongAdmin />}
+                />
+                <Route
+                    path="/admin/submissions"
+                    element={<SubmissionManagement />}
+                />
+                <Route path="/admin/tags" element={<TagManagement />} />
 
-              <Route path="/admin/users" element={<UserManagement />} />
-              <Route path="/admin/creators" element={<CreatorManagement />} />
-              <Route
-                path="/admin/creators/:creatorId"
-                element={<CreatorDetailPage />}
-              />
-              <Route path="/admin/singers" element={<SingerManagement />} />
-              <Route path="/admin/songs" element={<SongManagementAdmin />} />
-              <Route path="/admin/songs/new" element={<CreateSongAdmin />} />
-              <Route
-                path="/admin/songs/edit/:songId"
-                element={<EditSongAdmin />}
-              />
-              <Route
-                path="/admin/submissions"
-                element={<SubmissionManagement />}
-              />
-              <Route path="/admin/tags" element={<TagManagement />} />
-
-              <Route path="/creator" element={<CreatorDashboard />} />
-              <Route
-                path="/creator/my-library"
-                element={<MyPublishedSongs />}
-              />
-              <Route
-                path="/creator/my-submissions"
-                element={<MySubmissions />}
-              />
-              <Route
-                path="/creator/my-submissions/:submissionId"
-                element={<SubmissionDetail />}
-              />
-              <Route
-                path="/creator/submission/new"
-                element={<SongSubmission />}
-              />
-              <Route
-                path="/creator/submission/edit/:submissionId"
-                element={<SongSubmission />}
-              />
-              <Route path="/singer/:id" element={<ArtistDetailPage />} />
+                <Route path="/creator" element={<CreatorDashboard />} />
+                <Route
+                    path="/creator/my-library"
+                    element={<MyPublishedSongs />}
+                />
+                <Route
+                    path="/creator/my-submissions"
+                    element={<MySubmissions />}
+                />
+                <Route
+                    path="/creator/my-submissions/:submissionId"
+                    element={<SubmissionDetail />}
+                />
+                <Route
+                    path="/creator/submission/new"
+                    element={<SongSubmission />}
+                />
+                <Route
+                    path="/creator/submission/edit/:submissionId"
+                    element={<SongSubmission />}
+                />
+                <Route path="/singer/:id" element={<ArtistDetailPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Tooltip
-          id="global-tooltip"
-          style={{
-            backgroundColor: isDarkMode
-              ? "rgb(6, 182, 212)"
-              : "rgb(8, 145, 178)",
-            color: "#FFFFFF",
-            borderRadius: "8px",
-          }}
-          opacity={1}
-          offset={10}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <Tooltip
+              id="global-tooltip"
+              style={{
+                backgroundColor: isDarkMode
+                    ? "rgb(6, 182, 212)"
+                    : "rgb(8, 145, 178)",
+                color: "#FFFFFF",
+                borderRadius: "8px",
+              }}
+              opacity={1}
+              offset={10}
+          />
+        </Router>
+        <ToastContainer
+            autoClose={3000}
+            hideProgressBar
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss={false}
+            draggable={false}
+            pauseOnHover={false}
+            theme={isDarkMode ? "dark" : "light"}
+            position="bottom-right"
         />
-      </Router>
-      <ToastContainer
-        autoClose={3000}
-        hideProgressBar
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable={false}
-        pauseOnHover={false}
-        theme={isDarkMode ? "dark" : "light"}
-        position="bottom-right"
-      />
-    </>
+      </>
   );
 }
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AudioProvider>
-          <AppContent />
-        </AudioProvider>
-      </AuthProvider>
-    </ThemeProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AudioProvider>
+            <AppContent />
+          </AudioProvider>
+        </AuthProvider>
+      </ThemeProvider>
   );
 }
 
