@@ -51,8 +51,9 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
+    // Chỉ reset form khi đối tượng user thay đổi (ví dụ: sau khi đăng nhập)
     resetFormData();
-  }, [resetFormData]);
+  }, [user]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -61,13 +62,12 @@ const Profile = () => {
 
   const handleFileChange = (file) => {
     setAvatarFile(file);
-    setWantsToRemoveAvatar(false); // Nếu chọn file mới, không xóa nữa
+    setWantsToRemoveAvatar(false);
     if (file) {
       setAvatarPreview(URL.createObjectURL(file));
     } else {
-      // Khi nhấn nút X trên FileUpload, file là null
       setAvatarPreview('');
-      setWantsToRemoveAvatar(true); // Đánh dấu là muốn xóa
+      setWantsToRemoveAvatar(true);
     }
   };
 
@@ -95,7 +95,6 @@ const Profile = () => {
       setIsEditing(false);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
-      // Nếu có lỗi, reset lại form để tránh hiển thị sai
       resetFormData();
     } finally {
       setProfileLoading(false);
@@ -113,14 +112,25 @@ const Profile = () => {
           <form onSubmit={handleProfileSubmit} className="space-y-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="w-32 h-32 flex-shrink-0">
-                <FileUpload
-                    onFileChange={handleFileChange}
-                    existingFileUrl={avatarPreview}
-                    previewType="image"
-                    className="w-full h-full"
-                    accept="image/*"
-                    disabled={!isEditing}
-                />
+                {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+                {isEditing ? (
+                    <FileUpload
+                        onFileChange={handleFileChange}
+                        existingFileUrl={avatarPreview}
+                        previewType="image"
+                        className="w-full h-full"
+                        accept="image/*"
+                    />
+                ) : (
+                    <div className="w-32 h-32 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                      {user?.avatarPath ? (
+                          <img src={`${API_BASE_URL}${user.avatarPath}`} alt="Avatar" className="w-full h-full object-cover"/>
+                      ) : (
+                          <User size={48} className="text-slate-500"/>
+                      )}
+                    </div>
+                )}
+                {/* --- KẾT THÚC SỬA ĐỔI --- */}
               </div>
               <div className="w-full space-y-4">
                 <Input label="Tên hiển thị *" icon={User} name="displayName" value={formData.displayName} onChange={handleProfileChange} disabled={!isEditing} required />
