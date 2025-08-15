@@ -78,6 +78,18 @@ const Profile = () => {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.dateOfBirth) {
+      const selectedDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      selectedDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        toast.error("Ngày sinh không được ở trong tương lai.");
+        return;
+      }
+    }
     setProfileLoading(true);
 
     const dataToSubmit = {
