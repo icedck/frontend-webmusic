@@ -229,6 +229,16 @@ const incrementPlaylistListenCount = async (playlistId) => {
     }
 };
 
+const getTopListenedPlaylists = async () => {
+    try {
+        const response = await apiService.get('/api/v1/playlists/top-listened?limit=8');
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch top listened playlists:", error);
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -252,5 +262,6 @@ export const musicService = {
     getAdminPlaylistManagement,
     togglePlaylistVisibility,
     incrementSongListenCount,
-    incrementPlaylistListenCount
+    incrementPlaylistListenCount,
+    getTopListenedPlaylists
 };
