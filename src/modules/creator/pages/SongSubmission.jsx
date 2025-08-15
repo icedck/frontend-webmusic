@@ -28,6 +28,12 @@ const SongSubmission = () => {
   const [existingFiles, setExistingFiles] = useState({ audio: null, thumbnail: null });
   const [audioFile, setAudioFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
+
+  // --- BẮT ĐẦU SỬA ĐỔI ---
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState(null);
+  // --- KẾT THÚC SỬA ĐỔI ---
+
   const [newSingers, setNewSingers] = useState([]);
   const [newSingerFiles, setNewSingerFiles] = useState({});
 
@@ -65,6 +71,11 @@ const SongSubmission = () => {
               audio: submissionData.filePath,
               thumbnail: submissionData.thumbnailPath,
             });
+            // --- BẮT ĐẦU SỬA ĐỔI ---
+            if (submissionData.thumbnailPath) {
+              setThumbnailPreviewUrl(`${API_BASE_URL}${submissionData.thumbnailPath}`);
+            }
+            // --- KẾT THÚC SỬA ĐỔI ---
             setNewSingers(pendingSingers.map(s => ({ id: s.id, name: s.name, email: s.email })));
           } else {
             toast.error("Không tìm thấy yêu cầu để chỉnh sửa.");
@@ -84,6 +95,26 @@ const SongSubmission = () => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
+
+  // --- BẮT ĐẦU SỬA ĐỔI ---
+  const handleAudioFileChange = (file) => {
+    setAudioFile(file);
+    if (file) {
+      setAudioPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setAudioPreviewUrl(null);
+    }
+  };
+
+  const handleThumbnailFileChange = (file) => {
+    setThumbnailFile(file);
+    if (file) {
+      setThumbnailPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setThumbnailPreviewUrl(existingFiles.thumbnail ? `${API_BASE_URL}${existingFiles.thumbnail}` : null);
+    }
+  };
+  // --- KẾT THÚC SỬA ĐỔI ---
 
   const handleAddNewSinger = () => setNewSingers([...newSingers, { name: '', email: '' }]);
   const handleRemoveNewSinger = (index) => {
@@ -195,8 +226,10 @@ const SongSubmission = () => {
 
           <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
             <h2 className="text-xl font-semibold">Tệp tin {isEditMode && '(Chỉ chọn nếu muốn thay đổi)'}</h2>
-            <FileUpload label={`File audio ${!isEditMode ? '*' : ''}`} accept="audio/*" onFileChange={setAudioFile} fileName={existingFiles.audio?.split('/').pop()} />
-            <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={setThumbnailFile} previewType="image" existingFileUrl={existingFiles.thumbnail ? `${API_BASE_URL}${existingFiles.thumbnail}` : null} fileName={existingFiles.thumbnail?.split('/').pop()} />
+            {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+            <FileUpload label={`File audio ${!isEditMode ? '*' : ''}`} accept="audio/*" onFileChange={handleAudioFileChange} fileName={audioFile?.name || existingFiles.audio?.split('/').pop()} previewType="audio" existingFileUrl={audioPreviewUrl} />
+            <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={handleThumbnailFileChange} previewType="image" existingFileUrl={thumbnailPreviewUrl} fileName={thumbnailFile?.name || existingFiles.thumbnail?.split('/').pop()} />
+            {/* --- KẾT THÚC SỬA ĐỔI --- */}
           </div>
 
           <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard}`}>

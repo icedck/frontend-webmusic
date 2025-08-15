@@ -14,6 +14,12 @@ const CreateSongAdmin = () => {
     const [formData, setFormData] = useState({ title: '', description: '', singerIds: [], tagIds: [], isPremium: false });
     const [audioFile, setAudioFile] = useState(null);
     const [thumbnailFile, setThumbnailFile] = useState(null);
+
+    // --- BẮT ĐẦU SỬA ĐỔI ---
+    const [audioPreviewUrl, setAudioPreviewUrl] = useState(null);
+    const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState(null);
+    // --- KẾT THÚC SỬA ĐỔI ---
+
     const [availableSingers, setAvailableSingers] = useState([]);
     const [availableTags, setAvailableTags] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -25,8 +31,8 @@ const CreateSongAdmin = () => {
                     adminService.getAllApprovedSingers(),
                     adminService.getAllTags()
                 ]);
-                if (singersRes.success) setAvailableSingers(singersRes.data);
-                if (tagsRes.success) setAvailableTags(tagsRes.data);
+                if (singersRes.success) setAvailableSingers(Array.isArray(singersRes.data) ? singersRes.data.map(s => ({ id: s.id, name: s.name })) : []);
+                if (tagsRes.success) setAvailableTags(Array.isArray(tagsRes.data) ? tagsRes.data.map(t => ({ id: t.id, name: t.name })) : []);
             } catch (err) {
                 toast.error('Không thể tải dữ liệu ca sĩ hoặc thể loại.');
             }
@@ -35,6 +41,26 @@ const CreateSongAdmin = () => {
     }, []);
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+
+    // --- BẮT ĐẦU SỬA ĐỔI ---
+    const handleAudioFileChange = (file) => {
+        setAudioFile(file);
+        if (file) {
+            setAudioPreviewUrl(URL.createObjectURL(file));
+        } else {
+            setAudioPreviewUrl(null);
+        }
+    };
+
+    const handleThumbnailFileChange = (file) => {
+        setThumbnailFile(file);
+        if (file) {
+            setThumbnailPreviewUrl(URL.createObjectURL(file));
+        } else {
+            setThumbnailPreviewUrl(null);
+        }
+    };
+    // --- KẾT THÚC SỬA ĐỔI ---
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -100,8 +126,10 @@ const CreateSongAdmin = () => {
                 </div>
 
                 <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
-                    <FileUpload label="File audio *" accept="audio/*" onFileChange={setAudioFile} />
-                    <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={setThumbnailFile} previewType="image" />
+                    {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
+                    <FileUpload label="File audio *" accept="audio/*" onFileChange={handleAudioFileChange} fileName={audioFile?.name} previewType="audio" existingFileUrl={audioPreviewUrl} />
+                    <FileUpload label="Ảnh bìa" accept="image/*" onFileChange={handleThumbnailFileChange} previewType="image" existingFileUrl={thumbnailPreviewUrl} fileName={thumbnailFile?.name} />
+                    {/* --- KẾT THÚC SỬA ĐỔI --- */}
                 </div>
 
                 <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
