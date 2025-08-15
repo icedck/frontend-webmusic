@@ -1,3 +1,4 @@
+// File: src/modules/auth/services/authService.js
 import { apiService } from "../../../shared/services/apiService.js";
 
 const getMe = async () => {
@@ -15,8 +16,9 @@ const getMe = async () => {
 
 const handleLoginSuccess = async (token) => {
     localStorage.setItem('authToken', token);
+    // Cần set token vào header của apiService ngay lập tức
+    apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     const userProfileResponse = await getMe();
-    // FIX: Get the user data from the 'data' property of the BaseResponse
     const user = userProfileResponse.data;
     localStorage.setItem('authUser', JSON.stringify(user));
     return { token, user };
@@ -40,9 +42,8 @@ const login = async (credentials) => {
         if (!token) {
             throw new Error("Login failed: Token not found in response.");
         }
-        // The user object is now returned directly from handleLoginSuccess
         const { user } = await handleLoginSuccess(token);
-        return { user }; // Return the user object to Login.jsx
+        return { user };
     } catch (error)
     {
         console.error("Login API call failed:", error);
@@ -133,6 +134,7 @@ const changePassword = async (passwordData) => {
 const logout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
+    delete apiService.defaults.headers.common['Authorization'];
     window.location.href = '/login';
 };
 
@@ -162,7 +164,7 @@ const isAdmin = () => {
 
 const isPremium = () => {
     const user = getStoredUser();
-    return user?.isPremium || user?.subscription?.status === 'ACTIVE';
+    return user?.subscriptionStatus === 'ACTIVE';
 };
 
 const isCreator = () => {

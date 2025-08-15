@@ -1,3 +1,4 @@
+// File: src/modules/music/pages/PlaylistManagement.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { musicService } from '../services/musicService';
@@ -65,14 +66,12 @@ const PlaylistListItem = ({ playlist, onPlayPlaylist, onToggleVisibility, onDele
             <Link to={`/playlist/${playlist.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate hover:underline block">{playlist.name}</Link>
             <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-3 mt-1">
                 <span>{playlist.songCount} bài hát</span>
-                {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
                 {playlist.visibility !== 'PRIVATE' && (
                     <>
                         <span className="flex items-center gap-1"><Headphones size={14} /> {playlist.listenCount?.toLocaleString('vi-VN') || 0}</span>
                         <span className="flex items-center gap-1"><Heart size={14} /> {playlist.likeCount?.toLocaleString('vi-VN') || 0}</span>
                     </>
                 )}
-                {/* --- KẾT THÚC SỬA ĐỔI --- */}
                 <span>• bởi {playlist.creatorName}</span>
             </div>
         </div>
