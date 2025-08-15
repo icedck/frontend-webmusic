@@ -38,7 +38,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   }, [avatarMenuRef]);
 
   const mainNavItems = [
-    { href: '/dashboard', icon: Home, label: 'Trang chủ' },
+    { href: '/', icon: Home, label: 'Trang chủ' },
     { href: '/my-playlists', icon: Library, label: 'Thư viện' },
     { href: '/charts', icon: BarChart3, label: 'Bảng xếp hạng' },
     { type: 'button', action: onOpenPalette, icon: Search, label: 'Tìm kiếm' },
@@ -75,7 +75,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
       <header className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}>
         <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <Link to="/dashboard" className="flex items-center space-x-2 flex-shrink-0">
+            <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Music className="w-5 h-5 text-white" />
               </div>
@@ -83,7 +83,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
             <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 ml-2"></div>
             <nav className="hidden md:flex items-center gap-1 pl-2">
               {mainNavItems.map(item => {
-                const isActive = item.href && location.pathname.startsWith(item.href);
+                const isActive = item.href && location.pathname === item.href;
                 const commonContent = (
                     <>
                       <div className={`p-2 rounded-lg transition-colors ${isActive ? 'bg-black/10 dark:bg-white/10 text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover:bg-black/5 dark:group-hover:bg-white/5 group-hover:text-slate-800 dark:group-hover:text-white'}`}>
@@ -94,14 +94,14 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                       </span>
                     </>
                 );
-                return item.href ? (
-                    <Link key={item.label} to={item.href} className="group flex items-center p-2 rounded-lg text-sm font-semibold">
-                      {commonContent}
-                    </Link>
-                ) : (
+                return item.type === 'button' ? (
                     <button key={item.label} onClick={item.action} className="group flex items-center p-2 rounded-lg text-sm font-semibold">
                       {commonContent}
                     </button>
+                ) : (
+                    <Link key={item.label} to={item.href} className="group flex items-center p-2 rounded-lg text-sm font-semibold">
+                      {commonContent}
+                    </Link>
                 );
               })}
             </nav>
@@ -144,8 +144,8 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
 
                     <div className="relative" ref={avatarMenuRef}>
                       <button onClick={() => setIsAvatarMenuOpen(prev => !prev)} className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer">
-                          {user.photoURL ? <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" /> : <User size={18} />}
+                        <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden">
+                          {user.avatarPath ? <img src={`${API_BASE_URL}${user.avatarPath}`} alt="Avatar" className="w-full h-full object-cover" /> : <User size={18} />}
                         </div>
                         <ChevronDown size={16} className={`transition-transform ${isAvatarMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
@@ -153,8 +153,8 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                       {isAvatarMenuOpen && (
                           <div className="absolute top-full right-0 mt-2 w-72 p-2 rounded-xl shadow-lg border backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 border-slate-200/50 dark:border-slate-700/50">
                             <div className="flex items-center gap-3 p-2 mb-2">
-                              <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex-shrink-0">
-                                {user.photoURL && <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-full object-cover" />}
+                              <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex-shrink-0 overflow-hidden">
+                                {user.avatarPath ? <img src={`${API_BASE_URL}${user.avatarPath}`} alt="Avatar" className="w-full h-full object-cover" /> : <User size={24} className="m-auto"/>}
                               </div>
                               <div className="min-w-0">
                                 <p className="font-semibold truncate text-slate-800 dark:text-slate-100">{user.displayName}</p>
@@ -240,8 +240,8 @@ const DashboardLayout = () => {
   };
 
   const cmdMainNavItems = [
-    { name: 'Trang chủ', href: '/dashboard', icon: Home, category: 'Menu' },
-    { name: 'Tìm kiếm', href: '/search', icon: Search, category: 'Menu' },
+    { name: 'Trang chủ', href: '/', icon: Home, category: 'Menu' },
+    { name: 'Tìm kiếm', href: '#', icon: Search, category: 'Menu', action: () => setIsPaletteOpen(true) },
     { name: 'Thư viện', href: '/my-playlists', icon: Library, category: 'Menu' },
   ];
   const cmdCreatorNavItems = [

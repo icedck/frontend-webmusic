@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService } from "../modules/auth/services/authService.js";
-import { apiService } from '../shared/services/apiService.js'; // Import apiService
+import { apiService } from '../shared/services/apiService.js';
 
 const AuthContext = createContext();
 
@@ -17,36 +17,35 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const revalidateUser = useCallback(async () => {
-    try {
-      const token = authService.getStoredToken();
-      if (!token) return;
-
-      const response = await apiService.get('/api/v1/users/me');
-      if (response.data?.success) {
-        const freshUser = response.data.data;
-        setUser(freshUser);
-        authService.updateProfile(freshUser); // Cập nhật lại localStorage
-      }
-    } catch (error) {
-      console.error("Failed to revalidate user:", error);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        logout();
-      }
-    }
-  }, []);
-
+  // Chỉ chạy một lần khi component được mount
   useEffect(() => {
-    const token = authService.getStoredToken();
-    const storedUser = authService.getStoredUser();
+    const initializeAuth = async () => {
+      const token = authService.getStoredToken();
+      const storedUser = authService.getStoredUser();
 
-    if (token && storedUser) {
-      setUser(storedUser);
-      setIsAuthenticated(true);
-      revalidateUser(); // Kiểm tra lại thông tin user mỗi khi tải lại trang
+      if (token && storedUser) {
+        setUser(storedUser);
+        setIsAuthenticated(true);
+
+        // Revalidate user in background without causing re-renders
+        try {
+          apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const response = await apiService.get('/api/v1/users/me');
+          if (response.data?.success) {
+            const freshUser = response.data.data;
+            setUser(freshUser);
+            localStorage.setItem('authUser', JSON.stringify(freshUser));
+          }
+        } catch (error) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            logout();
+          }
+        }
+      }
+      setLoading(false);
     }
-    setLoading(false);
-  }, [revalidateUser]);
+    initializeAuth();
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -59,13 +58,18 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  const updateUserContext = (updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem('authUser', JSON.stringify(updatedUserData));
+  }
+
   const value = {
     user,
     isAuthenticated,
     loading,
     login,
     logout,
-    revalidateUser, // <<< THÊM MỚI
+    updateUserContext,
     isAdmin: authService.isAdmin,
     isCreator: authService.isCreator,
     isPremium: authService.isPremium,

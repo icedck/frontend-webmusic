@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAuth } from '../../../hooks/useAuth';
 import { authService } from '../services/authService';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
+import FileUpload from '../../../components/common/FileUpload';
 import { User, Mail, Phone, Calendar } from 'lucide-react';
 import { toast } from 'react-toastify';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const SettingsCard = ({ title, description, children }) => {
   const { isDarkMode } = useDarkMode();
@@ -24,13 +27,15 @@ const SettingsCard = ({ title, description, children }) => {
 
 const Profile = () => {
   const { currentTheme } = useDarkMode();
-  const { user, updateUser } = useAuth();
+  const { user, updateUserContext } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [formData, setFormData] = useState({ displayName: '', phoneNumber: '', dateOfBirth: '', gender: '' });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
 
-  const resetFormData = () => {
+  const resetFormData = useCallback(() => {
     if (user) {
       setFormData({
         displayName: user.displayName || '',
@@ -38,16 +43,27 @@ const Profile = () => {
         dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
         gender: user.gender || '',
       });
+      setAvatarFile(null);
+      setAvatarPreview(user.avatarPath ? `${API_BASE_URL}${user.avatarPath}` : '');
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     resetFormData();
-  }, [user]);
+  }, [resetFormData]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (file) => {
+    setAvatarFile(file);
+    if (file) {
+      setAvatarPreview(URL.createObjectURL(file));
+    } else {
+      setAvatarPreview(user.avatarPath ? `${API_BASE_URL}${user.avatarPath}` : '');
+    }
   };
 
   const handleCancelEdit = () => {
@@ -60,14 +76,15 @@ const Profile = () => {
     setProfileLoading(true);
 
     const dataToSubmit = {
-      ...formData,
+      displayName: formData.displayName,
+      phoneNumber: formData.phoneNumber || null,
       dateOfBirth: formData.dateOfBirth || null,
-      gender: formData.gender || null
+      gender: formData.gender || null,
     };
 
     try {
-      const response = await authService.updateProfile(dataToSubmit);
-      updateUser(response.data);
+      const response = await authService.updateProfile(dataToSubmit, avatarFile);
+      updateUserContext(response.data);
       toast.success('Cập nhật thông tin thành công!');
       setIsEditing(false);
     } catch (error) {
@@ -86,11 +103,40 @@ const Profile = () => {
 
         <SettingsCard title="Thông tin hiển thị" description="Cập nhật thông tin sẽ được hiển thị cho người khác.">
           <form onSubmit={handleProfileSubmit} className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-32 h-32 flex-shrink-0">
+                <FileUpload
+                    onFileChange={handleFileChange}
+                    existingFileUrl={avatarPreview}
+                    previewType="image"
+                    className="w-full h-full"
+                    accept="image/*"
+                    disabled={!isEditing}
+                />
+              </div>
+              <div className="w-full space-y-4">
+                <Input label="Tên hiển thị *" icon={User} name="displayName" value={formData.displayName} onChange={handleProfileChange} disabled={!isEditing} required />
+                <Input label="Email" icon={Mail} name="email" value={user?.email || ''} disabled />
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Tên hiển thị *" icon={User} name="displayName" value={formData.displayName} onChange={handleProfileChange} disabled={!isEditing} />
-              <Input label="Email" icon={Mail} name="email" value={user?.email || ''} disabled />
               <Input label="Số điện thoại" icon={Phone} name="phoneNumber" value={formData.phoneNumber} onChange={handleProfileChange} disabled={!isEditing} placeholder="Chưa cập nhật" />
               <Input label="Ngày sinh" icon={Calendar} name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleProfileChange} disabled={!isEditing} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Giới tính</label>
+              <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleProfileChange}
+                  disabled={!isEditing}
+                  className={`w-full p-2 border rounded-lg ${currentTheme.bg} ${currentTheme.border} focus:border-music-500 focus:ring-music-500 disabled:opacity-50`}
+              >
+                <option value="">Không muốn tiết lộ</option>
+                <option value="Male">Nam</option>
+                <option value="Female">Nữ</option>
+                <option value="Other">Khác</option>
+              </select>
             </div>
             {isEditing && (
                 <div className="flex items-center justify-end space-x-4 pt-4 border-t border-slate-200 dark:border-slate-700">

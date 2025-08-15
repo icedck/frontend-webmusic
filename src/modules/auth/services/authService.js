@@ -96,9 +96,20 @@ const verifyOtp = async (verifyData) => {
     }
 };
 
-const updateProfile = async (profileData) => {
+const updateProfile = async (profileData, avatarFile) => {
     try {
-        const response = await apiService.put('/api/v1/users/me', profileData);
+        const formData = new FormData();
+        formData.append('profileData', new Blob([JSON.stringify(profileData)], { type: 'application/json' }));
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+
+        const response = await apiService.put('/api/v1/users/me', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+
         const updatedUser = response.data?.data;
         if (updatedUser) {
             localStorage.setItem('authUser', JSON.stringify(updatedUser));
@@ -109,7 +120,6 @@ const updateProfile = async (profileData) => {
         throw error;
     }
 };
-
 const changePassword = async (passwordData) => {
     try {
         const response = await apiService.patch('/api/v1/users/me/password', passwordData);
