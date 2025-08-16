@@ -68,6 +68,20 @@ const createSingerByAdmin = async (formData) => {
     }
 };
 
+// START-CHANGE: Thêm hàm mới để tạo nhiều ca sĩ
+const createMultipleSingersByAdmin = async (formData) => {
+    try {
+        const response = await apiService.post('/api/v1/singers/admin/batch', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to create multiple singers:", error);
+        throw error;
+    }
+};
+// END-CHANGE
+
 const updateSingerByAdmin = async (singerId, singerRequest, avatarFile) => {
     const formData = new FormData();
     formData.append('singerRequest', new Blob([JSON.stringify(singerRequest)], { type: 'application/json' }));
@@ -113,7 +127,6 @@ const getTagsForAdmin = async (page = 0, size = 5) => {
     }
 };
 
-// Hàm mới được thêm vào
 const getAllTags = async () => {
     try {
         const response = await apiService.get('/api/v1/tags');
@@ -255,6 +268,15 @@ const rejectSubmission = async (submissionId, reason) => {
     }
 };
 
+const createMultipleTags = async (data) => {
+    try {
+        const response = await apiService.post('/api/v1/tags/admin/batch', data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const adminService = {
     getUsers,
     updateUser,
@@ -262,11 +284,12 @@ export const adminService = {
     getCreatorDetails,
     getSingers,
     createSingerByAdmin,
+    createMultipleSingersByAdmin,
     updateSingerByAdmin,
     deleteSingerByAdmin,
-    getAllApprovedSingers, // <--- Đã thêm vào
+    getAllApprovedSingers,
     getTagsForAdmin,
-    getAllTags, // <--- Đã thêm vào
+    getAllTags,
     createTag,
     updateTag,
     deleteTag,
@@ -278,4 +301,5 @@ export const adminService = {
     getPendingSubmissions,
     approveSubmission,
     rejectSubmission,
+    createMultipleTags,
 };

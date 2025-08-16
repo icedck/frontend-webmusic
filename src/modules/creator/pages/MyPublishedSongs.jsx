@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
-import { creatorService } from '../services/creatorService';
+import { creatorService } from '../services/creatorService.js';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
 import Input from '../../../components/common/Input';

@@ -1,3 +1,5 @@
+// WebMusic_frontend/src/modules/music/pages/PlaylistDetailPage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { musicService } from '../services/musicService';
@@ -20,7 +22,9 @@ const PlaylistDetailPage = () => {
     const { playlistId } = useParams();
     const navigate = useNavigate();
     const { playSong } = useAudio();
-    const { user } = useAuth();
+    // --- BẮT ĐẦU CHỈNH SỬA: Thêm isAuthenticated từ hook useAuth ---
+    const { user, isAuthenticated } = useAuth();
+    // --- KẾT THÚC CHỈNH SỬA ---
     const [playlist, setPlaylist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -52,7 +56,19 @@ const PlaylistDetailPage = () => {
         fetchPlaylistDetails();
     }, [fetchPlaylistDetails]);
 
+    // --- BẮT ĐẦU CHỈNH SỬA: Hàm xử lý khi người dùng chưa đăng nhập nhấn vào nút yêu cầu login ---
+    const handleActionRequirement = (actionName) => {
+        if (!isAuthenticated) {
+            toast.info(`Vui lòng đăng nhập để ${actionName}.`);
+            navigate('/login', { state: { from: window.location.pathname } });
+            return false;
+        }
+        return true;
+    };
+    // --- KẾT THÚC CHỈNH SỬA ---
+
     const handleTogglePlaylistLike = useCallback(async () => {
+        if (!handleActionRequirement('thích playlist')) return;
         if (!playlist) return;
         try {
             await musicService.togglePlaylistLike(playlist.id);
@@ -65,9 +81,10 @@ const PlaylistDetailPage = () => {
             console.error("Failed to toggle playlist like:", error);
             throw error;
         }
-    }, [playlist]);
+    }, [playlist, isAuthenticated]);
 
     const handleToggleSongLike = useCallback(async (songIdToToggle) => {
+        if (!handleActionRequirement('thích bài hát')) return;
         try {
             await musicService.toggleSongLike(songIdToToggle);
             setPlaylist(prev => ({
@@ -87,7 +104,7 @@ const PlaylistDetailPage = () => {
             console.error("Failed to toggle song like:", error);
             throw error;
         }
-    }, []);
+    }, [isAuthenticated]);
 
     const handlePlaySongFromPlaylist = (song) => {
         if (playlist && playlist.songs) {
@@ -195,19 +212,19 @@ const PlaylistDetailPage = () => {
                     </div>
                     <div className="flex items-center flex-wrap gap-2 pt-4">
                         <Button onClick={() => handlePlaySongFromPlaylist(playlist.songs[0])} disabled={!playlist.songs || playlist.songs.length === 0}><Play size={18} className="mr-2" />Phát</Button>
-                        {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
                         {playlist.visibility !== 'PRIVATE' && (
                             <LikeButton initialIsLiked={playlist.isLikedByCurrentUser} initialLikeCount={playlist.likeCount} onToggleLike={handleTogglePlaylistLike} size={18}/>
                         )}
-                        {playlist.canEdit && <Button variant="outline" onClick={() => setIsAddSongsModalOpen(true)}><PlusCircle size={16} /></Button>}
-                        {playlist.canEdit && <Button variant="outline" onClick={() => setIsEditModalOpen(true)}><Edit size={16} /></Button>}
-                        {playlist.canToggleVisibility && (
+                        {/* --- BẮT ĐẦU CHỈNH SỬA: Chỉ hiển thị các nút này khi đã đăng nhập và có quyền --- */}
+                        {isAuthenticated && playlist.canEdit && <Button variant="outline" onClick={() => setIsAddSongsModalOpen(true)}><PlusCircle size={16} /></Button>}
+                        {isAuthenticated && playlist.canEdit && <Button variant="outline" onClick={() => setIsEditModalOpen(true)}><Edit size={16} /></Button>}
+                        {isAuthenticated && playlist.canToggleVisibility && (
                             <Button variant="outline" onClick={handleToggleVisibility} disabled={isTogglingVisibility}>
                                 {playlist.visibility === 'PUBLIC' ? <EyeOff size={16} /> : <Eye size={16} />}
                             </Button>
                         )}
-                        {playlist.canDelete && <Button variant="danger_outline" onClick={() => setIsConfirmDeleteOpen(true)}><Trash2 size={16} /></Button>}
-                        {/* --- KẾT THÚC SỬA ĐỔI --- */}
+                        {isAuthenticated && playlist.canDelete && <Button variant="danger_outline" onClick={() => setIsConfirmDeleteOpen(true)}><Trash2 size={16} /></Button>}
+                        {/* --- KẾT THÚC CHỈNH SỬA --- */}
                     </div>
                 </div>
             </div>
@@ -229,7 +246,9 @@ const PlaylistDetailPage = () => {
                             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <LikeButton initialIsLiked={song.isLikedByCurrentUser} initialLikeCount={song.likeCount} onToggleLike={() => handleToggleSongLike(song.id)} showCount={false} />
                                 <Button size="icon" variant="ghost" onClick={() => handlePlaySongFromPlaylist(song)}><Play size={20} /></Button>
-                                {playlist.canEdit && <Button size="icon" variant="ghost" onClick={() => setSongToRemove(song)} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></Button>}
+                                {/* --- BẮT ĐẦU CHỈNH SỬA: Chỉ hiển thị nút xóa khi đã đăng nhập và có quyền --- */}
+                                {isAuthenticated && playlist.canEdit && <Button size="icon" variant="ghost" onClick={() => setSongToRemove(song)} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></Button>}
+                                {/* --- KẾT THÚC CHỈNH SỬA --- */}
                             </div>
                         </div>
                     ))
@@ -238,11 +257,11 @@ const PlaylistDetailPage = () => {
                 )}
             </div>
 
-            {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
-            {user && playlist.visibility !== 'PRIVATE' && (
+            {/* --- BẮT ĐẦU CHỈNH SỬA: Luôn hiển thị CommentSection, logic xử lý đăng nhập sẽ nằm bên trong nó --- */}
+            {playlist.visibility !== 'PRIVATE' && (
                 <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />
             )}
-            {/* --- KẾT THÚC SỬA ĐỔI --- */}
+            {/* --- KẾT THÚC CHỈNH SỬA --- */}
 
             <ConfirmationModal isOpen={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)} onConfirm={handleConfirmDeletePlaylist} title="Xác nhận xóa playlist" message={`Bạn có chắc chắn muốn xóa vĩnh viễn playlist "${playlist?.name}"? Hành động này không thể hoàn tác.`} confirmText="Xóa" isLoading={isProcessing}/>
             <ConfirmationModal isOpen={!!songToRemove} onClose={() => setSongToRemove(null)} onConfirm={handleConfirmRemoveSong} title="Xác nhận xóa bài hát" message={`Bạn có chắc chắn muốn xóa bài hát "${songToRemove?.title}" khỏi playlist này?`} confirmText="Xóa" isLoading={isProcessing}/>

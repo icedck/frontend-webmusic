@@ -112,7 +112,6 @@ const MusicDiscoveryPage = () => {
                 )}
             </Section>
 
-            {/* Các section chưa có dữ liệu thật sẽ chỉ hiển thị đầu mục */}
             <Section title="Mới Phát Hành" />
             <Section title="#WebMusicChart" />
 

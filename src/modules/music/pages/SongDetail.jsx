@@ -1,7 +1,10 @@
+// WebMusic_frontend/src/modules/music/pages/SongDetail.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // --- Thêm useNavigate ---
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAudio } from '../../../hooks/useAudio';
+import { useAuth } from '../../../hooks/useAuth'; // --- BẮT ĐẦU CHỈNH SỬA: Thêm useAuth ---
 import { musicService } from '../services/musicService';
 import Button from '../../../components/common/Button';
 import { Play, Pause, Plus, Download, BarChart3, User, CalendarDays } from 'lucide-react';
@@ -9,12 +12,15 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 import CommentSection from '../components/CommentSection';
-import { LikeButton } from '../components/LikeButton'; // <--- ĐÃ SỬA LỖI ĐƯỜNG DẪN
+import { LikeButton } from '../components/LikeButton';
+import { toast } from 'react-toastify'; // --- Thêm toast ---
 
 const SongDetail = () => {
     const { songId } = useParams();
+    const navigate = useNavigate(); // --- Thêm navigate ---
     const { currentTheme } = useDarkMode();
     const { playSong, togglePlay, currentSong, isPlaying } = useAudio();
+    const { isAuthenticated } = useAuth(); // --- BẮT ĐẦU CHỈNH SỬA: Lấy isAuthenticated ---
 
     const [song, setSong] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -53,7 +59,19 @@ const SongDetail = () => {
         }
     };
 
+    // --- BẮT ĐẦU CHỈNH SỬA: Hàm xử lý khi người dùng chưa đăng nhập nhấn vào nút yêu cầu login ---
+    const handleActionRequirement = (actionName) => {
+        if (!isAuthenticated) {
+            toast.info(`Vui lòng đăng nhập để ${actionName}.`);
+            navigate('/login', { state: { from: window.location.pathname } });
+            return false;
+        }
+        return true;
+    };
+    // --- KẾT THÚC CHỈNH SỬA ---
+
     const handleToggleLike = useCallback(async () => {
+        if (!handleActionRequirement('thích bài hát')) return;
         if (!song) return;
         try {
             await musicService.toggleSongLike(song.id);
@@ -66,7 +84,7 @@ const SongDetail = () => {
             console.error("Failed to toggle like:", error);
             throw error;
         }
-    }, [song]);
+    }, [song, isAuthenticated]);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -119,10 +137,14 @@ const SongDetail = () => {
                                 showCount={false}
                                 size={22}
                             />
-                            <Button variant="outline" size="icon" onClick={() => setIsAddToPlaylistModalOpen(true)}>
+                            {/* --- BẮT ĐẦU CHỈNH SỬA: Thêm điều kiện và hàm xử lý cho các nút cần đăng nhập --- */}
+                            <Button variant="outline" size="icon" onClick={() => handleActionRequirement('thêm vào playlist') && setIsAddToPlaylistModalOpen(true)}>
                                 <Plus className="w-5 h-5"/>
                             </Button>
-                            <Button variant="outline" size="icon"><Download className="w-5 h-5"/></Button>
+                            <Button variant="outline" size="icon" onClick={() => handleActionRequirement('tải xuống')}>
+                                <Download className="w-5 h-5"/>
+                            </Button>
+                            {/* --- KẾT THÚC CHỈNH SỬA --- */}
                         </div>
                     </div>
                 </div>
@@ -137,7 +159,9 @@ const SongDetail = () => {
                                 </p>
                             </div>
                         )}
+                        {/* --- BẮT ĐẦU CHỈNH SỬA: Luôn hiển thị CommentSection --- */}
                         <CommentSection commentableId={song.id} commentableType="SONG" />
+                        {/* --- KẾT THÚC CHỈNH SỬA --- */}
                     </div>
 
                     <div className="lg:col-span-1">

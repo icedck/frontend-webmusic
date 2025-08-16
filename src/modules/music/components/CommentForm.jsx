@@ -1,12 +1,14 @@
+// File: src/modules/music/components/CommentForm.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import Button from '../../../components/common/Button';
 import { Send } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Import Link
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const CommentForm = ({ onSubmit, isLoading }) => {
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth(); // Thêm isAuthenticated
     const [content, setContent] = useState('');
 
     const handleSubmit = (e) => {
@@ -16,9 +18,17 @@ const CommentForm = ({ onSubmit, isLoading }) => {
         setContent('');
     };
 
-    if (!user) {
-        return null;
+    // START-CHANGE: Hiển thị thông báo nếu chưa đăng nhập
+    if (!isAuthenticated) {
+        return (
+            <div className="mt-4 p-4 text-center bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <p className="text-slate-600 dark:text-slate-400">
+                    <Link to="/login" className="font-semibold text-cyan-500 hover:underline">Đăng nhập</Link> để tham gia bình luận.
+                </p>
+            </div>
+        );
     }
+    // END-CHANGE
 
     return (
         <form onSubmit={handleSubmit} className="flex items-start gap-4 mt-4">

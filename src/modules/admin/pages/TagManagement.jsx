@@ -1,3 +1,4 @@
+// File: src/modules/admin/pages/TagManagement.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
@@ -54,7 +55,7 @@ const TagManagement = () => {
 
     const handleCreateSuccess = () => {
         setIsCreateModalOpen(false);
-        toast.success("Tạo tag mới thành công!");
+        // Không cần toast ở đây vì đã có trong modal
         fetchTags(pageInfo.currentPage);
     };
 
@@ -77,7 +78,6 @@ const TagManagement = () => {
             if (response.success) {
                 toast.success(response.message || "Xóa tag thành công!");
                 setIsDeleteModalOpen(false);
-                // Fetch from page 0 if the deleted item was the last one on the current page
                 const newPage = tags.length === 1 && pageInfo.currentPage > 0 ? pageInfo.currentPage - 1 : pageInfo.currentPage;
                 fetchTags(newPage);
             } else {

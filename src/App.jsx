@@ -1,3 +1,5 @@
+// WebMusic_frontend/src/App.jsx
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -64,30 +66,37 @@ function AppContent() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
             <Route element={<DashboardLayout />}>
+              {/* === CÁC ROUTE CÔNG KHAI - AI CŨNG CÓ THỂ TRUY CẬP === */}
               <Route path="/" element={<MusicDiscoveryPage />} />
               <Route path="/dashboard" element={<Navigate to="/" replace />} />
               <Route path="/search" element={<SearchResults />} />
-              <Route path="/song/:songId" element={<SongDetail />} />
               <Route path="/payment/result" element={<PaymentResult />} />
 
+              {/* --- BẮT ĐẦU CHỈNH SỬA --- */}
+              {/* Di chuyển các route chi tiết ra khỏi ProtectedRoute để khách có thể xem */}
+              <Route path="/song/:songId" element={<SongDetail />} />
+              <Route
+                  path="/playlist/:playlistId"
+                  element={<PlaylistDetailPage />}
+              />
+              {/* Chuyển cả trang nghệ sĩ ra public nếu cần */}
+              <Route path="/singer/:id" element={<ArtistDetailPage />} />
+              {/* --- KẾT THÚC CHỈNH SỬA --- */}
+
+              {/* === CÁC ROUTE ĐƯỢC BẢO VỆ - CẦN ĐĂNG NHẬP === */}
               <Route element={<ProtectedRoute />}>
+                {/* Các route của User */}
                 <Route path="/songs" element={<SongManagement />} />
                 <Route path="/my-playlists" element={<PlaylistManagement />} />
-                <Route
-                    path="/playlist/:playlistId"
-                    element={<PlaylistDetailPage />}
-                />
                 <Route path="/premium" element={<PremiumUpgrade />} />
-
-                {/* --- BẮT ĐẦU SỬA ĐỔI --- */}
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/transactions" element={<TransactionHistory />} />
                 <Route
                     path="/profile/change-password"
                     element={<ChangePassword />}
                 />
-                {/* --- KẾT THÚC SỬA ĐỔI --- */}
 
+                {/* Các route cho Admin */}
                 <Route path="/admin/users" element={<UserManagement />} />
                 <Route path="/admin/creators" element={<CreatorManagement />} />
                 <Route
@@ -107,6 +116,7 @@ function AppContent() {
                 />
                 <Route path="/admin/tags" element={<TagManagement />} />
 
+                {/* Các route cho Creator */}
                 <Route path="/creator" element={<CreatorDashboard />} />
                 <Route
                     path="/creator/my-library"
@@ -128,7 +138,6 @@ function AppContent() {
                     path="/creator/submission/edit/:submissionId"
                     element={<SongSubmission />}
                 />
-                <Route path="/singer/:id" element={<ArtistDetailPage />} />
               </Route>
             </Route>
 

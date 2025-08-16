@@ -145,7 +145,7 @@ const Login = () => {
                   <div className="flex items-center justify-between">
                     <label htmlFor="password" className={`block text-sm font-medium ${currentTheme.text} mb-2`}>Mật khẩu</label>
                     <div className="text-sm">
-                      <Link to="/forgot-password" className="font-medium text-music-500 hover:text-music-600">Quên mật khẩu?</Link>
+                      <Link to="/forgot-password" className="font-medium text-music-500 hover:text-music-600" tabIndex={-1}> Quên mật khẩu?</Link>
                     </div>
                   </div>
                   <div className="relative">

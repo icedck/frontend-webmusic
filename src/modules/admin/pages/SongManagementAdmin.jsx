@@ -1,3 +1,5 @@
+// frontend/src/modules/admin/pages/SongManagementAdmin.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
@@ -15,8 +17,17 @@ const StatusBadge = ({ status }) => {
         REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
         HIDDEN: 'bg-gray-100 text-gray-800 dark:bg-gray-700/40 dark:text-gray-400',
     };
-    return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
+    return <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
 }
+
+// --- BẮT ĐẦU CHỈNH SỬA: Thêm component PremiumBadge ---
+const PremiumBadge = ({ isPremium }) => {
+    if (isPremium) {
+        return <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">PREMIUM</span>;
+    }
+    return <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">FREE</span>;
+};
+// --- KẾT THÚC CHỈNH SỬA ---
 
 const SongManagementAdmin = () => {
     const { currentTheme } = useDarkMode();
@@ -102,14 +113,17 @@ const SongManagementAdmin = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ca sĩ</th>
+                        {/* --- BẮT ĐẦU CHỈNH SỬA: Thêm cột LOẠI BÀI HÁT --- */}
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Loại bài hát</th>
+                        {/* --- KẾT THÚC CHỈNH SỬA --- */}
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trạng thái</th>
                         <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {loading && <tr><td colSpan="5" className="text-center py-4">Đang tải...</td></tr>}
+                    {loading && <tr><td colSpan="6" className="text-center py-4">Đang tải...</td></tr>}
                     {!loading && songs.length === 0 && (
-                        <tr><td colSpan="5" className="text-center py-4">Không có dữ liệu.</td></tr>
+                        <tr><td colSpan="6" className="text-center py-4">Không có dữ liệu.</td></tr>
                     )}
                     {!loading && songs.map((song) => (
                         <tr key={song.id}>
@@ -127,6 +141,11 @@ const SongManagementAdmin = () => {
                                 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">{song.singers?.map(s => s.name).join(', ') || 'N/A'}</td>
+                            {/* --- BẮT ĐẦU CHỈNH SỬA: Thêm ô hiển thị PremiumBadge --- */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <PremiumBadge isPremium={song.isPremium} />
+                            </td>
+                            {/* --- KẾT THÚC CHỈNH SỬA --- */}
                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={song.status} /></td>
                             <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
                                 {(song.status === 'APPROVED' || song.status === 'HIDDEN') && (
