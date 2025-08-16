@@ -320,6 +320,16 @@ const searchSingers = async (keyword, page = 0, size = 10) => {
     }
 };
 
+    const getTopSingers = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/singers/top?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch top singers:", error);
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -353,4 +363,5 @@ export const musicService = {
     searchSongs,
     searchPlaylists,
     searchSingers,
+    getTopSingers,
 };

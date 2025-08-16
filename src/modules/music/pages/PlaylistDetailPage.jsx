@@ -4,7 +4,7 @@ import { musicService } from '../services/musicService';
 import { useAudio } from '../../../hooks/useAudio';
 import { useAuth } from '../../../hooks/useAuth';
 import { toast } from 'react-toastify';
-import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff, Headphones, CalendarDays, Crown } from 'lucide-react';
+import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff, Headphones, CalendarDays, Crown, ListPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import Button from '../../../components/common/Button';
@@ -19,7 +19,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const PlaylistDetailPage = () => {
     const { playlistId } = useParams();
     const navigate = useNavigate();
-    const { playSong } = useAudio();
+    const { playSong, addToQueue } = useAudio();
     const { user, isAuthenticated } = useAuth();
     const [playlist, setPlaylist] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -101,12 +101,6 @@ const PlaylistDetailPage = () => {
     }, [isAuthenticated]);
 
     const handlePlaySongFromPlaylist = (song) => {
-        if (song.isPremium && !isAuthenticated) {
-            toast.info('Đây là nội dung Premium. Vui lòng đăng nhập để nghe.');
-            navigate('/login');
-            return;
-        }
-
         if (playlist && playlist.songs) {
             playSong(song, playlist.songs, { playlistId: playlist.id });
         }
@@ -115,15 +109,15 @@ const PlaylistDetailPage = () => {
     const handlePlayAll = () => {
         if (!playlist || !playlist.songs || playlist.songs.length === 0) return;
 
-        const firstPlayableSong = playlist.songs.find(s => !s.isPremium);
-
-        if (playlist.songs[0].isPremium && !isAuthenticated) {
-            toast.info('Bài hát đầu tiên trong playlist này là Premium. Vui lòng đăng nhập để nghe.');
-            navigate('/login');
-            return;
-        }
+        const firstSong = playlist.songs[0];
 
         if (!isAuthenticated) {
+            const firstPlayableSong = playlist.songs.find(s => !s.isPremium);
+            if (firstSong.isPremium) {
+                toast.info('Bài hát đầu tiên trong playlist này là Premium. Vui lòng đăng nhập.');
+                navigate('/login');
+                return;
+            }
             if (firstPlayableSong) {
                 playSong(firstPlayableSong, playlist.songs, { playlistId: playlist.id });
             } else {
@@ -131,7 +125,7 @@ const PlaylistDetailPage = () => {
                 navigate('/login');
             }
         } else {
-            playSong(playlist.songs[0], playlist.songs, { playlistId: playlist.id });
+            playSong(firstSong, playlist.songs, { playlistId: playlist.id });
         }
     };
 
@@ -268,6 +262,7 @@ const PlaylistDetailPage = () => {
                                 <span>{song.listenCount.toLocaleString('vi-VN')}</span>
                             </div>
                             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button size="icon" variant="ghost" onClick={() => addToQueue(song)} data-tooltip-id="global-tooltip" data-tooltip-content="Thêm vào hàng đợi"><ListPlus size={18} /></Button>
                                 <LikeButton initialIsLiked={song.isLikedByCurrentUser} initialLikeCount={song.likeCount} onToggleLike={() => handleToggleSongLike(song.id)} showCount={false} />
                                 <Button size="icon" variant="ghost" onClick={() => handlePlaySongFromPlaylist(song)}><Play size={20} /></Button>
                                 {isAuthenticated && playlist.canEdit && <Button size="icon" variant="ghost" onClick={() => setSongToRemove(song)} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></Button>}

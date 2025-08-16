@@ -5,7 +5,7 @@ import { useAudio } from '../../../hooks/useAudio';
 import { useAuth } from '../../../hooks/useAuth';
 import { musicService } from '../services/musicService';
 import Button from '../../../components/common/Button';
-import { Play, Pause, Plus, Download, BarChart3, User, CalendarDays, Crown } from 'lucide-react';
+import { Play, Pause, Plus, Download, BarChart3, User, CalendarDays, Crown, ListPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
@@ -17,7 +17,7 @@ const SongDetail = () => {
     const { songId } = useParams();
     const navigate = useNavigate();
     const { currentTheme } = useDarkMode();
-    const { playSong, togglePlay, currentSong, isPlaying } = useAudio();
+    const { playSong, togglePlay, currentSong, isPlaying, addToQueue } = useAudio();
     const { isAuthenticated } = useAuth();
 
     const [song, setSong] = useState(null);
@@ -49,12 +49,6 @@ const SongDetail = () => {
 
     const handlePlayPause = () => {
         if (song) {
-            if (song.isPremium && !isAuthenticated) {
-                toast.info('Đây là nội dung Premium. Vui lòng đăng nhập để nghe.');
-                navigate('/login');
-                return;
-            }
-
             if (currentSong?.id === song.id) {
                 togglePlay();
             } else {
@@ -70,6 +64,12 @@ const SongDetail = () => {
             return false;
         }
         return true;
+    };
+
+    const handleAddToQueue = () => {
+        if (song) {
+            addToQueue(song);
+        }
     };
 
     const handleToggleLike = useCallback(async () => {
@@ -147,6 +147,9 @@ const SongDetail = () => {
                                 showCount={false}
                                 size={22}
                             />
+                            <Button variant="outline" size="icon" onClick={handleAddToQueue} data-tooltip-id="global-tooltip" data-tooltip-content="Thêm vào hàng đợi">
+                                <ListPlus className="w-5 h-5"/>
+                            </Button>
                             <Button variant="outline" size="icon" onClick={() => handleActionRequirement('thêm vào playlist') && setIsAddToPlaylistModalOpen(true)}>
                                 <Plus className="w-5 h-5"/>
                             </Button>

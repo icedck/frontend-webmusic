@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Play, Plus, Crown } from 'lucide-react';
+import { Play, Plus, Crown, ListPlus } from 'lucide-react';
 import { AddToPlaylistModal } from '../../modules/music/components/AddToPlaylistModal';
 import { LikeButton } from '../../modules/music/components/LikeButton';
 import { musicService } from '../../modules/music/services/musicService';
 import { useAuth } from '../../hooks/useAuth';
+import { useAudio } from '../../hooks/useAudio';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -12,6 +13,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const SongCard = ({ song, onPlay }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { isAuthenticated } = useAuth();
+    const { addToQueue } = useAudio();
     const navigate = useNavigate();
 
     const handleOpenModal = (e) => {
@@ -42,15 +44,16 @@ const SongCard = ({ song, onPlay }) => {
     const handlePlayClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (song.isPremium && !isAuthenticated) {
-            toast.info('Đây là nội dung Premium. Vui lòng đăng nhập để nghe.');
-            navigate('/login');
-            return;
-        }
         if(onPlay) {
             onPlay(song);
         }
     }
+
+    const handleAddToQueue = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        addToQueue(song);
+    };
 
     return (
         <>
@@ -71,6 +74,25 @@ const SongCard = ({ song, onPlay }) => {
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                             <button onClick={handlePlayClick} className="w-12 h-12 bg-music-500 hover:bg-music-600 rounded-full flex items-center justify-center text-white scale-0 group-hover:scale-100 transition-transform duration-300 shadow-lg">
                                 <Play size={24} className="ml-1" />
+                            </button>
+                        </div>
+
+                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <button
+                                onClick={handleAddToQueue}
+                                className="w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white/40 dark:bg-black/20 dark:hover:bg-black/40 backdrop-blur-sm rounded-full text-white"
+                                aria-label="Thêm vào hàng đợi"
+                                data-tooltip-id="global-tooltip" data-tooltip-content="Thêm vào hàng đợi"
+                            >
+                                <ListPlus size={18} />
+                            </button>
+                            <button
+                                onClick={handleOpenModal}
+                                className="w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white/40 dark:bg-black/20 dark:hover:bg-black/40 backdrop-blur-sm rounded-full text-white"
+                                aria-label="Thêm vào playlist"
+                                data-tooltip-id="global-tooltip" data-tooltip-content="Thêm vào playlist"
+                            >
+                                <Plus size={18} />
                             </button>
                         </div>
                     </div>
@@ -97,13 +119,6 @@ const SongCard = ({ song, onPlay }) => {
                         />
                     </div>
                 </div>
-                <button
-                    onClick={handleOpenModal}
-                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white/40 dark:bg-black/20 dark:hover:bg-black/40 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    aria-label="Add to playlist"
-                >
-                    <Plus size={18} />
-                </button>
             </div>
             {isModalOpen && (
                 <AddToPlaylistModal

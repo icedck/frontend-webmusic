@@ -1,9 +1,9 @@
-// frontend/src/pages/MusicDiscoveryPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HeroSlider from '../components/music/HeroSlider';
 import PlaylistCard from '../components/music/PlaylistCard';
 import SongCard from '../components/music/SongCard';
+import ArtistCard from '../components/music/ArtistCard';
 import { musicService } from '../modules/music/services/musicService';
 import { toast } from 'react-toastify';
 import { useAudio } from '../hooks/useAudio';
@@ -61,11 +61,11 @@ const Footer = () => {
     );
 };
 
-const SkeletonGrid = ({ items = 5 }) => (
+const SkeletonGrid = ({ items = 5, type = 'default' }) => (
     <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-${items} gap-x-6 gap-y-8`}>
         {Array.from({ length: items }).map((_, index) => (
             <div key={index} className="space-y-2 animate-pulse">
-                <div className="aspect-square bg-slate-800 rounded-lg"></div>
+                <div className={`aspect-square bg-slate-800 ${type === 'artist' ? 'rounded-full' : 'rounded-lg'}`}></div>
                 <div className="h-4 bg-slate-800 rounded w-3/4"></div>
                 <div className="h-3 bg-slate-800 rounded w-1/2"></div>
             </div>
@@ -76,13 +76,13 @@ const SkeletonGrid = ({ items = 5 }) => (
 
 const MusicDiscoveryPage = () => {
     const { playSong } = useAudio();
-
     const [topSongs, setTopSongs] = useState([]);
     const [topPlaylists, setTopPlaylists] = useState([]);
     const [recentSongs, setRecentSongs] = useState([]);
     const [recentPlaylists, setRecentPlaylists] = useState([]);
     const [mostLikedSongs, setMostLikedSongs] = useState([]);
     const [mostLikedPlaylists, setMostLikedPlaylists] = useState([]);
+    const [topSingers, setTopSingers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -95,14 +95,16 @@ const MusicDiscoveryPage = () => {
                     recentSongsRes,
                     recentPlaylistsRes,
                     mostLikedSongsRes,
-                    mostLikedPlaylistsRes
+                    mostLikedPlaylistsRes,
+                    topSingersRes
                 ] = await Promise.all([
-                    musicService.getTopSongs(8),
+                    musicService.getTopSongs(5),
                     musicService.getTopListenedPlaylists(),
-                    musicService.getRecentSongs(8),
-                    musicService.getRecentPlaylists(8),
-                    musicService.getMostLikedSongs(8),
-                    musicService.getMostLikedPlaylists(8)
+                    musicService.getRecentSongs(5),
+                    musicService.getRecentPlaylists(5),
+                    musicService.getMostLikedSongs(5),
+                    musicService.getMostLikedPlaylists(5),
+                    musicService.getTopSingers(5)
                 ]);
 
                 if (topSongsRes.success) setTopSongs(topSongsRes.data);
@@ -111,6 +113,7 @@ const MusicDiscoveryPage = () => {
                 if (recentPlaylistsRes.success) setRecentPlaylists(recentPlaylistsRes.data);
                 if (mostLikedSongsRes.success) setMostLikedSongs(mostLikedSongsRes.data);
                 if (mostLikedPlaylistsRes.success) setMostLikedPlaylists(mostLikedPlaylistsRes.data);
+                if (topSingersRes.success) setTopSingers(topSingersRes.data);
 
             } catch (error) {
                 toast.error("Không thể tải dữ liệu trang chủ.");
@@ -131,93 +134,59 @@ const MusicDiscoveryPage = () => {
             <HeroSlider />
 
             <Section title="Playlist Nghe Nhiều">
-                {loading ? (
-                    <SkeletonGrid items={5} />
-                ) : topPlaylists.length > 0 ? (
+                {loading ? <SkeletonGrid items={5} /> : topPlaylists.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                        {topPlaylists.slice(0, 5).map(p => <PlaylistCard key={p.id} playlist={p} />)}
+                        {topPlaylists.map(p => <PlaylistCard key={p.id} playlist={p} />)}
                     </div>
-                ) : (
-                    <p className="text-slate-400">Không có playlist nào để hiển thị.</p>
-                )}
+                ) : <p className="text-slate-400">Không có playlist nào để hiển thị.</p>}
             </Section>
 
             <Section title="Bài hát nghe nhiều">
-                {loading ? (
-                    <SkeletonGrid items={5} />
-                ) : topSongs.length > 0 ? (
+                {loading ? <SkeletonGrid items={5} /> : topSongs.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                        {topSongs.slice(0, 5).map(song =>
-                            <SongCard
-                                key={song.id}
-                                song={song}
-                                onPlay={() => handlePlaySongFromList(song, topSongs)}
-                            />
-                        )}
+                        {topSongs.map(song => <SongCard key={song.id} song={song} onPlay={() => handlePlaySongFromList(song, topSongs)} />)}
                     </div>
-                ) : (
-                    <p className="text-slate-400">Không có bài hát nào để hiển thị.</p>
-                )}
+                ) : <p className="text-slate-400">Không có bài hát nào để hiển thị.</p>}
             </Section>
 
             <Section title="Mới Phát Hành">
-                {loading ? (
-                    <SkeletonGrid items={5} />
-                ) : recentSongs.length > 0 ? (
+                {loading ? <SkeletonGrid items={5} /> : recentSongs.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                        {recentSongs.slice(0, 5).map(song =>
-                            <SongCard
-                                key={song.id}
-                                song={song}
-                                onPlay={() => handlePlaySongFromList(song, recentSongs)}
-                            />
-                        )}
+                        {recentSongs.map(song => <SongCard key={song.id} song={song} onPlay={() => handlePlaySongFromList(song, recentSongs)} />)}
                     </div>
-                ) : (
-                    <p className="text-slate-400">Không có bài hát mới nào để hiển thị.</p>
-                )}
+                ) : <p className="text-slate-400">Không có bài hát mới nào để hiển thị.</p>}
             </Section>
 
             <Section title="Playlist Mới">
-                {loading ? (
-                    <SkeletonGrid items={5} />
-                ) : recentPlaylists.length > 0 ? (
+                {loading ? <SkeletonGrid items={5} /> : recentPlaylists.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                        {recentPlaylists.slice(0, 5).map(p => <PlaylistCard key={p.id} playlist={p} />)}
+                        {recentPlaylists.map(p => <PlaylistCard key={p.id} playlist={p} />)}
                     </div>
-                ) : (
-                    <p className="text-slate-400">Không có playlist mới nào để hiển thị.</p>
-                )}
+                ) : <p className="text-slate-400">Không có playlist mới nào để hiển thị.</p>}
             </Section>
 
             <Section title="Được Yêu Thích Nhất">
-                {loading ? (
-                    <SkeletonGrid items={5} />
-                ) : mostLikedSongs.length > 0 ? (
+                {loading ? <SkeletonGrid items={5} /> : mostLikedSongs.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                        {mostLikedSongs.slice(0, 5).map(song =>
-                            <SongCard
-                                key={song.id}
-                                song={song}
-                                onPlay={() => handlePlaySongFromList(song, mostLikedSongs)}
-                            />
-                        )}
+                        {mostLikedSongs.map(song => <SongCard key={song.id} song={song} onPlay={() => handlePlaySongFromList(song, mostLikedSongs)} />)}
                     </div>
-                ) : (
-                    <p className="text-slate-400">Không có bài hát nào được yêu thích để hiển thị.</p>
-                )}
+                ) : <p className="text-slate-400">Không có bài hát nào được yêu thích để hiển thị.</p>}
             </Section>
 
             <Section title="Playlist Được Yêu Thích">
-                {loading ? (
-                    <SkeletonGrid items={5} />
-                ) : mostLikedPlaylists.length > 0 ? (
+                {loading ? <SkeletonGrid items={5} /> : mostLikedPlaylists.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                        {mostLikedPlaylists.slice(0, 5).map(p => <PlaylistCard key={p.id} playlist={p} />)}
+                        {mostLikedPlaylists.map(p => <PlaylistCard key={p.id} playlist={p} />)}
                     </div>
-                ) : (
-                    <p className="text-slate-400">Không có playlist nào được yêu thích để hiển thị.</p>
-                )}
+                ) : <p className="text-slate-400">Không có playlist nào được yêu thích để hiển thị.</p>}
+            </Section>
+
+            <Section title="Nghệ sĩ nổi bật">
+                {loading ? <SkeletonGrid items={5} type="artist" /> : topSingers.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
+                        {topSingers.map(artist => <ArtistCard key={artist.id} artist={artist} />)}
+                    </div>
+                ) : <p className="text-slate-400">Không có nghệ sĩ nào để hiển thị.</p>}
             </Section>
 
             <Section title="#WebMusicChart" />

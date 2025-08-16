@@ -297,7 +297,25 @@ export const AudioProvider = ({ children }) => {
 
   const toggleRepeat = () => setIsRepeat(prev => !prev);
   const toggleShuffle = () => setIsShuffle(prev => !prev);
-  const addToQueue = (song) => setQueue(prev => [...prev, song]);
+
+  const addToQueue = (song) => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để sử dụng tính năng này.');
+      navigate('/login');
+      return;
+    }
+
+    const toastId = `add-queue-${song.id}`;
+
+    if (queue.some(s => s.id === song.id)) {
+      toast.info(`"${song.title}" đã có trong danh sách phát.`, { toastId });
+      return;
+    }
+
+    setQueue(prev => [...prev, song]);
+    toast.success(`Đã thêm "${song.title}" vào danh sách phát.`, { toastId });
+  };
+
   const removeFromQueue = (songId) => setQueue(prev => prev.filter(song => song.id !== songId));
   const clearQueue = () => {
     setQueue([]);
