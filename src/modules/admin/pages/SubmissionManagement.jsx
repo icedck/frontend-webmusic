@@ -4,8 +4,8 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
 import { toast } from 'react-toastify';
 import RejectReasonModal from '../components/RejectReasonModal';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import SubmissionDetailModal from '../components/SubmissionDetailModal';
+import { CheckCircle, XCircle, Eye, MoreVertical } from 'lucide-react';
 
 const SubmissionManagement = () => {
     const { currentTheme } = useDarkMode();
@@ -14,16 +14,23 @@ const SubmissionManagement = () => {
     const [error, setError] = useState(null);
 
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedSubmission, setSelectedSubmission] = useState(null);
-    const [actionLoading, setActionLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(null);
 
     const fetchSubmissions = async () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await adminService.getPendingSubmissions();
-            if (Array.isArray(response)) {
-                setSubmissions(response);
+            const params = {
+                page: 0,
+                size: 20,
+                status: 'PENDING'
+            };
+            const response = await adminService.getSubmissions(params);
+
+            if (response && Array.isArray(response.content)) {
+                setSubmissions(response.content);
             } else {
                 setSubmissions([]);
             }
@@ -40,7 +47,7 @@ const SubmissionManagement = () => {
     }, []);
 
     const handleApprove = async (id) => {
-        setActionLoading(true);
+        setActionLoading(id);
         try {
             await adminService.approveSubmission(id);
             toast.success("Đã duyệt yêu cầu thành công!");
@@ -48,7 +55,7 @@ const SubmissionManagement = () => {
         } catch (err) {
             toast.error(err.response?.data?.message || "Lỗi khi duyệt yêu cầu.");
         } finally {
-            setActionLoading(false);
+            setActionLoading(null);
         }
     };
 
@@ -57,19 +64,24 @@ const SubmissionManagement = () => {
         setIsRejectModalOpen(true);
     };
 
+    const openDetailModal = (submission) => {
+        setSelectedSubmission(submission);
+        setIsDetailModalOpen(true);
+    };
+
     const handleReject = async (reason) => {
         if (!selectedSubmission) return;
-        setActionLoading(true);
+        setActionLoading(selectedSubmission.id);
         try {
             await adminService.rejectSubmission(selectedSubmission.id, reason);
             toast.success("Đã từ chối yêu cầu thành công!");
             setSubmissions(prev => prev.filter(sub => sub.id !== selectedSubmission.id));
-            setIsRejectModalOpen(false);
-            setSelectedSubmission(null);
         } catch (err) {
             toast.error(err.response?.data?.message || "Lỗi khi từ chối yêu cầu.");
         } finally {
-            setActionLoading(false);
+            setActionLoading(null);
+            setIsRejectModalOpen(false);
+            setSelectedSubmission(null);
         }
     };
 
@@ -80,12 +92,12 @@ const SubmissionManagement = () => {
 
             <div className={`overflow-x-auto ${currentTheme.bgCard} rounded-xl border ${currentTheme.border}`}>
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
+                    <thead className="bg-gray-50 dark:bg-slate-800/50">
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Creator</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ngày gửi</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Creator</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Ngày gửi</th>
+                        <th className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
                     </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -94,19 +106,40 @@ const SubmissionManagement = () => {
                     {!loading && !error && submissions.length === 0 && (<tr><td colSpan="4" className="text-center py-10">Không có yêu cầu nào đang chờ duyệt.</td></tr>)}
 
                     {!loading && !error && submissions.map(sub => (
-                        <tr key={sub.id}>
-                            <td className="px-6 py-4 font-medium">
-                                <Link to={`/song/${sub.approvedSongId || sub.id}`} target="_blank" className="hover:underline">{sub.title}</Link>
-                            </td>
-                            <td className="px-6 py-4">{sub.creatorName}</td>
-                            <td className="px-6 py-4 text-sm">{new Date(sub.submissionDate).toLocaleDateString('vi-VN')}</td>
+                        <tr key={sub.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <td className="px-6 py-4 font-medium">{sub.title}</td>
+                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{sub.creatorName}</td>
+                            <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{new Date(sub.submissionDate).toLocaleDateString('vi-VN')}</td>
                             <td className="px-6 py-4 text-right">
-                                <div className="flex justify-end space-x-2">
-                                    <Button size="sm" variant="success" onClick={() => handleApprove(sub.id)} disabled={actionLoading}>
-                                        <CheckCircle className="w-4 h-4 mr-1"/> Duyệt
+                                <div className="flex justify-end items-center space-x-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => openDetailModal(sub)}
+                                        data-tooltip-id="global-tooltip"
+                                        data-tooltip-content="Xem chi tiết"
+                                    >
+                                        <Eye className="w-5 h-5 text-slate-500" />
                                     </Button>
-                                    <Button size="sm" variant="danger" onClick={() => openRejectModal(sub)} disabled={actionLoading}>
-                                        <XCircle className="w-4 h-4 mr-1"/> Từ chối
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleApprove(sub.id)}
+                                        disabled={actionLoading === sub.id}
+                                        data-tooltip-id="global-tooltip"
+                                        data-tooltip-content="Duyệt"
+                                    >
+                                        <CheckCircle className="w-5 h-5 text-green-500" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => openRejectModal(sub)}
+                                        disabled={actionLoading === sub.id}
+                                        data-tooltip-id="global-tooltip"
+                                        data-tooltip-content="Từ chối"
+                                    >
+                                        <XCircle className="w-5 h-5 text-red-500" />
                                     </Button>
                                 </div>
                             </td>
@@ -120,7 +153,13 @@ const SubmissionManagement = () => {
                 isOpen={isRejectModalOpen}
                 onClose={() => setIsRejectModalOpen(false)}
                 onConfirm={handleReject}
-                isLoading={actionLoading}
+                isLoading={!!actionLoading}
+            />
+
+            <SubmissionDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                submissionId={selectedSubmission?.id}
             />
         </div>
     );

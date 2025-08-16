@@ -290,6 +290,36 @@ const getMostLikedPlaylists = async (limit = 8) => {
     }
 };
 
+const searchSongs = async (keyword, page = 0, size = 10) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs`, { params: { search: keyword, page, size } });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to search songs:", error);
+        throw error;
+    }
+};
+
+const searchPlaylists = async (keyword, page = 0, size = 10) => {
+    try {
+        const response = await apiService.get(`/api/v1/playlists/search`, { params: { keyword, page, size } });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to search playlists:", error);
+        throw error;
+    }
+};
+
+const searchSingers = async (keyword, page = 0, size = 10) => {
+    try {
+        const response = await apiService.get(`/api/v1/singers/search`, { params: { keyword, page, size } });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to search singers:", error);
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -320,4 +350,7 @@ export const musicService = {
     getRecentPlaylists,
     getMostLikedSongs,
     getMostLikedPlaylists,
+    searchSongs,
+    searchPlaylists,
+    searchSingers,
 };

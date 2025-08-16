@@ -1,4 +1,3 @@
-// File: src/components/layout/DashboardLayout.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
@@ -11,12 +10,13 @@ import ConfirmationModal from '../common/ConfirmationModal';
 import {
   Music, Home, Search, Library, BarChart3, Users as AdminIcon, Mic2, ListMusic as SongIcon, CheckSquare,
   Crown, Upload, LogOut, Sun, Moon, User, Settings, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat,
-  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen, Tags, History
+  Repeat1, Briefcase, KeyRound, ChevronDown, BookOpen, Tags, History, Bell
 } from 'lucide-react';
+import NotificationDropdown from './NotificationDropdown';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-// START-CHANGE: Thêm hàm format ngày
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -25,7 +25,6 @@ const formatDate = (dateString) => {
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 };
-// END-CHANGE
 
 const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   const { toggleDarkMode, isDarkMode } = useDarkMode();
@@ -39,15 +38,33 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef(null);
 
+  const {
+    notifications, unreadCount, loading: notificationsLoading, pageInfo,
+    fetchNotifications, markNotificationAsRead, markAllNotificationsAsRead
+  } = useNotifications();
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (avatarMenuRef.current && !avatarMenuRef.current.contains(event.target)) {
         setIsAvatarMenuOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setIsNotifOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [avatarMenuRef]);
+  }, []);
+
+  const handleNotifToggle = () => {
+    const shouldOpen = !isNotifOpen;
+    setIsNotifOpen(shouldOpen);
+    if (shouldOpen) {
+      fetchNotifications(0);
+    }
+  };
 
   const mainNavItems = [
     { href: '/', icon: Home, label: 'Trang chủ' },
@@ -142,7 +159,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
             <div className="flex items-center gap-2">
               {user ? (
                   <>
-                    {/* START-CHANGE: Ẩn nút nâng cấp nếu đã là premium */}
                     {!isPremium() && (
                         <Link to="/premium">
                           <button className="hidden lg:inline-flex relative group items-center justify-center h-10 px-4 font-medium text-sm text-white rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 flex-shrink-0 whitespace-nowrap min-w-max">
@@ -151,15 +167,38 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                           </button>
                         </Link>
                     )}
-                    {/* END-CHANGE */}
 
                     <button onClick={toggleDarkMode} className="p-2 rounded-full text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
                       {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
 
+                    <div className="relative" ref={notifRef}>
+                      <button onClick={handleNotifToggle} className="relative p-2 rounded-full text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
+                        <Bell size={20} />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1 right-1 flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                        )}
+                      </button>
+                      {isNotifOpen && (
+                          <NotificationDropdown
+                              notifications={notifications}
+                              loading={notificationsLoading}
+                              onClose={() => setIsNotifOpen(false)}
+                              onMarkAsRead={markNotificationAsRead}
+                              onMarkAllAsRead={() => {
+                                markAllNotificationsAsRead();
+                              }}
+                              onLoadMore={() => fetchNotifications(pageInfo.page + 1)}
+                              hasMore={pageInfo.page + 1 < pageInfo.totalPages}
+                          />
+                      )}
+                    </div>
+
                     <div className="relative" ref={avatarMenuRef}>
                       <button onClick={() => setIsAvatarMenuOpen(prev => !prev)} className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                        {/* START-CHANGE: Thêm hiệu ứng cho avatar premium */}
                         <div className="relative">
                           <div className={`w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden
                             ${isPremium() ? 'ring-2 ring-offset-1 ring-amber-400 dark:ring-offset-slate-900' : ''}`}>
@@ -171,13 +210,11 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                               </div>
                           )}
                         </div>
-                        {/* END-CHANGE */}
                         <ChevronDown size={16} className={`transition-transform ${isAvatarMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
 
                       {isAvatarMenuOpen && (
                           <div className="absolute top-full right-0 mt-2 w-72 p-2 rounded-xl shadow-lg border backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 border-slate-200/50 dark:border-slate-700/50">
-                            {/* START-CHANGE: Sửa layout và thêm trạng thái subscription */}
                             <div className="flex items-start gap-3 p-2 mb-2">
                               <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center">
                                 {user.avatarPath ? <img src={`${API_BASE_URL}${user.avatarPath}`} alt="Avatar" className="w-full h-full object-cover" /> : <User size={24} />}
@@ -200,7 +237,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                                 )}
                               </div>
                             </div>
-                            {/* END-CHANGE */}
 
                             <hr className="my-1 border-slate-200 dark:border-slate-700" />
 

@@ -68,7 +68,6 @@ const createSingerByAdmin = async (formData) => {
     }
 };
 
-// START-CHANGE: Thêm hàm mới để tạo nhiều ca sĩ
 const createMultipleSingersByAdmin = async (formData) => {
     try {
         const response = await apiService.post('/api/v1/singers/admin/batch', formData, {
@@ -80,7 +79,6 @@ const createMultipleSingersByAdmin = async (formData) => {
         throw error;
     }
 };
-// END-CHANGE
 
 const updateSingerByAdmin = async (singerId, singerRequest, avatarFile) => {
     const formData = new FormData();
@@ -236,17 +234,15 @@ const toggleSongVisibility = async (songId) => {
     }
 };
 
-const getPendingSubmissions = async (page = 0, size = 10) => {
+const getSubmissions = async (params = {}) => {
     try {
-        const response = await apiService.get(`/api/v1/submissions/pending?page=${page}&size=${size}`);
-        const data = response.data;
-        return data.content ? data.content : data;
+        const response = await apiService.get('/api/v1/submissions/admin/all', { params });
+        return response.data;
     } catch (error) {
-        console.error("Failed to fetch pending submissions:", error);
+        console.error("Failed to fetch submissions:", error);
         throw error;
     }
 };
-
 
 const approveSubmission = async (submissionId) => {
     try {
@@ -264,6 +260,16 @@ const rejectSubmission = async (submissionId, reason) => {
         return response.data;
     } catch (error) {
         console.error(`Failed to reject submission ${submissionId}:`, error);
+        throw error;
+    }
+};
+
+const getSubmissionDetails = async (submissionId) => {
+    try {
+        const response = await apiService.get(`/api/v1/submissions/${submissionId}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to fetch submission details for id ${submissionId}:`, error);
         throw error;
     }
 };
@@ -298,8 +304,9 @@ export const adminService = {
     getSongByIdForAdmin,
     updateSongByAdmin,
     toggleSongVisibility,
-    getPendingSubmissions,
+    getSubmissions,
     approveSubmission,
     rejectSubmission,
     createMultipleTags,
+    getSubmissionDetails,
 };

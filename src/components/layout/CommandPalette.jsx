@@ -12,7 +12,9 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
 
     useEffect(() => {
         if (isOpen) {
-            inputRef.current?.focus();
+            setSearchTerm('');
+            setActiveIndex(0);
+            setTimeout(() => inputRef.current?.focus(), 100);
         }
     }, [isOpen]);
 
@@ -25,10 +27,19 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
         handleClose();
     };
 
-    const filteredCommands = navigationCommands.filter(command =>
-        command.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (command.category && command.category.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const handleSearchSubmit = () => {
+        if (searchTerm.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+            handleClose();
+        }
+    };
+
+    const filteredCommands = searchTerm
+        ? navigationCommands.filter(command =>
+            command.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (command.category && command.category.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        : navigationCommands;
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -36,14 +47,16 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
 
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                setActiveIndex((prev) => (prev + 1) % filteredCommands.length);
+                setActiveIndex((prev) => (prev + 1) % (filteredCommands.length || 1));
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                setActiveIndex((prev) => (prev - 1 + filteredCommands.length) % filteredCommands.length);
+                setActiveIndex((prev) => (prev - 1 + (filteredCommands.length || 1)) % (filteredCommands.length || 1));
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (filteredCommands[activeIndex]) {
+                if (filteredCommands.length > 0 && filteredCommands[activeIndex]) {
                     handleAction(filteredCommands[activeIndex]);
+                } else {
+                    handleSearchSubmit();
                 }
             } else if (e.key === 'Escape') {
                 handleClose();
@@ -52,11 +65,9 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, activeIndex, filteredCommands]);
+    }, [isOpen, activeIndex, filteredCommands, searchTerm]);
 
     const handleClose = () => {
-        setSearchTerm('');
-        setActiveIndex(0);
         onClose();
     };
 
@@ -73,31 +84,32 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Tìm kiếm trang hoặc hành động..."
+                        placeholder="Tìm kiếm trang, bài hát, playlist..."
                         className={`w-full bg-transparent outline-none ${currentTheme.text} placeholder-gray-500 dark:placeholder-gray-400`}
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setActiveIndex(0); }}
                     />
                 </div>
                 <ul className="p-2 max-h-[400px] overflow-y-auto">
-                    {filteredCommands.length > 0 ? (
+                    {searchTerm && filteredCommands.length === 0 ? (
+                        <li className={`p-4 text-center ${currentTheme.textSecondary}`}>
+                            Không tìm thấy trang. Nhấn Enter để tìm kiếm "{searchTerm}"
+                        </li>
+                    ) : (
                         filteredCommands.map((command, index) => (
                             <li key={command.name}>
-                                <Link
-                                    to={command.href}
+                                <button
                                     onClick={(e) => { e.preventDefault(); handleAction(command); }}
-                                    className={`flex items-center justify-between p-3 rounded-lg text-sm transition-colors ${currentTheme.text} ${index === activeIndex ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                    className={`flex items-center justify-between p-3 rounded-lg text-sm transition-colors w-full text-left ${currentTheme.text} ${index === activeIndex ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
                                 >
                                     <div className="flex items-center">
                                         <command.icon className="w-5 h-5 mr-3" />
                                         <span>{command.name}</span>
                                     </div>
                                     {command.category && <span className={`text-xs px-2 py-1 rounded-md ${currentTheme.textSecondary} bg-black/5 dark:bg-white/5`}>{command.category}</span>}
-                                </Link>
+                                </button>
                             </li>
                         ))
-                    ) : (
-                        <li className={`p-4 text-center ${currentTheme.textSecondary}`}>Không tìm thấy kết quả.</li>
                     )}
                 </ul>
             </div>
