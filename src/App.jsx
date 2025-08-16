@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -51,6 +50,7 @@ import { AudioProvider } from "./hooks/useAudio.jsx";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import "react-toastify/dist/ReactToastify.css";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function AppContent() {
   const { isDarkMode } = useDarkMode();
@@ -98,7 +98,7 @@ function AppContent() {
               <Route path="/creator/submission/edit/:submissionId" element={<SongSubmission />} />
             </Route>
           </Route>
-
+          <Route path="*" element={<NotFoundPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Tooltip
