@@ -27,9 +27,5 @@ Thumbs.db
 # Logs
 *.log
 
-# Audio files (if storing locally during development)
-public/audio/
-public/uploads/
-
 # Cache
 .cache/
