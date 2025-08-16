@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { musicService } from '../modules/music/services/musicService';
+import { useAuth } from './useAuth';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 export const AudioContext = createContext();
 
@@ -24,9 +27,15 @@ export const AudioProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [playContext, setPlayContext] = useState({});
 
+  const isPreviewingRef = useRef(false);
+  const isPlayingUpsellRef = useRef(false);
+
+  const { isAuthenticated, isPremium } = useAuth();
+  const navigate = useNavigate();
   const audioRef = useRef(null);
   const fadeIntervalRef = useRef(null);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+  const UPSELL_AUDIO_URL = '/audio/premium_upsell.mp3';
 
   const FADE_DURATION = 300;
   const FADE_INTERVAL = 30;
@@ -38,17 +47,18 @@ export const AudioProvider = ({ children }) => {
     }
   };
 
-  const fadeIn = useCallback(async () => {
+  const fadeIn = useCallback(() => {
     clearFadeInterval();
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.volume = 0;
-    try {
-      await audio.play();
-    } catch (e) {
-      console.error("Error on play attempt:", e);
-      return;
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.error("Audio play failed:", error);
+      });
     }
 
     const targetVolume = volume;
@@ -85,14 +95,76 @@ export const AudioProvider = ({ children }) => {
     }, FADE_INTERVAL);
   }, []);
 
+  const stopAndClearPlayer = useCallback(() => {
+    fadeOut(() => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+      setCurrentSong(null);
+      setQueue([]);
+      setCurrentIndex(-1);
+      setCurrentTime(0);
+      setDuration(0);
+      isPreviewingRef.current = false;
+      isPlayingUpsellRef.current = false;
+    });
+  }, [fadeOut]);
+
+  const playUpsellAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    isPlayingUpsellRef.current = true;
+
+    fadeOut(() => {
+      audio.src = UPSELL_AUDIO_URL;
+      audio.load();
+      audio.addEventListener('canplaythrough', fadeIn, { once: true });
+    });
+  }, [fadeOut, fadeIn]);
+
+  const playNext = useCallback(() => {
+    if (isPlayingUpsellRef.current) return;
+    if (queue.length === 0) return;
+    let nextIndex;
+    if (isShuffle) {
+      nextIndex = Math.floor(Math.random() * queue.length);
+      if (queue.length > 1 && nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % queue.length;
+      }
+    } else {
+      nextIndex = (currentIndex + 1) % queue.length;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    playSong(queue[nextIndex], queue, playContext);
+  }, [queue, isShuffle, currentIndex, playContext]);
+
   const playSong = useCallback((song, playlist = [], context = {}) => {
+    if (!song) return;
+
+    isPreviewingRef.current = false;
+    isPlayingUpsellRef.current = false;
+
+    if (song.isPremium && !isAuthenticated) {
+      toast.info('Đây là nội dung Premium. Vui lòng đăng nhập để nghe.');
+      navigate('/login');
+      return;
+    }
+
+    if (song.isPremium && isAuthenticated && !isPremium()) {
+      isPreviewingRef.current = true;
+    }
+
     clearFadeInterval();
     const audio = audioRef.current;
     if (!audio) return;
 
-    musicService.incrementSongListenCount(song.id);
-    if (context.playlistId) {
-      musicService.incrementPlaylistListenCount(context.playlistId);
+    if (!isPreviewingRef.current) {
+      musicService.incrementSongListenCount(song.id);
+      if (context.playlistId) {
+        musicService.incrementPlaylistListenCount(context.playlistId);
+      }
     }
 
     const executePlay = () => {
@@ -117,13 +189,8 @@ export const AudioProvider = ({ children }) => {
       }
 
       audio.src = `${API_BASE_URL}${song.filePath}`;
-
-      const onCanPlay = () => {
-        fadeIn();
-        audio.removeEventListener('canplaythrough', onCanPlay);
-      };
-      audio.addEventListener('canplaythrough', onCanPlay);
       audio.load();
+      audio.addEventListener('canplaythrough', fadeIn, { once: true });
     };
 
     if (isPlaying) {
@@ -131,28 +198,26 @@ export const AudioProvider = ({ children }) => {
     } else {
       executePlay();
     }
-  }, [API_BASE_URL, queue, isPlaying, fadeIn, fadeOut]);
-
-  const playNext = useCallback(() => {
-    if (queue.length === 0) return;
-    let nextIndex;
-    if (isShuffle) {
-      nextIndex = Math.floor(Math.random() * queue.length);
-      if (queue.length > 1 && nextIndex === currentIndex) {
-        nextIndex = (currentIndex + 1) % queue.length;
-      }
-    } else {
-      nextIndex = (currentIndex + 1) % queue.length;
-    }
-    playSong(queue[nextIndex], queue, playContext);
-  }, [queue, isShuffle, currentIndex, playSong, playContext]);
+  }, [API_BASE_URL, isPlaying, fadeIn, fadeOut, isAuthenticated, isPremium, navigate, playNext]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      if (isPreviewingRef.current && !isNaN(audio.duration) && audio.currentTime >= audio.duration * 0.15) {
+        isPreviewingRef.current = false;
+        playUpsellAudio();
+      }
+    };
+
     const handleEnded = () => {
+      if (isPlayingUpsellRef.current) {
+        isPlayingUpsellRef.current = false;
+        playNext();
+        return;
+      }
       if (isRepeat) {
         audio.currentTime = 0;
         fadeIn();
@@ -160,12 +225,14 @@ export const AudioProvider = ({ children }) => {
         playNext();
       }
     };
+
+    const updateDuration = () => setDuration(audio.duration);
     const handleLoadStart = () => setLoading(true);
     const handleCanPlayThrough = () => setLoading(false);
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
-    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('loadstart', handleLoadStart);
@@ -174,7 +241,7 @@ export const AudioProvider = ({ children }) => {
     audio.addEventListener('pause', handlePause);
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('loadstart', handleLoadStart);
@@ -183,10 +250,10 @@ export const AudioProvider = ({ children }) => {
       audio.removeEventListener('pause', handlePause);
       clearFadeInterval();
     };
-  }, [isRepeat, playNext, fadeIn]);
+  }, [isRepeat, fadeIn, playNext, playUpsellAudio, navigate]);
 
   const togglePlay = () => {
-    if (!audioRef.current || !currentSong) return;
+    if (!audioRef.current || !currentSong || isPlayingUpsellRef.current) return;
     if (isPlaying) {
       fadeOut(() => {
         audioRef.current.pause();
@@ -207,22 +274,14 @@ export const AudioProvider = ({ children }) => {
     playSong(queue[prevIndex], queue, playContext);
   }, [queue, isShuffle, currentIndex, playSong, playContext]);
 
-  const stopAndClearPlayer = () => {
-    fadeOut(() => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-      }
-      setCurrentSong(null);
-      setQueue([]);
-      setCurrentIndex(-1);
-      setCurrentTime(0);
-      setDuration(0);
-    });
-  };
-
   const seekTo = (time) => {
-    if (audioRef.current) {
+    if (audioRef.current && !isPlayingUpsellRef.current) {
+      const previewTimeLimit = duration * 0.15;
+      if (isPreviewingRef.current && time > previewTimeLimit) {
+        audioRef.current.currentTime = previewTimeLimit;
+        setCurrentTime(previewTimeLimit);
+        return;
+      }
       audioRef.current.currentTime = time;
       setCurrentTime(time);
     }

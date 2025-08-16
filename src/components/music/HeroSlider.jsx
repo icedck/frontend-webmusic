@@ -1,3 +1,5 @@
+// frontend/src/components/music/HeroSlider.jsx
+
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Navigation } from 'swiper/modules';
@@ -8,13 +10,11 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 
-// --- BẮT ĐẦU SỬA ĐỔI: Sử dụng dữ liệu quảng cáo tĩnh ---
 const staticSlides = [
     { id: 1, title: 'Sự Kiện Âm Nhạc Mùa Hè', description: 'Hòa mình vào những giai điệu sôi động nhất', imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80', link: '/events' },
     { id: 2, title: 'Top Hits Mới Nhất', description: 'Khám phá những bản hit đang làm mưa làm gió', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80', link: '/new-releases' },
     { id: 3, title: 'Trở Thành Premium', description: 'Nghe nhạc không quảng cáo, chất lượng cao nhất', imageUrl: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=800&q=80', link: '/premium' },
 ];
-// --- KẾT THÚC SỬA ĐỔI ---
 
 const HeroSlider = () => {
     return (

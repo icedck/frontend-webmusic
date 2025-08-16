@@ -1,3 +1,4 @@
+// frontend/src/modules/music/services/musicService.js
 import { apiService } from '../../../shared/services/apiService';
 
 const getSongById = async (songId) => {
@@ -239,6 +240,56 @@ const getTopListenedPlaylists = async () => {
     }
 };
 
+const getTopSongs = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/top?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch top songs:", error);
+        throw error;
+    }
+};
+
+const getRecentSongs = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/recent?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch recent songs:", error);
+        throw error;
+    }
+};
+
+const getRecentPlaylists = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/playlists/recent?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch recent playlists:", error);
+        throw error;
+    }
+};
+
+const getMostLikedSongs = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/most-liked?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch most liked songs:", error);
+        throw error;
+    }
+};
+
+const getMostLikedPlaylists = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/playlists/most-liked?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch most liked playlists:", error);
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSingerDetail,
@@ -263,5 +314,10 @@ export const musicService = {
     togglePlaylistVisibility,
     incrementSongListenCount,
     incrementPlaylistListenCount,
-    getTopListenedPlaylists
+    getTopListenedPlaylists,
+    getTopSongs,
+    getRecentSongs,
+    getRecentPlaylists,
+    getMostLikedSongs,
+    getMostLikedPlaylists,
 };

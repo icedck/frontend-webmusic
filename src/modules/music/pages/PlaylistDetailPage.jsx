@@ -1,12 +1,10 @@
-// WebMusic_frontend/src/modules/music/pages/PlaylistDetailPage.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { musicService } from '../services/musicService';
 import { useAudio } from '../../../hooks/useAudio';
 import { useAuth } from '../../../hooks/useAuth';
 import { toast } from 'react-toastify';
-import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff, Headphones, CalendarDays } from 'lucide-react';
+import { Loader2, Music, Trash2, Play, Edit, PlusCircle, Eye, EyeOff, Headphones, CalendarDays, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import Button from '../../../components/common/Button';
@@ -22,9 +20,7 @@ const PlaylistDetailPage = () => {
     const { playlistId } = useParams();
     const navigate = useNavigate();
     const { playSong } = useAudio();
-    // --- BẮT ĐẦU CHỈNH SỬA: Thêm isAuthenticated từ hook useAuth ---
     const { user, isAuthenticated } = useAuth();
-    // --- KẾT THÚC CHỈNH SỬA ---
     const [playlist, setPlaylist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -56,7 +52,6 @@ const PlaylistDetailPage = () => {
         fetchPlaylistDetails();
     }, [fetchPlaylistDetails]);
 
-    // --- BẮT ĐẦU CHỈNH SỬA: Hàm xử lý khi người dùng chưa đăng nhập nhấn vào nút yêu cầu login ---
     const handleActionRequirement = (actionName) => {
         if (!isAuthenticated) {
             toast.info(`Vui lòng đăng nhập để ${actionName}.`);
@@ -65,7 +60,6 @@ const PlaylistDetailPage = () => {
         }
         return true;
     };
-    // --- KẾT THÚC CHỈNH SỬA ---
 
     const handleTogglePlaylistLike = useCallback(async () => {
         if (!handleActionRequirement('thích playlist')) return;
@@ -107,8 +101,37 @@ const PlaylistDetailPage = () => {
     }, [isAuthenticated]);
 
     const handlePlaySongFromPlaylist = (song) => {
+        if (song.isPremium && !isAuthenticated) {
+            toast.info('Đây là nội dung Premium. Vui lòng đăng nhập để nghe.');
+            navigate('/login');
+            return;
+        }
+
         if (playlist && playlist.songs) {
             playSong(song, playlist.songs, { playlistId: playlist.id });
+        }
+    };
+
+    const handlePlayAll = () => {
+        if (!playlist || !playlist.songs || playlist.songs.length === 0) return;
+
+        const firstPlayableSong = playlist.songs.find(s => !s.isPremium);
+
+        if (playlist.songs[0].isPremium && !isAuthenticated) {
+            toast.info('Bài hát đầu tiên trong playlist này là Premium. Vui lòng đăng nhập để nghe.');
+            navigate('/login');
+            return;
+        }
+
+        if (!isAuthenticated) {
+            if (firstPlayableSong) {
+                playSong(firstPlayableSong, playlist.songs, { playlistId: playlist.id });
+            } else {
+                toast.info('Playlist này chỉ chứa các bài hát Premium. Vui lòng đăng nhập.');
+                navigate('/login');
+            }
+        } else {
+            playSong(playlist.songs[0], playlist.songs, { playlistId: playlist.id });
         }
     };
 
@@ -211,11 +234,10 @@ const PlaylistDetailPage = () => {
                         )}
                     </div>
                     <div className="flex items-center flex-wrap gap-2 pt-4">
-                        <Button onClick={() => handlePlaySongFromPlaylist(playlist.songs[0])} disabled={!playlist.songs || playlist.songs.length === 0}><Play size={18} className="mr-2" />Phát</Button>
+                        <Button onClick={handlePlayAll} disabled={!playlist.songs || playlist.songs.length === 0}><Play size={18} className="mr-2" />Phát</Button>
                         {playlist.visibility !== 'PRIVATE' && (
                             <LikeButton initialIsLiked={playlist.isLikedByCurrentUser} initialLikeCount={playlist.likeCount} onToggleLike={handleTogglePlaylistLike} size={18}/>
                         )}
-                        {/* --- BẮT ĐẦU CHỈNH SỬA: Chỉ hiển thị các nút này khi đã đăng nhập và có quyền --- */}
                         {isAuthenticated && playlist.canEdit && <Button variant="outline" onClick={() => setIsAddSongsModalOpen(true)}><PlusCircle size={16} /></Button>}
                         {isAuthenticated && playlist.canEdit && <Button variant="outline" onClick={() => setIsEditModalOpen(true)}><Edit size={16} /></Button>}
                         {isAuthenticated && playlist.canToggleVisibility && (
@@ -224,7 +246,6 @@ const PlaylistDetailPage = () => {
                             </Button>
                         )}
                         {isAuthenticated && playlist.canDelete && <Button variant="danger_outline" onClick={() => setIsConfirmDeleteOpen(true)}><Trash2 size={16} /></Button>}
-                        {/* --- KẾT THÚC CHỈNH SỬA --- */}
                     </div>
                 </div>
             </div>
@@ -234,7 +255,10 @@ const PlaylistDetailPage = () => {
                     playlist.songs.map((song, index) => (
                         <div key={song.id} className="group flex items-center gap-4 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200">
                             <div className="text-sm text-slate-400 w-6 text-center">{index + 1}</div>
-                            <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} alt={song.title} className="w-12 h-12 rounded-md object-cover" />
+                            <div className="relative">
+                                <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} alt={song.title} className="w-12 h-12 rounded-md object-cover" />
+                                {song.isPremium && <Crown className="absolute top-1 left-1 w-3 h-3 text-amber-400 fill-amber-400" />}
+                            </div>
                             <div className="flex-1 min-w-0">
                                 <Link to={`/song/${song.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate hover:underline">{song.title}</Link>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{song.singers && song.singers.map(s => s.name).join(', ')}</p>
@@ -246,9 +270,7 @@ const PlaylistDetailPage = () => {
                             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <LikeButton initialIsLiked={song.isLikedByCurrentUser} initialLikeCount={song.likeCount} onToggleLike={() => handleToggleSongLike(song.id)} showCount={false} />
                                 <Button size="icon" variant="ghost" onClick={() => handlePlaySongFromPlaylist(song)}><Play size={20} /></Button>
-                                {/* --- BẮT ĐẦU CHỈNH SỬA: Chỉ hiển thị nút xóa khi đã đăng nhập và có quyền --- */}
                                 {isAuthenticated && playlist.canEdit && <Button size="icon" variant="ghost" onClick={() => setSongToRemove(song)} className="text-red-500 hover:text-red-700"><Trash2 size={18} /></Button>}
-                                {/* --- KẾT THÚC CHỈNH SỬA --- */}
                             </div>
                         </div>
                     ))
@@ -257,11 +279,9 @@ const PlaylistDetailPage = () => {
                 )}
             </div>
 
-            {/* --- BẮT ĐẦU CHỈNH SỬA: Luôn hiển thị CommentSection, logic xử lý đăng nhập sẽ nằm bên trong nó --- */}
             {playlist.visibility !== 'PRIVATE' && (
                 <CommentSection commentableId={playlist.id} commentableType="PLAYLIST" />
             )}
-            {/* --- KẾT THÚC CHỈNH SỬA --- */}
 
             <ConfirmationModal isOpen={isConfirmDeleteOpen} onClose={() => setIsConfirmDeleteOpen(false)} onConfirm={handleConfirmDeletePlaylist} title="Xác nhận xóa playlist" message={`Bạn có chắc chắn muốn xóa vĩnh viễn playlist "${playlist?.name}"? Hành động này không thể hoàn tác.`} confirmText="Xóa" isLoading={isProcessing}/>
             <ConfirmationModal isOpen={!!songToRemove} onClose={() => setSongToRemove(null)} onConfirm={handleConfirmRemoveSong} title="Xác nhận xóa bài hát" message={`Bạn có chắc chắn muốn xóa bài hát "${songToRemove?.title}" khỏi playlist này?`} confirmText="Xóa" isLoading={isProcessing}/>

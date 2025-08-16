@@ -1,26 +1,24 @@
-// WebMusic_frontend/src/modules/music/pages/SongDetail.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // --- Thêm useNavigate ---
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import { useAudio } from '../../../hooks/useAudio';
-import { useAuth } from '../../../hooks/useAuth'; // --- BẮT ĐẦU CHỈNH SỬA: Thêm useAuth ---
+import { useAuth } from '../../../hooks/useAuth';
 import { musicService } from '../services/musicService';
 import Button from '../../../components/common/Button';
-import { Play, Pause, Plus, Download, BarChart3, User, CalendarDays } from 'lucide-react';
+import { Play, Pause, Plus, Download, BarChart3, User, CalendarDays, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 import CommentSection from '../components/CommentSection';
 import { LikeButton } from '../components/LikeButton';
-import { toast } from 'react-toastify'; // --- Thêm toast ---
+import { toast } from 'react-toastify';
 
 const SongDetail = () => {
     const { songId } = useParams();
-    const navigate = useNavigate(); // --- Thêm navigate ---
+    const navigate = useNavigate();
     const { currentTheme } = useDarkMode();
     const { playSong, togglePlay, currentSong, isPlaying } = useAudio();
-    const { isAuthenticated } = useAuth(); // --- BẮT ĐẦU CHỈNH SỬA: Lấy isAuthenticated ---
+    const { isAuthenticated } = useAuth();
 
     const [song, setSong] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -51,6 +49,12 @@ const SongDetail = () => {
 
     const handlePlayPause = () => {
         if (song) {
+            if (song.isPremium && !isAuthenticated) {
+                toast.info('Đây là nội dung Premium. Vui lòng đăng nhập để nghe.');
+                navigate('/login');
+                return;
+            }
+
             if (currentSong?.id === song.id) {
                 togglePlay();
             } else {
@@ -59,7 +63,6 @@ const SongDetail = () => {
         }
     };
 
-    // --- BẮT ĐẦU CHỈNH SỬA: Hàm xử lý khi người dùng chưa đăng nhập nhấn vào nút yêu cầu login ---
     const handleActionRequirement = (actionName) => {
         if (!isAuthenticated) {
             toast.info(`Vui lòng đăng nhập để ${actionName}.`);
@@ -68,7 +71,6 @@ const SongDetail = () => {
         }
         return true;
     };
-    // --- KẾT THÚC CHỈNH SỬA ---
 
     const handleToggleLike = useCallback(async () => {
         if (!handleActionRequirement('thích bài hát')) return;
@@ -112,6 +114,14 @@ const SongDetail = () => {
                             alt={song.title}
                             className="w-48 h-48 lg:w-56 lg:h-56 rounded-lg object-cover shadow-2xl"
                         />
+                        {song.isPremium && (
+                            <div
+                                className="absolute top-3 left-3 flex items-center bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1.5"
+                                title="Nội dung Premium"
+                            >
+                                <Crown className="w-5 h-5 text-amber-400 fill-amber-400" />
+                            </div>
+                        )}
                     </div>
                     <div className="relative flex-1 flex flex-col justify-end items-center md:items-start text-center md:text-left">
                         <span className={`text-sm font-semibold text-music-500 dark:text-music-400 uppercase`}>Bài hát</span>
@@ -137,14 +147,12 @@ const SongDetail = () => {
                                 showCount={false}
                                 size={22}
                             />
-                            {/* --- BẮT ĐẦU CHỈNH SỬA: Thêm điều kiện và hàm xử lý cho các nút cần đăng nhập --- */}
                             <Button variant="outline" size="icon" onClick={() => handleActionRequirement('thêm vào playlist') && setIsAddToPlaylistModalOpen(true)}>
                                 <Plus className="w-5 h-5"/>
                             </Button>
                             <Button variant="outline" size="icon" onClick={() => handleActionRequirement('tải xuống')}>
                                 <Download className="w-5 h-5"/>
                             </Button>
-                            {/* --- KẾT THÚC CHỈNH SỬA --- */}
                         </div>
                     </div>
                 </div>
@@ -159,9 +167,7 @@ const SongDetail = () => {
                                 </p>
                             </div>
                         )}
-                        {/* --- BẮT ĐẦU CHỈNH SỬA: Luôn hiển thị CommentSection --- */}
                         <CommentSection commentableId={song.id} commentableType="SONG" />
-                        {/* --- KẾT THÚC CHỈNH SỬA --- */}
                     </div>
 
                     <div className="lg:col-span-1">

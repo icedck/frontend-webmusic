@@ -1,3 +1,5 @@
+// frontend/tailwind.config.js
+
 /** @type {import('tailwindcss').Config} */
 import colors from 'tailwindcss/colors';
 
@@ -10,11 +12,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // <<< THAY ĐỔI TẠI ĐÂY >>>
-        // Đổi màu primary sang Cyan. Đây sẽ là màu gốc cho text, border, focus...
         primary: colors.cyan,
-
-        // Giữ lại các màu phụ, chúng ta không cần thay đổi chúng
         accent: colors.cyan,
         surface: colors.slate,
       },

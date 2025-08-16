@@ -1,22 +1,38 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Music, Play } from 'lucide-react';
 import { useAudio } from '../../hooks/useAudio';
 import { musicService } from '../../modules/music/services/musicService';
 import Button from '../common/Button';
+import { useAuth } from '../../hooks/useAuth';
+import { toast } from 'react-toastify';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const PlaylistCard = ({ playlist }) => {
     const { playSong } = useAudio();
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+
     const handlePlayPlaylist = async (e) => {
         e.preventDefault();
         e.stopPropagation();
         try {
             const response = await musicService.getPlaylistDetails(playlist.id);
             if (response.success && response.data.songs && response.data.songs.length > 0) {
-                playSong(response.data.songs[0], response.data.songs, { playlistId: playlist.id });
+                const firstSong = response.data.songs[0];
+                if (firstSong.isPremium && !isAuthenticated) {
+                    toast.info('Playlist này bắt đầu bằng một bài hát Premium. Vui lòng đăng nhập.');
+                    navigate('/login');
+                    return;
+                }
+                playSong(firstSong, response.data.songs, { playlistId: playlist.id });
+            } else {
+                toast.warn('Playlist này không có bài hát nào để phát.');
             }
         } catch (error) {
             console.error("Failed to play playlist:", error);
+            toast.error('Không thể phát playlist này.');
         }
     };
 

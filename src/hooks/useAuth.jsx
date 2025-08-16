@@ -17,24 +17,28 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Chỉ chạy một lần khi component được mount
+  const processUserData = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(!!userData);
+    if (userData) {
+      localStorage.setItem('authUser', JSON.stringify(userData));
+    }
+  }
+
   useEffect(() => {
     const initializeAuth = async () => {
       const token = authService.getStoredToken();
       const storedUser = authService.getStoredUser();
 
       if (token && storedUser) {
-        setUser(storedUser);
-        setIsAuthenticated(true);
+        processUserData(storedUser);
 
-        // Revalidate user in background without causing re-renders
         try {
           apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           const response = await apiService.get('/api/v1/users/me');
           if (response.data?.success) {
             const freshUser = response.data.data;
-            setUser(freshUser);
-            localStorage.setItem('authUser', JSON.stringify(freshUser));
+            processUserData(freshUser);
           }
         } catch (error) {
           if (error.response?.status === 401 || error.response?.status === 403) {
@@ -48,19 +52,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
+    processUserData(userData);
   };
 
   const logout = () => {
     authService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
+    processUserData(null);
   };
 
   const updateUserContext = (updatedUserData) => {
-    setUser(updatedUserData);
-    localStorage.setItem('authUser', JSON.stringify(updatedUserData));
+    processUserData(updatedUserData);
   }
 
   const revalidateUser = useCallback(async () => {
@@ -72,8 +73,7 @@ export const AuthProvider = ({ children }) => {
       const response = await apiService.get('/api/v1/users/me');
       if (response.data?.success) {
         const freshUser = response.data.data;
-        setUser(freshUser);
-        localStorage.setItem('authUser', JSON.stringify(freshUser));
+        processUserData(freshUser);
       }
     } catch (error) {
       if (error.response?.status === 401 || error.response?.status === 403) {
@@ -89,9 +89,9 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUserContext,
-    isAdmin: authService.isAdmin,
-    isCreator: authService.isCreator,
-    isPremium: authService.isPremium,
+    isAdmin: () => authService.isAdmin(user),
+    isCreator: () => authService.isCreator(user),
+    isPremium: () => user?.hasActiveSubscription || false,
     revalidateUser,
   };
 
