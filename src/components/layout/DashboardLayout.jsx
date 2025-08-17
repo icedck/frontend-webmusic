@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import NotificationDropdown from "./NotificationDropdown";
 import { useNotifications } from "../../hooks/useNotifications";
+import Avatar from "../common/Avatar";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -357,7 +358,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                     className="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                   >
                     <div className="relative">
-                      <div
+                      {/* <div
                         className={`w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer overflow-hidden
                             ${
                               isPremium()
@@ -374,6 +375,16 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                         ) : (
                           <User size={18} />
                         )}
+                      </div> */}
+
+                      <div
+                        className={`${
+                          isPremium()
+                            ? "ring-2 ring-offset-1 ring-amber-400 dark:ring-offset-slate-900 rounded-full"
+                            : ""
+                        }`}
+                      >
+                        <Avatar user={user} className="w-8 h-8" />
                       </div>
                       {isPremium() && (
                         <div className="absolute -bottom-1 -right-1 bg-amber-400 rounded-full p-0.5 border border-white dark:border-slate-800">
@@ -396,7 +407,9 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                   {isAvatarMenuOpen && (
                     <div className="absolute top-full right-0 mt-2 w-72 p-2 rounded-xl shadow-lg border backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 border-slate-200/50 dark:border-slate-700/50">
                       <div className="flex items-start gap-3 p-2 mb-2">
-                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center">
+                        <Avatar user={user} className="w-12 h-12" />
+
+                        {/* <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center">
                           {user.avatarPath ? (
                             <img
                               src={`${API_BASE_URL}${user.avatarPath}`}
@@ -406,7 +419,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                           ) : (
                             <User size={24} />
                           )}
-                        </div>
+                        </div> */}
                         <div className="min-w-0 flex-grow">
                           <p className="font-semibold truncate text-slate-800 dark:text-slate-100">
                             {user.displayName}
