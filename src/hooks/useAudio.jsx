@@ -30,7 +30,7 @@ export const AudioProvider = ({ children }) => {
   const isPreviewingRef = useRef(false);
   const isPlayingUpsellRef = useRef(false);
 
-  const { isAuthenticated, isPremium } = useAuth();
+  const { isAuthenticated, isPremium, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const audioRef = useRef(null);
   const fadeIntervalRef = useRef(null);
@@ -52,28 +52,34 @@ export const AudioProvider = ({ children }) => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.volume = 0;
-
+    // Đảm bảo audio đang play trước khi fade
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(error => {
-        console.error("Audio play failed:", error);
+        // Lỗi này thường xảy ra nếu người dùng chưa tương tác, không cần log ra console
+        // console.error("Audio play failed:", error);
       });
     }
 
+    // Nếu volume đã ở mức target, không cần fade
+    if (audio.volume >= volume) return;
+
     const targetVolume = volume;
+    // Bắt đầu từ volume hiện tại thay vì 0
+    let currentVolume = audio.volume;
     const step = targetVolume / (FADE_DURATION / FADE_INTERVAL);
 
     fadeIntervalRef.current = setInterval(() => {
-      const currentVolume = audio.volume;
+      currentVolume += step;
       if (currentVolume < targetVolume) {
-        audio.volume = Math.min(currentVolume + step, targetVolume);
+        audio.volume = currentVolume;
       } else {
         audio.volume = targetVolume;
         clearFadeInterval();
       }
     }, FADE_INTERVAL);
   }, [volume]);
+
 
   const fadeOut = useCallback((onComplete) => {
     clearFadeInterval();
@@ -86,9 +92,10 @@ export const AudioProvider = ({ children }) => {
     const step = startVolume / (FADE_DURATION / FADE_INTERVAL);
     fadeIntervalRef.current = setInterval(() => {
       const currentVolume = audio.volume;
-      if (currentVolume > 0) {
-        audio.volume = Math.max(currentVolume - step, 0);
+      if (currentVolume > step) {
+        audio.volume -= step;
       } else {
+        audio.volume = 0;
         clearFadeInterval();
         if (onComplete) onComplete();
       }
@@ -116,32 +123,27 @@ export const AudioProvider = ({ children }) => {
     if (!audio) return;
 
     isPlayingUpsellRef.current = true;
+    audio.volume = 0; // Reset volume trước khi fade out
 
     fadeOut(() => {
       audio.src = UPSELL_AUDIO_URL;
       audio.load();
-      audio.addEventListener('canplaythrough', fadeIn, { once: true });
+      const playAfterLoad = () => {
+        fadeIn();
+        audio.removeEventListener('canplaythrough', playAfterLoad);
+      };
+      audio.addEventListener('canplaythrough', playAfterLoad);
     });
   }, [fadeOut, fadeIn]);
 
-  const playNext = useCallback(() => {
-    if (isPlayingUpsellRef.current) return;
-    if (queue.length === 0) return;
-    let nextIndex;
-    if (isShuffle) {
-      nextIndex = Math.floor(Math.random() * queue.length);
-      if (queue.length > 1 && nextIndex === currentIndex) {
-        nextIndex = (currentIndex + 1) % queue.length;
-      }
-    } else {
-      nextIndex = (currentIndex + 1) % queue.length;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    playSong(queue[nextIndex], queue, playContext);
-  }, [queue, isShuffle, currentIndex, playContext]);
 
   const playSong = useCallback((song, playlist = [], context = {}) => {
     if (!song) return;
+
+    if (authLoading) {
+      toast.info("Đang xác thực, vui lòng chờ...");
+      return;
+    }
 
     isPreviewingRef.current = false;
     isPlayingUpsellRef.current = false;
@@ -167,11 +169,13 @@ export const AudioProvider = ({ children }) => {
       }
     }
 
+    // --- BẮT ĐẦU SỬA ĐỔI CHÍNH ---
     const executePlay = () => {
       setLoading(true);
       setCurrentSong(song);
       setPlayContext(context);
 
+      // Logic cập nhật queue không đổi
       if (playlist.length > 0) {
         setQueue(playlist);
         const index = playlist.findIndex(s => s.id === song.id);
@@ -189,16 +193,47 @@ export const AudioProvider = ({ children }) => {
       }
 
       audio.src = `${API_BASE_URL}${song.filePath}`;
+      audio.volume = 0; // Bắt đầu với âm lượng 0
       audio.load();
-      audio.addEventListener('canplaythrough', fadeIn, { once: true });
+
+      // Gọi play() ngay lập tức sau khi load()
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          // Khi đã bắt đầu play thành công, mới bắt đầu fadeIn
+          fadeIn();
+        }).catch(error => {
+          // Nếu play() thất bại (ví dụ do chính sách autoplay),
+          // chúng ta vẫn cập nhật UI nhưng không phát nhạc.
+          console.error("Autoplay was prevented:", error);
+          setIsPlaying(false); // Đảm bảo UI hiển thị nút play
+        });
+      }
     };
+    // --- KẾT THÚC SỬA ĐỔI CHÍNH ---
 
     if (isPlaying) {
       fadeOut(executePlay);
     } else {
       executePlay();
     }
-  }, [API_BASE_URL, isPlaying, fadeIn, fadeOut, isAuthenticated, isPremium, navigate, playNext]);
+  }, [API_BASE_URL, isPlaying, fadeIn, fadeOut, isAuthenticated, isPremium, navigate, authLoading]);
+
+
+  const playNext = useCallback(() => {
+    if (isPlayingUpsellRef.current) return;
+    if (queue.length === 0) return;
+    let nextIndex;
+    if (isShuffle) {
+      nextIndex = Math.floor(Math.random() * queue.length);
+      if (queue.length > 1 && nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % queue.length;
+      }
+    } else {
+      nextIndex = (currentIndex + 1) % queue.length;
+    }
+    playSong(queue[nextIndex], queue, playContext);
+  }, [queue, isShuffle, currentIndex, playContext, playSong]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -220,7 +255,9 @@ export const AudioProvider = ({ children }) => {
       }
       if (isRepeat) {
         audio.currentTime = 0;
-        fadeIn();
+        // Gọi play trực tiếp thay vì fadeIn để tránh lỗi
+        const playPromise = audio.play();
+        if(playPromise) playPromise.catch(e => console.error(e));
       } else {
         playNext();
       }

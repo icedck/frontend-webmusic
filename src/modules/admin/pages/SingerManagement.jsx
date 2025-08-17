@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { PlusCircle, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
+import Input from '../../../components/common/Input'; // Thêm Input component
+import { useDebounce } from '../../../hooks/useDebounce'; // Thêm useDebounce
+import { PlusCircle, ChevronLeft, ChevronRight, Edit, Trash2, Search } from 'lucide-react'; // Thêm Search icon
 import { adminService } from '../services/adminService';
 import CreateSingerModal from '../components/CreateSingerModal';
 import UpdateSingerModal from '../components/UpdateSingerModal';
@@ -35,10 +37,15 @@ const SingerManagement = () => {
         totalElements: 0,
     });
 
-    const fetchSingers = async (page, size) => {
+    // --- BẮT ĐẦU SỬA ĐỔI: Thêm state cho tìm kiếm ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    // --- KẾT THÚC SỬA ĐỔI ---
+
+    const fetchSingers = async (page, size, search = '') => { // Thêm search vào hàm
         try {
             setLoading(true);
-            const response = await adminService.getSingers(page, size);
+            const response = await adminService.getSingers(page, size, search); // Truyền search vào service
             if (response.success && response.data) {
                 setSingers(Array.isArray(response.data.content) ? response.data.content : []);
                 setPageInfo({
@@ -58,14 +65,15 @@ const SingerManagement = () => {
         }
     };
 
+    // Effect để fetch dữ liệu lần đầu và khi tìm kiếm
     useEffect(() => {
-        fetchSingers(pageInfo.pageNumber, pageInfo.pageSize);
-    }, []);
+        fetchSingers(0, pageInfo.pageSize, debouncedSearchTerm);
+    }, [debouncedSearchTerm]);
 
     const handleCreateSuccess = () => {
         setIsCreateModalOpen(false);
         toast.success("Thêm ca sĩ mới thành công!");
-        fetchSingers(0, pageInfo.pageSize);
+        fetchSingers(0, pageInfo.pageSize, debouncedSearchTerm); // Fetch lại với từ khóa hiện tại
     };
 
     const handleUpdateSuccess = (updatedSinger) => {
@@ -85,7 +93,8 @@ const SingerManagement = () => {
             const response = await adminService.deleteSingerByAdmin(selectedSinger.id);
             if (response.success) {
                 toast.success(response.message || "Xóa ca sĩ thành công!");
-                setSingers(prev => prev.filter(s => s.id !== selectedSinger.id));
+                // Fetch lại dữ liệu trang hiện tại để cập nhật tổng số phần tử
+                fetchSingers(pageInfo.pageNumber, pageInfo.pageSize, debouncedSearchTerm);
                 setIsDeleteModalOpen(false);
             } else {
                 toast.error(response.message || "Xóa ca sĩ thất bại.");
@@ -99,22 +108,36 @@ const SingerManagement = () => {
 
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < pageInfo.totalPages) {
-            fetchSingers(newPage, pageInfo.pageSize);
+            fetchSingers(newPage, pageInfo.pageSize, debouncedSearchTerm);
         }
     };
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Quản lý ca sĩ</h1>
                     <p className={`mt-2 ${currentTheme.textSecondary}`}>Thêm, sửa, và quản lý các ca sĩ trong hệ thống.</p>
                 </div>
-                <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+                <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 w-full md:w-auto">
                     <PlusCircle className="w-5 h-5" />
                     <span>Thêm ca sĩ</span>
                 </Button>
             </div>
+
+            {/* --- BẮT ĐẦU SỬA ĐỔI: Thêm ô tìm kiếm --- */}
+            <div className="flex justify-end">
+                <div className="w-full md:w-1/3">
+                    <Input
+                        id="search-singer"
+                        placeholder="Tìm theo tên hoặc email ca sĩ..."
+                        icon={<Search size={18} />}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+            {/* --- KẾT THÚC SỬA ĐỔI --- */}
 
             <div className={`overflow-x-auto ${currentTheme.bgCard} rounded-xl border ${currentTheme.border}`}>
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -130,7 +153,7 @@ const SingerManagement = () => {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {loading && <tr><td colSpan="5" className="text-center py-4">Đang tải...</td></tr>}
                     {!loading && singers.length === 0 && (
-                        <tr><td colSpan="5" className="text-center py-4">Không có dữ liệu.</td></tr>
+                        <tr><td colSpan="5" className="text-center py-4">Không có ca sĩ nào phù hợp.</td></tr>
                     )}
                     {!loading && singers.map((singer) => (
                         <tr key={singer.id}>
@@ -159,7 +182,7 @@ const SingerManagement = () => {
                 </table>
             </div>
 
-            {!loading && pageInfo.totalPages > 1 && (
+            {!loading && pageInfo.totalPages > 0 && (
                 <div className="flex items-center justify-between mt-4">
                     <span className="text-sm">
                         Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số {pageInfo.totalElements} ca sĩ)

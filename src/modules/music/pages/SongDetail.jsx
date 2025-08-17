@@ -18,7 +18,8 @@ const SongDetail = () => {
     const navigate = useNavigate();
     const { currentTheme } = useDarkMode();
     const { playSong, togglePlay, currentSong, isPlaying, addToQueue } = useAudio();
-    const { isAuthenticated } = useAuth();
+    // === BẮT ĐẦU SỬA ĐỔI 1: Lấy thêm `loading` từ useAuth ===
+    const { isAuthenticated, loading: authLoading } = useAuth();
 
     const [song, setSong] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -90,9 +91,11 @@ const SongDetail = () => {
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-    if (loading) {
+    // === BẮT ĐẦU SỬA ĐỔI 2: Hiển thị loading khi auth hoặc song đang tải ===
+    if (loading || authLoading) {
         return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-music-500"></div></div>;
     }
+    // === KẾT THÚC SỬA ĐỔI 2 ===
 
     if (error || !song) {
         return <div className={`text-center py-10 ${currentTheme.bgCard} rounded-lg`}><p className="text-red-500">{error || "Không tìm thấy bài hát."}</p></div>;

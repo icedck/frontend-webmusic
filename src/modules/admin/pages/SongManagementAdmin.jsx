@@ -1,10 +1,10 @@
-// frontend/src/modules/admin/pages/SongManagementAdmin.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
-import { PlusCircle, Edit, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import Input from '../../../components/common/Input';
+import { useDebounce } from '../../../hooks/useDebounce';
+import { PlusCircle, Edit, ChevronLeft, ChevronRight, Eye, EyeOff, Search } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import { toast } from 'react-toastify';
 
@@ -20,14 +20,12 @@ const StatusBadge = ({ status }) => {
     return <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
 }
 
-// --- BẮT ĐẦU CHỈNH SỬA: Thêm component PremiumBadge ---
 const PremiumBadge = ({ isPremium }) => {
     if (isPremium) {
         return <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">PREMIUM</span>;
     }
     return <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">FREE</span>;
 };
-// --- KẾT THÚC CHỈNH SỬA ---
 
 const SongManagementAdmin = () => {
     const { currentTheme } = useDarkMode();
@@ -41,10 +39,15 @@ const SongManagementAdmin = () => {
     });
     const [processingId, setProcessingId] = useState(null);
 
-    const fetchSongs = async (page, size) => {
+    // --- BẮT ĐẦU SỬA ĐỔI: Thêm state cho tìm kiếm ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms delay
+    // --- KẾT THÚC SỬA ĐỔI ---
+
+    const fetchSongs = async (page, size, search = '') => { // Thêm search vào hàm
         try {
             setLoading(true);
-            const response = await adminService.getSongs(page, size);
+            const response = await adminService.getSongs(page, size, search); // Truyền search vào service
             if (response.success && response.data && response.data.pageInfo) {
                 setSongs(Array.isArray(response.data.content) ? response.data.content : []);
                 setPageInfo({
@@ -64,13 +67,16 @@ const SongManagementAdmin = () => {
         }
     };
 
+    // Effect để fetch dữ liệu lần đầu và khi tìm kiếm
     useEffect(() => {
-        fetchSongs(pageInfo.pageNumber, pageInfo.pageSize);
-    }, []);
+        // Khi tìm kiếm, luôn quay về trang đầu tiên
+        fetchSongs(0, pageInfo.pageSize, debouncedSearchTerm);
+    }, [debouncedSearchTerm]);
 
+    // Effect để fetch dữ liệu khi chuyển trang
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < pageInfo.totalPages) {
-            fetchSongs(newPage, pageInfo.pageSize);
+            fetchSongs(newPage, pageInfo.pageSize, debouncedSearchTerm);
         }
     };
 
@@ -93,18 +99,33 @@ const SongManagementAdmin = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Quản lý bài hát</h1>
                     <p className={`mt-2 ${currentTheme.textSecondary}`}>Thêm, sửa, và quản lý các bài hát trong hệ thống.</p>
                 </div>
                 <Link to="/admin/songs/new">
-                    <Button className="flex items-center space-x-2">
+                    <Button className="flex items-center space-x-2 w-full md:w-auto">
                         <PlusCircle className="w-5 h-5" />
                         <span>Thêm bài hát</span>
                     </Button>
                 </Link>
             </div>
+
+            {/* --- BẮT ĐẦU SỬA ĐỔI: Thêm ô tìm kiếm --- */}
+            <div className="flex justify-end">
+                <div className="w-full md:w-1/3">
+                    <Input
+                        id="search-song"
+                        placeholder="Tìm theo tên bài hát, ca sĩ..."
+                        icon={<Search size={18} />}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+            {/* --- KẾT THÚC SỬA ĐỔI --- */}
+
 
             <div className={`overflow-x-auto ${currentTheme.bgCard} rounded-xl border ${currentTheme.border}`}>
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -113,9 +134,7 @@ const SongManagementAdmin = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ca sĩ</th>
-                        {/* --- BẮT ĐẦU CHỈNH SỬA: Thêm cột LOẠI BÀI HÁT --- */}
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Loại bài hát</th>
-                        {/* --- KẾT THÚC CHỈNH SỬA --- */}
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trạng thái</th>
                         <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
                     </tr>
@@ -123,7 +142,7 @@ const SongManagementAdmin = () => {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {loading && <tr><td colSpan="6" className="text-center py-4">Đang tải...</td></tr>}
                     {!loading && songs.length === 0 && (
-                        <tr><td colSpan="6" className="text-center py-4">Không có dữ liệu.</td></tr>
+                        <tr><td colSpan="6" className="text-center py-4">Không có bài hát nào phù hợp.</td></tr>
                     )}
                     {!loading && songs.map((song) => (
                         <tr key={song.id}>
@@ -141,11 +160,9 @@ const SongManagementAdmin = () => {
                                 </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">{song.singers?.map(s => s.name).join(', ') || 'N/A'}</td>
-                            {/* --- BẮT ĐẦU CHỈNH SỬA: Thêm ô hiển thị PremiumBadge --- */}
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <PremiumBadge isPremium={song.isPremium} />
                             </td>
-                            {/* --- KẾT THÚC CHỈNH SỬA --- */}
                             <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={song.status} /></td>
                             <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
                                 {(song.status === 'APPROVED' || song.status === 'HIDDEN') && (
@@ -172,7 +189,7 @@ const SongManagementAdmin = () => {
                 </table>
             </div>
 
-            {!loading && pageInfo.totalPages > 1 && (
+            {!loading && pageInfo.totalPages > 0 && (
                 <div className="flex items-center justify-between mt-4">
                     <span className="text-sm">
                         Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số {pageInfo.totalElements} bài hát)
