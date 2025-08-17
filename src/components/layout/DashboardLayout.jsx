@@ -123,8 +123,15 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
       icon: History,
       label: "Lịch sử giao dịch",
     },
-    { href: "/profile/change-password", icon: KeyRound, label: "Đổi mật khẩu" },
   ];
+  // Chỉ thêm mục "Đổi mật khẩu" nếu người dùng không đăng nhập bằng Google
+  if (user && user.provider !== "google") {
+    userMenuItems.push({
+      href: "/profile/change-password",
+      icon: KeyRound,
+      label: "Đổi mật khẩu",
+    });
+  }
 
   const creatorMenuItems = [
     { href: "/creator/my-library", icon: BookOpen, label: "Thư viện bài hát" },
