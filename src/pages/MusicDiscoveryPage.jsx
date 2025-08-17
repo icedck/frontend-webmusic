@@ -29,8 +29,6 @@ const Footer = () => {
     <footer className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 mt-16 text-sm">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
-          {/* --- BẮT ĐẦU PHẦN THAY ĐỔI: LOGO VÀ MÔ TẢ --- */}
-          {/* Khu vực này chiếm 2/5 không gian trên màn hình lớn để cân đối */}
           <div className="col-span-full lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -46,7 +44,6 @@ const Footer = () => {
               trau dồi kỹ năng.
             </p>
           </div>
-          {/* --- KẾT THÚC PHẦN THAY ĐỔI --- */}
 
           <div>
             <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
