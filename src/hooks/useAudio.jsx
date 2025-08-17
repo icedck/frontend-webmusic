@@ -52,20 +52,14 @@ export const AudioProvider = ({ children }) => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    // Đảm bảo audio đang play trước khi fade
     const playPromise = audio.play();
     if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        // Lỗi này thường xảy ra nếu người dùng chưa tương tác, không cần log ra console
-        // console.error("Audio play failed:", error);
-      });
+      playPromise.catch(error => {});
     }
 
-    // Nếu volume đã ở mức target, không cần fade
     if (audio.volume >= volume) return;
 
     const targetVolume = volume;
-    // Bắt đầu từ volume hiện tại thay vì 0
     let currentVolume = audio.volume;
     const step = targetVolume / (FADE_DURATION / FADE_INTERVAL);
 
@@ -123,7 +117,7 @@ export const AudioProvider = ({ children }) => {
     if (!audio) return;
 
     isPlayingUpsellRef.current = true;
-    audio.volume = 0; // Reset volume trước khi fade out
+    audio.volume = 0;
 
     fadeOut(() => {
       audio.src = UPSELL_AUDIO_URL;
@@ -158,24 +152,18 @@ export const AudioProvider = ({ children }) => {
       isPreviewingRef.current = true;
     }
 
-    clearFadeInterval();
     const audio = audioRef.current;
     if (!audio) return;
 
     if (!isPreviewingRef.current) {
       musicService.incrementSongListenCount(song.id);
-      if (context.playlistId) {
-        musicService.incrementPlaylistListenCount(context.playlistId);
-      }
     }
 
-    // --- BẮT ĐẦU SỬA ĐỔI CHÍNH ---
     const executePlay = () => {
       setLoading(true);
       setCurrentSong(song);
       setPlayContext(context);
 
-      // Logic cập nhật queue không đổi
       if (playlist.length > 0) {
         setQueue(playlist);
         const index = playlist.findIndex(s => s.id === song.id);
@@ -193,24 +181,19 @@ export const AudioProvider = ({ children }) => {
       }
 
       audio.src = `${API_BASE_URL}${song.filePath}`;
-      audio.volume = 0; // Bắt đầu với âm lượng 0
+      audio.volume = 0;
       audio.load();
 
-      // Gọi play() ngay lập tức sau khi load()
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          // Khi đã bắt đầu play thành công, mới bắt đầu fadeIn
           fadeIn();
         }).catch(error => {
-          // Nếu play() thất bại (ví dụ do chính sách autoplay),
-          // chúng ta vẫn cập nhật UI nhưng không phát nhạc.
           console.error("Autoplay was prevented:", error);
-          setIsPlaying(false); // Đảm bảo UI hiển thị nút play
+          setIsPlaying(false);
         });
       }
     };
-    // --- KẾT THÚC SỬA ĐỔI CHÍNH ---
 
     if (isPlaying) {
       fadeOut(executePlay);
@@ -219,6 +202,19 @@ export const AudioProvider = ({ children }) => {
     }
   }, [API_BASE_URL, isPlaying, fadeIn, fadeOut, isAuthenticated, isPremium, navigate, authLoading]);
 
+  const playPlaylist = useCallback((playlistData) => {
+    if (!playlistData || !playlistData.songs || playlistData.songs.length === 0) {
+      toast.warn('Playlist này không có bài hát nào để phát.');
+      return;
+    }
+
+    const firstSong = playlistData.songs[0];
+
+    musicService.incrementPlaylistListenCount(playlistData.id);
+
+    playSong(firstSong, playlistData.songs, { playlistId: playlistData.id });
+
+  }, [playSong]);
 
   const playNext = useCallback(() => {
     if (isPlayingUpsellRef.current) return;
@@ -255,7 +251,6 @@ export const AudioProvider = ({ children }) => {
       }
       if (isRepeat) {
         audio.currentTime = 0;
-        // Gọi play trực tiếp thay vì fadeIn để tránh lỗi
         const playPromise = audio.play();
         if(playPromise) playPromise.catch(e => console.error(e));
       } else {
@@ -368,7 +363,7 @@ export const AudioProvider = ({ children }) => {
 
   const value = {
     currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle,
-    queue, currentIndex, loading, audioRef, playSong, togglePlay, playNext,
+    queue, currentIndex, loading, audioRef, playSong, playPlaylist, togglePlay, playNext,
     playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle,
     addToQueue, removeFromQueue, clearQueue, formatTime, stopAndClearPlayer
   };

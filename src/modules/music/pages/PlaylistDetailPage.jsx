@@ -19,7 +19,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const PlaylistDetailPage = () => {
     const { playlistId } = useParams();
     const navigate = useNavigate();
-    const { playSong, addToQueue } = useAudio();
+    const { playSong, addToQueue, playPlaylist } = useAudio();
     const { user, isAuthenticated } = useAuth();
     const [playlist, setPlaylist] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -109,24 +109,16 @@ const PlaylistDetailPage = () => {
     const handlePlayAll = () => {
         if (!playlist || !playlist.songs || playlist.songs.length === 0) return;
 
-        const firstSong = playlist.songs[0];
-
         if (!isAuthenticated) {
             const firstPlayableSong = playlist.songs.find(s => !s.isPremium);
-            if (firstSong.isPremium) {
-                toast.info('Bài hát đầu tiên trong playlist này là Premium. Vui lòng đăng nhập.');
+            if (!firstPlayableSong) {
+                toast.info('Playlist này chỉ chứa các bài hát Premium. Vui lòng đăng nhập.');
                 navigate('/login');
                 return;
             }
-            if (firstPlayableSong) {
-                playSong(firstPlayableSong, playlist.songs, { playlistId: playlist.id });
-            } else {
-                toast.info('Playlist này chỉ chứa các bài hát Premium. Vui lòng đăng nhập.');
-                navigate('/login');
-            }
-        } else {
-            playSong(firstSong, playlist.songs, { playlistId: playlist.id });
         }
+
+        playPlaylist(playlist);
     };
 
     const handleSongsAdded = () => {

@@ -17,9 +17,10 @@ const fetchFormData = async () => {
     }
 };
 
-const getMySubmissions = async () => {
+const getMySubmissions = async (page = 0, size = 10, keyword = '') => {
     try {
-        const baseResponse = await apiService.get('/api/v1/submissions/my');
+        const params = { page, size, keyword };
+        const baseResponse = await apiService.get('/api/v1/submissions/my', { params });
         return baseResponse.data;
     } catch (error) {
         console.error("Failed to fetch submissions:", error);

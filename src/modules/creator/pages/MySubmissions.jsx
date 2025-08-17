@@ -5,8 +5,11 @@ import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { PlusCircle, Music, Search, Filter, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Music, Search, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useDebounce } from '../../../hooks/useDebounce';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const StatusBadge = ({ status }) => {
   const { currentTheme } = useDarkMode();
@@ -30,17 +33,33 @@ const MySubmissions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [pageInfo, setPageInfo] = useState({
+    pageNumber: 0,
+    pageSize: 10,
+    totalPages: 0,
+    totalElements: 0,
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (page, size, keyword) => {
     try {
       setLoading(true);
-      const pagedData = await submissionService.getMySubmissions();
+      setError(null);
+      const response = await submissionService.getMySubmissions(page, size, keyword);
 
-      if (pagedData && Array.isArray(pagedData.content)) {
-        setSubmissions(pagedData.content);
+      if (response && response.pageInfo && Array.isArray(response.content)) {
+        setSubmissions(response.content);
+        setPageInfo({
+          pageNumber: response.pageInfo.page,
+          pageSize: response.pageInfo.size,
+          totalPages: response.pageInfo.totalPages,
+          totalElements: response.pageInfo.totalElements,
+        });
       } else {
         setError("Dữ liệu trả về không hợp lệ.");
         setSubmissions([]);
@@ -55,8 +74,14 @@ const MySubmissions = () => {
   };
 
   useEffect(() => {
-    fetchSubmissions();
-  }, []);
+    fetchSubmissions(0, pageInfo.pageSize, debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < pageInfo.totalPages) {
+      fetchSubmissions(newPage, pageInfo.pageSize, debouncedSearchTerm);
+    }
+  };
 
   const openWithdrawModal = (id) => {
     setSelectedSubmissionId(id);
@@ -75,7 +100,7 @@ const MySubmissions = () => {
     try {
       await submissionService.withdrawSubmission(selectedSubmissionId);
       toast.success("Đã rút lại yêu cầu thành công!");
-      setSubmissions(prev => prev.filter(sub => sub.id !== selectedSubmissionId));
+      fetchSubmissions(pageInfo.pageNumber, pageInfo.pageSize, debouncedSearchTerm);
       closeWithdrawModal();
     } catch (err) {
       toast.error(err.response?.data?.message || "Có lỗi xảy ra khi rút lại yêu cầu.");
@@ -101,11 +126,13 @@ const MySubmissions = () => {
       return (
           <div className={`text-center py-16 ${currentTheme.bgCard} rounded-xl border ${currentTheme.border}`}>
             <Music className={`w-16 h-16 mx-auto ${currentTheme.textSecondary}`} />
-            <h3 className={`mt-4 text-xl font-semibold ${currentTheme.text}`}>Không tìm thấy yêu cầu nào</h3>
-            <p className={`mt-2 text-sm ${currentTheme.textSecondary}`}>Bạn chưa gửi yêu cầu đăng bài hát nào.</p>
-            <Link to="/creator/submission/new" className="mt-6 inline-block">
-              <Button>Tạo yêu cầu mới</Button>
-            </Link>
+            <h3 className={`mt-4 text-xl font-semibold ${currentTheme.text}`}>{searchTerm ? 'Không tìm thấy kết quả' : 'Không có yêu cầu nào'}</h3>
+            <p className={`mt-2 text-sm ${currentTheme.textSecondary}`}>{searchTerm ? 'Hãy thử một từ khóa khác.' : 'Bạn chưa gửi yêu cầu đăng bài hát nào.'}</p>
+            {!searchTerm && (
+                <Link to="/creator/submission/new" className="mt-6 inline-block">
+                  <Button>Tạo yêu cầu mới</Button>
+                </Link>
+            )}
           </div>
       );
     }
@@ -115,7 +142,7 @@ const MySubmissions = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className={`${currentTheme.bg}`}>
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tên bài hát</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Bài hát</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ngày gửi</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Trạng thái</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Hành động</th>
@@ -125,9 +152,16 @@ const MySubmissions = () => {
             {submissions.map((submission) => (
                 <tr key={submission.id} className={`hover:${currentTheme.bgHover}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <Link to={`/creator/my-submissions/${submission.id}`} className="font-medium hover:underline text-music-500">
-                      {submission.title}
-                    </Link>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <img className="h-10 w-10 rounded-md object-cover" src={submission.thumbnailPath ? `${API_BASE_URL}${submission.thumbnailPath}` : `https://via.placeholder.com/40`} alt={submission.title} />
+                      </div>
+                      <div className="ml-4">
+                        <Link to={`/creator/my-submissions/${submission.id}`} className="font-medium hover:underline text-music-500 dark:text-music-400">
+                          {submission.title}
+                        </Link>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {new Date(submission.submissionDate).toLocaleDateString('vi-VN')}
@@ -139,7 +173,7 @@ const MySubmissions = () => {
                     <div className="flex items-center justify-end space-x-4">
                       {submission.status === 'PENDING' ? (
                           <>
-                            <Link to={`/creator/submission/edit/${submission.id}`} className="text-music-500 hover:text-music-600">
+                            <Link to={`/creator/submission/edit/${submission.id}`} className="text-blue-500 hover:text-blue-600">
                               <Edit className="w-4 h-4" />
                             </Link>
                             <button onClick={() => openWithdrawModal(submission.id)} className="text-red-500 hover:text-red-600">
@@ -174,23 +208,34 @@ const MySubmissions = () => {
           </Link>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="relative flex-1">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${currentTheme.textSecondary}`} />
-            <Input placeholder="Tìm kiếm theo tên bài hát..." className="pl-10" />
-          </div>
-          <div className="relative">
-            <Filter className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${currentTheme.textSecondary}`} />
-            <select className={`pl-10 pr-4 py-2 border rounded-lg ${currentTheme.bg} ${currentTheme.border} appearance-none`}>
-              <option>Tất cả</option>
-              <option>Đang chờ</option>
-              <option>Đã duyệt</option>
-              <option>Bị từ chối</option>
-            </select>
+        <div className="flex justify-end">
+          <div className="w-full md:w-1/3">
+            <Input
+                placeholder="Tìm kiếm theo tên bài hát..."
+                icon={<Search size={18} />}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
 
         {renderContent()}
+
+        {!loading && pageInfo.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+                <span className="text-sm text-gray-700 dark:text-gray-400">
+                    Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số {pageInfo.totalElements} yêu cầu)
+                </span>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber - 1)} disabled={pageInfo.pageNumber === 0}>
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => handlePageChange(pageInfo.pageNumber + 1)} disabled={pageInfo.pageNumber >= pageInfo.totalPages - 1}>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+        )}
 
         <ConfirmationModal
             isOpen={isModalOpen}

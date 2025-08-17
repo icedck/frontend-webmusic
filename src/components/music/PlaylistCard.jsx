@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const PlaylistCard = ({ playlist }) => {
-    const { playSong } = useAudio();
+    const { playPlaylist } = useAudio();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -20,13 +20,18 @@ const PlaylistCard = ({ playlist }) => {
         try {
             const response = await musicService.getPlaylistDetails(playlist.id);
             if (response.success && response.data.songs && response.data.songs.length > 0) {
-                const firstSong = response.data.songs[0];
-                if (firstSong.isPremium && !isAuthenticated) {
-                    toast.info('Playlist này bắt đầu bằng một bài hát Premium. Vui lòng đăng nhập.');
-                    navigate('/login');
-                    return;
+                const playlistData = response.data;
+
+                if (!isAuthenticated) {
+                    const firstPlayableSong = playlistData.songs.find(s => !s.isPremium);
+                    if (!firstPlayableSong) {
+                        toast.info('Playlist này chỉ chứa các bài hát Premium. Vui lòng đăng nhập.');
+                        navigate('/login');
+                        return;
+                    }
                 }
-                playSong(firstSong, response.data.songs, { playlistId: playlist.id });
+
+                playPlaylist(playlistData);
             } else {
                 toast.warn('Playlist này không có bài hát nào để phát.');
             }
