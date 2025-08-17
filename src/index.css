@@ -9,7 +9,40 @@
   }
 
   body {
-    @apply bg-white dark:bg-surface-900 text-surface-900 dark:text-white transition-colors duration-300;
+    @apply bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300;
+  }
+
+  /* === Custom Scrollbar (Áp dụng toàn cục) === */
+  /* Cho các trình duyệt dựa trên WebKit (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;  /* Chiều rộng của thanh cuộn */
+    height: 8px; /* Chiều cao cho thanh cuộn ngang */
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: transparent; /* Làm cho track trong suốt */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full border-2 border-solid border-transparent bg-clip-content;
+    /*
+     * bg-clip-content và border-transparent sẽ tạo ra một padding ảo xung quanh thumb,
+     * làm cho nó trông mỏng hơn mà không ảnh hưởng đến vùng có thể click.
+     */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 dark:bg-slate-600; /* Màu khi di chuột vào */
+  }
+
+  /* Cho Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 transparent; /* thumb color, track color */
+  }
+
+  html.dark * {
+    scrollbar-color: #475569 transparent; /* Màu cho dark mode */
   }
 }
 
@@ -34,8 +67,8 @@
   /* Music Card Styles */
   .music-card {
     @apply bg-white dark:bg-surface-800 rounded-xl shadow-sm border border-surface-100 dark:border-surface-700
-           hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600
-           transition-all duration-300 group cursor-pointer;
+    hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600
+    transition-all duration-300 group cursor-pointer;
   }
 
   .music-card:hover {
@@ -49,28 +82,6 @@
 
   .gradient-secondary {
     @apply bg-gradient-to-r from-accent-500 to-accent-600;
-  }
-
-  /* Custom Scrollbar */
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(52 157 95) rgb(243 244 246);
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-surface-100 dark:bg-surface-700;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary-500 rounded-full;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-600;
   }
 }
 
@@ -103,4 +114,3 @@
 .text-stroke-blue-500 { -webkit-text-stroke: 1.5px #3b82f6; }
 .text-stroke-green-400 { -webkit-text-stroke: 1.5px #4ade80; }
 .text-stroke-red-400 { -webkit-text-stroke: 1.5px #f87171; }
-

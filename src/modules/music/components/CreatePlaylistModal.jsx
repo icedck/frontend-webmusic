@@ -120,10 +120,7 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
             const songIds = selectedSongs.map(s => s.id);
             const requestData = { name, songIds };
 
-            // --- BẮT ĐẦU SỬA ĐỔI ---
-            // Đổi tên 'request' thành 'playlistRequest' cho khớp với backend
             formData.append('playlistRequest', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
-            // --- KẾT THÚC SỬA ĐỔI ---
 
             if (imageFile) {
                 formData.append('thumbnailFile', imageFile);
@@ -176,7 +173,9 @@ export const CreatePlaylistModal = ({ isOpen, onClose, onSuccess }) => {
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Ảnh đại diện (không bắt buộc)
                             </label>
-                            <FileUpload onFileChange={setImageFile} />
+                            {/* === KHU VỰC ĐÃ SỬA ĐỔI === */}
+                            <FileUpload onFileChange={setImageFile} previewType="image" />
+                            {/* === KẾT THÚC KHU VỰC SỬA ĐỔI === */}
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-900 dark:text-white">

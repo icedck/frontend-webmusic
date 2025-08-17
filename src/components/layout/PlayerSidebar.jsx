@@ -6,7 +6,7 @@ import { useDarkMode } from '../../hooks/useDarkMode';
 import Button from '../common/Button';
 import {
     Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Star, ChevronsRight,
-    ChevronsLeft, Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal
+    Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal, Mic2 // Import thêm Mic2 để chuẩn bị
 } from 'lucide-react';
 import { musicService } from '../../modules/music/services/musicService';
 import { toast } from 'react-toastify';
@@ -71,6 +71,8 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     const [isAddToPlaylistModalOpen, setIsAddToPlaylistModalOpen] = useState(false);
     const progressBarRef = useRef(null);
     const [isQueueVisible, setIsQueueVisible] = useState(true);
+    // State để quản lý chế độ xem: 'queue' hoặc 'lyrics'
+    const [viewMode, setViewMode] = useState('queue');
 
     const [isLiked, setIsLiked] = useState(currentSong?.isLikedByCurrentUser || false);
 
@@ -110,6 +112,10 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
         return <Volume2 size={18} />;
     };
 
+    const handleToggleView = () => {
+        setViewMode(currentMode => currentMode === 'queue' ? 'lyrics' : 'queue');
+    }
+
     return (
         <>
             <aside className={`relative flex-shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-0' : 'w-80'}`}>
@@ -120,10 +126,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                     </div>
 
                     <div className="relative h-full flex flex-col p-4">
-                        <button onClick={onToggle} className={`absolute top-4 right-4 w-8 h-8 rounded-full transition-colors flex items-center justify-center z-20 ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-700/90 text-slate-300 hover:text-white' : 'bg-white/80 text-slate-700 hover:bg-slate-200 hover:text-black'}`}>
-                            <ChevronsRight size={20} />
-                        </button>
-
                         <div className={`absolute inset-4 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-opacity duration-500 ease-in-out ${!currentSong ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <Music className="w-10 h-10 mb-2" />
                             <p className="font-semibold">Chưa có nhạc</p>
@@ -132,13 +134,27 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
 
                         <div className={`h-full flex flex-col transition-opacity duration-500 ease-in-out ${currentSong ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <div className="flex-1 flex flex-col min-h-0">
-                                <div className="flex justify-between items-center mb-3 px-2">
-                                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Danh sách phát</h3>
-                                    <Button variant="ghost" size="icon" className="!w-8 !h-8" onClick={() => setIsQueueVisible(!isQueueVisible)}>
-                                        <ChevronsRight className={`transition-transform ${isQueueVisible ? 'rotate-90' : ''}`} />
-                                    </Button>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        {viewMode === 'queue' ? 'Danh sách phát' : 'Lời bài hát'}
+                                    </h3>
+
+                                    <div className="flex items-center">
+                                        {/* === KHU VỰC ĐÃ SỬA ĐỔI === */}
+                                        <Button variant="ghost" size="icon" className="!w-8 !h-8" onClick={handleToggleView}>
+                                            {/* Icon sẽ thay đổi tùy theo viewMode */}
+                                            {viewMode === 'queue' ? <Mic2 size={18} /> : <ListMusic size={18} />}
+                                        </Button>
+                                        {/* === KẾT THÚC KHU VỰC SỬA ĐỔI === */}
+
+                                        <Button onClick={onToggle} variant="ghost" size="icon" className="!w-8 !h-8">
+                                            <ChevronsRight size={20} />
+                                        </Button>
+                                    </div>
                                 </div>
-                                {isQueueVisible && (
+
+                                {/* Hiển thị nội dung tùy theo viewMode */}
+                                {viewMode === 'queue' && (
                                     <div className="flex-1 overflow-y-auto space-y-1 pr-1">
                                         {queue.map((qSong, index) => (
                                             <QueueItem
@@ -148,6 +164,11 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                                 onPlay={() => playSong(qSong, queue)}
                                             />
                                         ))}
+                                    </div>
+                                )}
+                                {viewMode === 'lyrics' && (
+                                    <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                                        <p className="text-slate-400">Chức năng Lời bài hát sẽ được phát triển sau.</p>
                                     </div>
                                 )}
                             </div>
@@ -225,12 +246,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                     </div>
                 </div>
             </aside>
-
-            {isCollapsed && (
-                <button onClick={onToggle} className={`absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-16 flex items-center justify-center backdrop-blur-md rounded-lg transition-all duration-200 ${isDarkMode ? 'bg-gray-800/50 hover:bg-gray-700/70 border border-white/10 text-slate-300 hover:text-white' : 'bg-slate-200/50 hover:bg-slate-300/70 border border-black/10 text-slate-600 hover:text-black'}`} aria-label="Mở trình phát nhạc">
-                    <ChevronsLeft size={20} />
-                </button>
-            )}
 
             {currentSong && <AddToPlaylistModal
                 isOpen={isAddToPlaylistModalOpen}
