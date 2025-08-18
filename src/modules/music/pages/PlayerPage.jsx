@@ -129,7 +129,7 @@ const PlayerPage = () => {
                             <div className="space-y-3">
                                 <h3 className="font-semibold mb-2">Đang phát</h3>
                                 <div className="flex items-center p-2 rounded-lg bg-slate-700/50">
-                                    <img src={song.albumArtUrl} className="w-12 h-12 rounded-md mr-4" />
+                                    <img src={song.albumArtUrl} className="w-12 h-12 rounded-md object-cover mr-4" />
                                     <div>
                                         <p className="font-semibold">{song.title}</p>
                                         <p className="text-sm text-slate-400">{song.artist.name}</p>
@@ -138,7 +138,7 @@ const PlayerPage = () => {
                                 <h3 className="font-semibold pt-4">Tiếp theo</h3>
                                 {queue.map(qSong => (
                                     <div key={qSong.id} className="flex items-center p-2 rounded-lg hover:bg-slate-700/50 cursor-pointer">
-                                        <img src={qSong.albumArtUrl} className="w-12 h-12 rounded-md mr-4" />
+                                        <img src={qSong.albumArtUrl} className="w-12 h-12 rounded-md object-cover mr-4" />
                                         <div>
                                             <p className="font-semibold">{qSong.title}</p>
                                             <p className="text-sm text-slate-400">{qSong.artistName}</p>

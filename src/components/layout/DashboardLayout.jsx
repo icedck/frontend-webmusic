@@ -292,7 +292,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                     <img
                         src={`${API_BASE_URL}${currentSong.thumbnailPath}`}
                         alt={currentSong.title}
-                        className="w-10 h-10 rounded-md hidden md:block"
+                        className="w-10 h-10 rounded-md object-cover hidden md:block"
                     />
                     <div className="hidden lg:block min-w-0">
                       <p className="font-semibold truncate">{currentSong.title}</p>

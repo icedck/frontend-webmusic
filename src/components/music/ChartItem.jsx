@@ -18,7 +18,7 @@ const ChartItem = ({ song, rank }) => {
       <span className={getRankClass(rank)} style={{ WebkitTextStroke: `1.5px ${song.color}` }}>
         {rank}
       </span>
-            <img src={song.imageUrl} alt={song.title} className="w-12 h-12 rounded-md mx-4" />
+            <img src={song.imageUrl} alt={song.title} className="w-12 h-12 rounded-md object-cover mx-4" />
             <div className="flex-grow">
                 <p className="font-semibold text-white truncate">{song.title}</p>
                 <p className="text-sm text-slate-400 truncate">{song.artist}</p>
