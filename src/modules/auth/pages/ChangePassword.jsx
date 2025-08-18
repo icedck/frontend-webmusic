@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useDarkMode } from "../../../hooks/useDarkMode";
 import { useAuth } from "../../../hooks/useAuth";
 import { authService } from "../services/authService";
@@ -163,13 +162,7 @@ const ChangePassword = () => {
               {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
-          <div className="flex justify-between items-center pt-4">
-            <Link
-              to="/forgot-password"
-              className="text-sm font-medium text-music-500 hover:text-music-600 hover:underline"
-            >
-              Quên mật khẩu?
-            </Link>
+          <div className="flex justify-end items-center pt-4">
             <Button type="submit" disabled={passwordLoading}>
               {passwordLoading ? "Đang lưu..." : "Lưu mật khẩu mới"}
             </Button>
