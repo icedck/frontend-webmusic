@@ -344,11 +344,10 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                               loading={notificationsLoading}
                               onClose={() => setIsNotifOpen(false)}
                               onMarkAsRead={markNotificationAsRead}
-                              onMarkAllAsRead={() => {
-                                markAllNotificationsAsRead();
-                              }}
+                              onMarkAllAsRead={markAllNotificationsAsRead}
                               onLoadMore={() => fetchNotifications(pageInfo.page + 1)}
                               hasMore={pageInfo.page + 1 < pageInfo.totalPages}
+                              unreadCount={unreadCount}
                           />
                       )}
                     </div>

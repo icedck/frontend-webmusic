@@ -1,11 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
 import Button from '../common/Button';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const NotificationDropdown = ({
                                   notifications,
@@ -15,12 +13,30 @@ const NotificationDropdown = ({
                                   onMarkAllAsRead,
                                   onLoadMore,
                                   hasMore,
+                                  unreadCount
                               }) => {
+    const navigate = useNavigate();
+
+    const handleNotificationClick = (notif) => {
+        // Mark as read if not already read
+        if (!notif.isRead) {
+            onMarkAsRead(notif.id);
+        }
+        // Close dropdown
+        onClose();
+        // Navigate to the link
+        navigate(notif.link);
+    };
     return (
         <div className="absolute top-full right-0 mt-2 w-80 md:w-96 rounded-xl shadow-lg border backdrop-blur-xl bg-white/80 dark:bg-slate-800/80 border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center justify-between p-3 border-b border-slate-200/70 dark:border-slate-700/70">
                 <h3 className="font-semibold">Thông báo</h3>
-                <Button variant="link" size="sm" onClick={onMarkAllAsRead}>
+                <Button
+                    variant="link"
+                    size="sm"
+                    onClick={onMarkAllAsRead}
+                    disabled={unreadCount === 0}
+                >
                     Đánh dấu đã đọc tất cả
                 </Button>
             </div>
@@ -30,25 +46,23 @@ const NotificationDropdown = ({
                 )}
 
                 {notifications.map((notif) => (
-                    <Link
+                    <div
                         key={notif.id}
-                        to={notif.link}
-                        onClick={() => {
-                            if (!notif.isRead) onMarkAsRead(notif.id);
-                            onClose();
-                        }}
-                        className="flex items-start gap-3 p-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        onClick={() => handleNotificationClick(notif)}
+                        className="flex items-start gap-3 p-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                     >
-                        {!notif.isRead && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 mt-1.5 flex-shrink-0"></div>
-                        )}
-                        <div className={`flex-grow ${notif.isRead ? 'pl-5' : ''}`}>
+                        <div className="w-2.5 h-2.5 flex-shrink-0 mt-1.5">
+                            {!notif.isRead && (
+                                <div className="w-full h-full rounded-full bg-cyan-500"></div>
+                            )}
+                        </div>
+                        <div className="flex-grow">
                             <p className="text-sm" dangerouslySetInnerHTML={{ __html: notif.message }}></p>
                             <span className="text-xs text-cyan-600 dark:text-cyan-400">
                                 {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: vi })}
                             </span>
                         </div>
-                    </Link>
+                    </div>
                 ))}
 
                 {loading && (
