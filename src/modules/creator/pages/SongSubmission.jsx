@@ -195,7 +195,7 @@ const SongSubmission = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
               <h2 className="text-xl font-semibold">Thông tin cơ bản</h2>
-              <Input name="title" label="Tên bài hát *" value={formData.title} onChange={handleInputChange} required />
+              <Input name="title" label="Tên bài hát " value={formData.title} onChange={handleInputChange} required />
               <textarea id="description" name="description" rows={4} placeholder="Giới thiệu ngắn về bài hát..." value={formData.description} onChange={handleInputChange} className={`w-full p-2 border rounded-lg ${currentTheme.bg} ${currentTheme.border} focus:border-music-500 focus:ring-music-500`} />
             </div>
 

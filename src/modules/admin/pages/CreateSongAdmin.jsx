@@ -171,7 +171,7 @@ const CreateSongAdmin = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className={`p-8 rounded-xl border ${currentTheme.border} ${currentTheme.bgCard} space-y-6`}>
-                    <Input name="title" label="Tên bài hát *" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                    <Input name="title" label="Tên bài hát " value={title} onChange={(e) => setTitle(e.target.value)} required />
                     <textarea id="description" name="description" rows={4} placeholder="Giới thiệu ngắn về bài hát..." value={description} onChange={(e) => setDescription(e.target.value)} className={`w-full p-2 border rounded-lg ${currentTheme.bg} ${currentTheme.border} focus:border-cyan-500 focus:ring-cyan-500`} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
