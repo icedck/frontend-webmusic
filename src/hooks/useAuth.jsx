@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
     updateUserContext,
     isAdmin: () => authService.isAdmin(user),
     isCreator: () => authService.isCreator(user),
-    isPremium: () => user?.hasActiveSubscription || authService.isAdmin(user), // Sửa nhỏ: Admin luôn có quyền premium
+    isPremium: () => user?.hasActiveSubscription || authService.isAdmin(user) || authService.isCreator(user),
     revalidateUser,
   };
 
