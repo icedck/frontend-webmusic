@@ -250,12 +250,32 @@ const getTopSongs = async (limit = 8) => {
     }
 };
 
+const getTopSongsPaginated = async (page = 1, size = 20) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/top?page=${page - 1}&size=${size}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch top songs paginated:", error);
+        throw error;
+    }
+};
+
 const getRecentSongs = async (limit = 8) => {
     try {
         const response = await apiService.get(`/api/v1/songs/recent?limit=${limit}`);
         return response.data;
     } catch (error) {
         console.error("Failed to fetch recent songs:", error);
+        throw error;
+    }
+};
+
+const getRecentSongsPaginated = async (page = 1, size = 20) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/recent?page=${page - 1}&size=${size}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch recent songs paginated:", error);
         throw error;
     }
 };
@@ -280,6 +300,16 @@ const getMostLikedSongs = async (limit = 8) => {
     }
 };
 
+const getMostLikedSongsPaginated = async (page = 1, size = 20) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/most-liked?page=${page - 1}&size=${size}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch most liked songs paginated:", error);
+        throw error;
+    }
+};
+
 const getMostLikedPlaylists = async (limit = 8) => {
     try {
         const response = await apiService.get(`/api/v1/playlists/most-liked?limit=${limit}`);
@@ -297,6 +327,17 @@ const searchSongs = async (keyword, page = 0, size = 10) => {
     } catch (error) {
         console.error("Failed to search songs:", error);
         throw error;
+    }
+};
+
+const getAllSongs = async (page = 0, size = 20) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/all`, { params: { page, size } });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to get all songs:", error);
+        // Fallback to search with empty keyword
+        return await searchSongs('', page, size);
     }
 };
 
@@ -356,11 +397,15 @@ export const musicService = {
     incrementPlaylistListenCount,
     getTopListenedPlaylists,
     getTopSongs,
+    getTopSongsPaginated,
     getRecentSongs,
+    getRecentSongsPaginated,
     getRecentPlaylists,
     getMostLikedSongs,
+    getMostLikedSongsPaginated,
     getMostLikedPlaylists,
     searchSongs,
+    getAllSongs,
     searchPlaylists,
     searchSingers,
     getTopSingers,

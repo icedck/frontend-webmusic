@@ -29,6 +29,8 @@ import {
   PlaylistManagement,
   SongDetail,
   PlaylistDetailPage,
+  AllPlaylistsPage,
+  AllSongsPage,
 } from "./modules/music";
 import {
   CreatorDashboard,
@@ -69,6 +71,8 @@ function AppContent() {
             <Route path="/search" element={<SearchResults />} />
             <Route path="/song/:songId" element={<SongDetail />} />
             <Route path="/payment/result" element={<PaymentResult />} />
+            <Route path="/playlists" element={<AllPlaylistsPage />} />
+            <Route path="/all-songs" element={<AllSongsPage />} />
             <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
             <Route path="/singer/:id" element={<ArtistDetailPage />} />
 

@@ -224,7 +224,7 @@ const MusicDiscoveryPage = () => {
     <div className="space-y-16">
       <HeroSlider />
 
-      <Section title="Playlist Nghe Nhiều">
+      <Section title="Playlist Nghe Nhiều" viewAllLink="/playlists?category=top-listened">
         {loading ? (
           <SkeletonGrid items={5} />
         ) : topPlaylists.length > 0 ? (
@@ -238,7 +238,7 @@ const MusicDiscoveryPage = () => {
         )}
       </Section>
 
-      <Section title="Bài hát nghe nhiều">
+      <Section title="Bài hát nghe nhiều" viewAllLink="/all-songs?category=popular">
         {loading ? (
           <SkeletonGrid items={5} />
         ) : topSongs.length > 0 ? (
@@ -276,7 +276,7 @@ const MusicDiscoveryPage = () => {
         )}
       </Section>
 
-      <Section title="Playlist Mới">
+      <Section title="Playlist Mới" viewAllLink="/playlists?category=recent">
         {loading ? (
           <SkeletonGrid items={5} />
         ) : recentPlaylists.length > 0 ? (
@@ -312,7 +312,7 @@ const MusicDiscoveryPage = () => {
         )}
       </Section>
 
-      <Section title="Playlist Được Yêu Thích">
+      <Section title="Playlist Được Yêu Thích" viewAllLink="/playlists?category=most-liked">
         {loading ? (
           <SkeletonGrid items={5} />
         ) : mostLikedPlaylists.length > 0 ? (
