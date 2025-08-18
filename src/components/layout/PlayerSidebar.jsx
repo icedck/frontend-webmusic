@@ -6,7 +6,7 @@ import { useDarkMode } from '../../hooks/useDarkMode';
 import Button from '../common/Button';
 import {
     Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Star, ChevronsRight,
-    Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal, Mic2 // Import thêm Mic2 để chuẩn bị
+    Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal, Mic2, X // Import thêm X cho nút xóa
 } from 'lucide-react';
 import { musicService } from '../../modules/music/services/musicService';
 import { toast } from 'react-toastify';
@@ -40,20 +40,29 @@ const PremiumUpsellCard = () => {
     );
 };
 
-const QueueItem = ({ song, isPlayingNow, onPlay }) => {
+const QueueItem = ({ song, isPlayingNow, onPlay, onRemove }) => {
     const { isDarkMode } = useDarkMode();
     return (
-        <div
-            onClick={onPlay}
-            className={`group flex items-center p-2 rounded-lg transition-colors cursor-pointer ${isPlayingNow ? (isDarkMode ? 'bg-white/10' : 'bg-black/5') : 'hover:bg-white/5 dark:hover:bg-black/10'}`}
-        >
-            <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/40'} alt={song.title} className="w-10 h-10 rounded-md object-cover" />
-            <div className="flex-1 min-w-0 mx-3">
-                <p className={`font-semibold truncate ${isPlayingNow ? 'text-cyan-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>{song.title}</p>
-                <p className={`text-sm truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {song.singers.map(s => s.name).join(', ')}
-                </p>
+        <div className={`group flex items-center p-2 rounded-lg transition-colors ${isPlayingNow ? (isDarkMode ? 'bg-white/10' : 'bg-black/5') : 'hover:bg-white/5 dark:hover:bg-black/10'}`}>
+            <div onClick={onPlay} className="flex items-center flex-1 cursor-pointer">
+                <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/40'} alt={song.title} className="w-10 h-10 rounded-md object-cover" />
+                <div className="flex-1 min-w-0 mx-3">
+                    <p className={`font-semibold truncate ${isPlayingNow ? 'text-cyan-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>{song.title}</p>
+                    <p className={`text-sm truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {song.singers.map(s => s.name).join(', ')}
+                    </p>
+                </div>
             </div>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove();
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
+                aria-label="Xóa khỏi hàng đợi"
+            >
+                <X size={16} />
+            </button>
         </div>
     );
 };
@@ -64,7 +73,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     const navigate = useNavigate();
     const {
         currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle, queue, currentIndex,
-        togglePlay, playNext, playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle, formatTime, playSong,
+        togglePlay, playNext, playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle, formatTime, playSong, removeFromQueue,
     } = useAudio();
 
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
@@ -163,6 +172,10 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                                     song={qSong}
                                                     isPlayingNow={currentIndex === index}
                                                     onPlay={() => playSong(qSong, queue)}
+                                                    onRemove={() => {
+                                                        removeFromQueue(qSong.id);
+                                                        toast.success(`Đã xóa "${qSong.title}" khỏi hàng đợi.`);
+                                                    }}
                                                 />
                                             ))
                                         ) : (

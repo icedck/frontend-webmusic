@@ -348,7 +348,68 @@ export const AudioProvider = ({ children }) => {
     toast.success(`Đã thêm "${song.title}" vào danh sách phát.`, { toastId });
   };
 
-  const removeFromQueue = (songId) => setQueue(prev => prev.filter(song => song.id !== songId));
+  const removeFromQueue = useCallback((songId) => {
+    const removedIndex = queue.findIndex(song => song.id === songId);
+    
+    if (removedIndex === -1) {
+      // Bài hát không tồn tại trong queue
+      return;
+    }
+
+    const newQueue = queue.filter(song => song.id !== songId);
+    const isRemovingCurrentSong = removedIndex === currentIndex;
+    
+    if (newQueue.length === 0) {
+      // Nếu queue trống sau khi xóa
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+      setQueue([]);
+      setCurrentSong(null);
+      setCurrentIndex(-1);
+      setCurrentTime(0);
+      setDuration(0);
+      setIsPlaying(false);
+      toast.success('Đã xóa bài hát khỏi danh sách phát.');
+      return;
+    }
+
+    // Cập nhật queue trước
+    setQueue(newQueue);
+    
+    if (isRemovingCurrentSong) {
+      // Nếu xóa bài hát đang phát
+      let nextIndex = removedIndex;
+      
+      // Nếu xóa bài cuối cùng, quay về bài đầu tiên
+      if (removedIndex >= newQueue.length) {
+        nextIndex = 0;
+      }
+      
+      // Phát bài tiếp theo
+      const nextSong = newQueue[nextIndex];
+      setCurrentIndex(nextIndex);
+      setCurrentSong(nextSong);
+      
+      // Phát bài mới
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.src = `${API_BASE_URL}/api/songs/${nextSong.id}/play`;
+          if (isPlaying) {
+            audioRef.current.play().catch(console.error);
+          }
+        }
+      }, 100);
+    } else if (removedIndex < currentIndex) {
+      // Nếu xóa bài hát trước bài đang phát, giảm currentIndex
+      setCurrentIndex(prev => prev - 1);
+    }
+    // Nếu xóa bài hát sau bài đang phát, không cần thay đổi currentIndex
+    
+    toast.success('Đã xóa bài hát khỏi danh sách phát.');
+  }, [queue, currentIndex, isPlaying, audioRef, API_BASE_URL]);
+  
   const clearQueue = () => {
     setQueue([]);
     setCurrentIndex(-1);
