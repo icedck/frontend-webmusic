@@ -176,7 +176,7 @@ const Profile = () => {
             </div>
             <div className="w-full space-y-4">
               <Input
-                label="Tên hiển thị *"
+                label="Tên hiển thị "
                 icon={User}
                 name="displayName"
                 value={formData.displayName}
