@@ -22,6 +22,7 @@ import { vi } from "date-fns/locale";
 import { AddToPlaylistModal } from "../components/AddToPlaylistModal";
 import CommentSection from "../components/CommentSection";
 import { LikeButton } from "../components/LikeButton";
+import DescriptionBox from "../components/DescriptionBox";
 import { toast } from "react-toastify";
 
 const SongDetail = () => {
@@ -256,22 +257,10 @@ const SongDetail = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
           <div className="lg:col-span-2 space-y-8">
-            {song.description && (
-              <div
-                className={`${currentTheme.bgCard} p-6 rounded-xl border ${currentTheme.border}`}
-              >
-                <h2 className={`text-xl font-bold mb-4 ${currentTheme.text}`}>
-                  Mô tả
-                </h2>
-                <p
-                  className={`${currentTheme.textSecondary} whitespace-pre-wrap`}
-                >
-                  {song.description}
-                </p>
-              </div>
-            )}
+            <DescriptionBox description={song.description} />
+            
             <CommentSection commentableId={song.id} commentableType="SONG" />
           </div>
 

@@ -15,7 +15,7 @@
   /* === Custom Scrollbar (Áp dụng toàn cục) === */
   /* Cho các trình duyệt dựa trên WebKit (Chrome, Safari, Edge) */
   ::-webkit-scrollbar {
-    width: 8px;  /* Chiều rộng của thanh cuộn */
+    width: 8px; /* Chiều rộng của thanh cuộn */
     height: 8px; /* Chiều cao cho thanh cuộn ngang */
   }
 
@@ -107,10 +107,20 @@
   }
 
   @keyframes equalizer {
-    from { height: 4px; }
-    to { height: 20px; }
+    from {
+      height: 4px;
+    }
+    to {
+      height: 20px;
+    }
   }
 }
-.text-stroke-blue-500 { -webkit-text-stroke: 1.5px #3b82f6; }
-.text-stroke-green-400 { -webkit-text-stroke: 1.5px #4ade80; }
-.text-stroke-red-400 { -webkit-text-stroke: 1.5px #f87171; }
+.text-stroke-blue-500 {
+  -webkit-text-stroke: 1.5px #3b82f6;
+}
+.text-stroke-green-400 {
+  -webkit-text-stroke: 1.5px #4ade80;
+}
+.text-stroke-red-400 {
+  -webkit-text-stroke: 1.5px #f87171;
+}
