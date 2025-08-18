@@ -9,6 +9,7 @@ import Avatar from "../../../components/common/Avatar";
 const CommentForm = ({ onSubmit, isLoading }) => {
   const { user, isAuthenticated } = useAuth();
   const [content, setContent] = useState("");
+  const COMMENT_MAX_LENGTH = 500;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,8 +45,12 @@ const CommentForm = ({ onSubmit, isLoading }) => {
           placeholder="Viết bình luận của bạn..."
           className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-transparent focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
           rows="2"
+          maxLength={COMMENT_MAX_LENGTH}
         />
-        <div className="flex justify-end mt-2">
+        <div className="flex justify-between items-center mt-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {content.length} / {COMMENT_MAX_LENGTH}
+          </p>
           <Button
             type="submit"
             disabled={!content.trim() || isLoading}
