@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { musicService } from '../../music/services/musicService';
 import SongCard from '../../../components/music/SongCard';
+import SongListItem from '../../../components/music/SongListItem';
 import PlaylistCard from '../../../components/music/PlaylistCard';
 import ArtistCard from '../../../components/music/ArtistCard';
 import Button from '../../../components/common/Button';
@@ -15,6 +16,23 @@ const SkeletonGrid = ({ CardComponent, count = 5 }) => (
                 <div className={`aspect-square bg-slate-200 dark:bg-slate-800 ${CardComponent === ArtistCard ? 'rounded-full' : 'rounded-lg'}`}></div>
                 <div className="h-4 mt-2 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
                 <div className="h-3 mt-1 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
+            </div>
+        ))}
+    </div>
+);
+
+const SkeletonList = ({ count = 5 }) => (
+    <div className="space-y-3">
+        {Array.from({ length: count }).map((_, i) => (
+            <div key={i} className="animate-pulse flex items-center gap-4 p-3">
+                <div className="w-6 h-4 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-md"></div>
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
+                </div>
+                <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                <div className="w-24 h-8 bg-slate-200 dark:bg-slate-800 rounded"></div>
             </div>
         ))}
     </div>
@@ -76,10 +94,17 @@ const SearchResults = () => {
 
             <section>
                 <h2 className="text-2xl font-semibold mb-4">Bài hát</h2>
-                {loading ? <SkeletonGrid CardComponent={SongCard} /> : (
+                {loading ? <SkeletonList /> : (
                     songs.content?.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                            {songs.content.map(song => <SongCard key={song.id} song={song} onPlay={() => handlePlaySong(song, songs.content)} />)}
+                        <div className="space-y-2">
+                            {songs.content.map((song, index) => 
+                                <SongListItem 
+                                    key={song.id} 
+                                    song={song} 
+                                    index={index}
+                                    onPlay={() => handlePlaySong(song, songs.content)} 
+                                />
+                            )}
                         </div>
                     ) : <p>Không tìm thấy bài hát nào.</p>
                 )}
