@@ -72,7 +72,15 @@ const SongSubmission = () => {
   const fetchFormOptions = async () => {
     try {
       const formOptions = await submissionService.fetchFormData();
-      setAvailableSingers(Array.isArray(formOptions?.singers) ? formOptions.singers.map(s => ({ id: s.id, name: s.name })) : []);
+      setAvailableSingers(
+        Array.isArray(formOptions?.singers)
+          ? formOptions.singers.map((s) => ({
+              id: s.id,
+              name: s.name,
+              status: s.status,
+            }))
+          : []
+      );
       setAvailableTags(Array.isArray(formOptions?.tags) ? formOptions.tags.map(t => ({ id: t.id, name: t.name })) : []);
     } catch (error) {
       toast.error("Không thể tải lại danh sách ca sĩ/thể loại.");
