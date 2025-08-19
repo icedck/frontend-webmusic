@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import CreateTagModal from '../components/CreateTagModal';
 import UpdateTagModal from '../components/UpdateTagModal';
 import { useDebounce } from '../../../hooks/useDebounce';
+import Pagination from "../../../components/common/Pagination";
 
 const PAGE_SIZE = 5;
 
@@ -167,27 +168,16 @@ const TagManagement = () => {
                     </tbody>
                 </table>
             </div>
-            {pageInfo.totalElements > 0 && (
-                <div className="flex items-center justify-between mt-4">
-                    <p className="text-sm">
+            {pageInfo.totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 flex-wrap gap-4">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
                         Hiển thị {from} - {to} trên {pageInfo.totalElements} tag
                     </p>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => handlePageChange(pageInfo.currentPage - 1)}
-                            disabled={pageInfo.currentPage === 0}
-                        >
-                            Trước
-                        </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => handlePageChange(pageInfo.currentPage + 1)}
-                            disabled={pageInfo.currentPage >= pageInfo.totalPages - 1}
-                        >
-                            Sau
-                        </Button>
-                    </div>
+                    <Pagination
+                        currentPage={pageInfo.currentPage}
+                        totalPages={pageInfo.totalPages}
+                        onPageChange={handlePageChange}
+                    />
                 </div>
             )}
 

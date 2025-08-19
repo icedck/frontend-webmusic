@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { adminService } from "../services/adminService";
 import { toast } from "react-toastify";
+import Pagination from "../../../components/common/Pagination";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -126,6 +127,15 @@ const SongManagementAdmin = () => {
       setProcessingId(null);
     }
   };
+
+  const from =
+    pageInfo.totalElements > 0
+      ? pageInfo.pageNumber * pageInfo.pageSize + 1
+      : 0;
+  const to = Math.min(
+    (pageInfo.pageNumber + 1) * pageInfo.pageSize,
+    pageInfo.totalElements
+  );
 
   return (
     <div className="space-y-6">
@@ -280,31 +290,16 @@ const SongManagementAdmin = () => {
           </tbody>
         </table>
       </div>
-
-      {!loading && pageInfo.totalPages > 0 && (
-        <div className="flex items-center justify-between mt-4">
-          <span className="text-sm">
-            Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages} (Tổng số{" "}
-            {pageInfo.totalElements} bài hát)
-          </span>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(pageInfo.pageNumber - 1)}
-              disabled={pageInfo.pageNumber === 0}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(pageInfo.pageNumber + 1)}
-              disabled={pageInfo.pageNumber >= pageInfo.totalPages - 1}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+      {!loading && pageInfo.totalPages > 1 && (
+        <div className="flex items-center justify-between w-full mt-4 flex-col md:flex-row gap-4 md:gap-0">
+          <p className={`text-sm ${currentTheme.textSecondary}`}>
+            Hiển thị {from} - {to} trên {pageInfo.totalElements} bài hát
+          </p>
+          <Pagination
+            currentPage={pageInfo.pageNumber}
+            totalPages={pageInfo.totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>
