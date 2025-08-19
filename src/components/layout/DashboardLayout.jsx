@@ -90,18 +90,18 @@ const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
   }
 
   return (
-    <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-12 z-10 pointer-events-none">
+    <div className="flex items-center justify-center pointer-events-none min-h-[20px]">
       <p 
         className={`
-          text-sm font-semibold text-center max-w-md truncate transition-all duration-500 ease-out
+          text-sm font-medium text-center max-w-xs lg:max-w-sm truncate transition-all duration-300 ease-out
           ${isDarkMode ? 'text-cyan-400' : 'text-blue-600'}
           ${isAnimating 
-            ? 'transform translate-y-2 opacity-0' 
-            : 'transform translate-y-0 opacity-100'
+            ? 'transform translate-y-1 opacity-0 scale-95' 
+            : 'transform translate-y-0 opacity-100 scale-100'
           }
         `}
         style={{
-          animation: isAnimating ? 'none' : 'slideUp 0.5s ease-out',
+          animation: isAnimating ? 'none' : 'slideUp 0.3s ease-out',
         }}
       >
         {displayedLine}
@@ -234,7 +234,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
       <header
           className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}
       >
-        <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+        <div className="relative px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -285,14 +285,20 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Hiển thị lời bài hát gần với controls - CHỈ CHO PREMIUM */}
-            {user && isPremium() && (
-              <NavbarLyricsDisplay 
-                lyrics={lyrics}
-                currentTime={currentTime}
-                isVisible={!isPlayerVisible && currentSong && lyrics && lyrics.length > 0}
-              />
-            )}
+            {/* Hiển thị lời bài hát gần player controls - CHO PREMIUM, ADMIN, VÀ CREATOR */}
+            <div className={`transition-all duration-300 ease-in-out ${
+              user && (isPremium() || isAdmin() || isCreator()) && !isPlayerVisible && currentSong && lyrics && lyrics.length > 0
+                ? "opacity-100 max-w-xs"
+                : "opacity-0 max-w-0"
+            } overflow-hidden`}>
+              {user && (isPremium() || isAdmin() || isCreator()) && (
+                <NavbarLyricsDisplay 
+                  lyrics={lyrics}
+                  currentTime={currentTime}
+                  isVisible={!isPlayerVisible && currentSong && lyrics && lyrics.length > 0}
+                />
+              )}
+            </div>
             
             <div
                 className={`flex items-center gap-3 transition-all duration-300 ease-in-out ${
