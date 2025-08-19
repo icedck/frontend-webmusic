@@ -8,7 +8,6 @@ const ChartList = ({ chartData = [] }) => {
     const { playSong } = useAudio();
     const { isDarkMode } = useDarkMode();
 
-    // Lọc ra các entry không hợp lệ (null, undefined, hoặc không có thuộc tính 'song')
     const validChartData = chartData ? chartData.filter(entry => entry && entry.song) : [];
 
     if (validChartData.length === 0) {

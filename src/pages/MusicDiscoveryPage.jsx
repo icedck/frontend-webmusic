@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import HeroSlider from "../components/music/HeroSlider";
+import FeaturedSongs from "../components/music/FeaturedSongs";
 import PlaylistCard from "../components/music/PlaylistCard";
 import SongCard from "../components/music/SongCard";
 import ArtistCard from "../components/music/ArtistCard";
@@ -234,6 +235,9 @@ const MusicDiscoveryPage = () => {
   return (
       <div className="space-y-16">
         <HeroSlider />
+
+        {/* Featured Songs Section */}
+        <FeaturedSongs playlists={mostLikedPlaylists} />
 
         <Section title="Playlist Nghe Nhiều" viewAllLink="/playlists?category=top-listened">
           {loading ? (

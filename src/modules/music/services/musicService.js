@@ -343,6 +343,17 @@ const getMostLikedPlaylists = async (limit = 8) => {
     }
 };
 
+const getMostLikedPlaylistsWithSongs = async (limit = 8) => {
+    try {
+        const response = await apiService.get(`/api/v1/playlists/most-liked?limit=${limit}&includeSongs=true`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch most liked playlists with songs:", error);
+        // Fallback to regular getMostLikedPlaylists if the new endpoint doesn't exist
+        return await getMostLikedPlaylists(limit);
+    }
+};
+
 const searchSongs = async (keyword, page = 0, size = 10) => {
     try {
         const response = await apiService.get(`/api/v1/songs`, { params: { search: keyword, page, size } });
@@ -429,6 +440,7 @@ export const musicService = {
     getMostLikedSongs,
     getMostLikedSongsPaginated,
     getMostLikedPlaylists,
+    getMostLikedPlaylistsWithSongs,
     searchSongs,
     getAllSongs,
     searchPlaylists,
