@@ -2,85 +2,221 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Play, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { Play, ArrowUp, ArrowDown, Minus, Pause, Crown, Headphones, Heart } from 'lucide-react';
 import Button from '../common/Button';
+import { useAudio } from '../../hooks/useAudio';
+import { useDarkMode } from '../../hooks/useDarkMode';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-const ChartItem = ({ chartEntry, onPlay }) => {
+const ChartItem = ({ chartEntry, onPlay, index }) => {
     const { rank, previousRank, song } = chartEntry;
+    const { currentSong, isPlaying } = useAudio();
+    const { isDarkMode } = useDarkMode();
 
     if (!song) {
         return null;
     }
 
+    const isCurrentlyPlaying = isPlaying && currentSong?.id === song.id;
+
     const getRankChange = () => {
-        if (previousRank === null) {
-            return { icon: <ArrowUp />, color: 'text-green-500', text: 'Mới' };
+        if (previousRank === null || previousRank === undefined) {
+            return { icon: ArrowUp, color: 'text-green-500', text: 'Mới', bgColor: 'bg-green-100 dark:bg-green-900/30' };
         }
         if (rank < previousRank) {
-            return { icon: <ArrowUp />, color: 'text-green-500', text: previousRank - rank };
+            const change = previousRank - rank;
+            return { icon: ArrowUp, color: 'text-green-500', text: `+${change}`, bgColor: 'bg-green-100 dark:bg-green-900/30' };
         }
         if (rank > previousRank) {
-            return { icon: <ArrowDown />, color: 'text-red-500', text: rank - previousRank };
+            const change = rank - previousRank;
+            return { icon: ArrowDown, color: 'text-red-500', text: `-${change}`, bgColor: 'bg-red-100 dark:bg-red-900/30' };
         }
-        return { icon: <Minus />, color: 'text-slate-500', text: '' };
+        return { icon: Minus, color: 'text-slate-500', text: '=', bgColor: 'bg-slate-100 dark:bg-slate-800/30' };
     };
 
     const rankChange = getRankChange();
 
-    const rankColor = rank === 1 ? 'text-cyan-400' :
-        rank === 2 ? 'text-green-400' :
-            rank === 3 ? 'text-amber-400' :
-                'text-slate-600 dark:text-slate-300';
+    const getRankDisplay = () => {
+        if (rank === 1) {
+            return {
+                color: 'text-yellow-500',
+                bgColor: 'bg-gradient-to-br from-yellow-400 to-yellow-600',
+                textColor: 'text-white',
+                shadow: 'shadow-lg shadow-yellow-500/30',
+                icon: Crown
+            };
+        }
+        if (rank === 2) {
+            return {
+                color: 'text-slate-400',
+                bgColor: 'bg-gradient-to-br from-slate-300 to-slate-500',
+                textColor: 'text-white',
+                shadow: 'shadow-lg shadow-slate-500/30'
+            };
+        }
+        if (rank === 3) {
+            return {
+                color: 'text-amber-600',
+                bgColor: 'bg-gradient-to-br from-amber-500 to-amber-700',
+                textColor: 'text-white',
+                shadow: 'shadow-lg shadow-amber-500/30'
+            };
+        }
+        return {
+            color: 'text-slate-600 dark:text-slate-300',
+            bgColor: 'bg-slate-100 dark:bg-slate-700',
+            textColor: 'text-slate-700 dark:text-slate-300',
+            shadow: 'shadow-md'
+        };
+    };
 
-    const fallbackColor = 'rgba(0, 0, 0, 0.5)';
-    const strokeStyle = {
-        WebkitTextStroke: `1.5px ${song.color || fallbackColor}`,
+    const rankDisplay = getRankDisplay();
+
+    const formatDuration = (duration) => {
+        if (!duration) return '';
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        return `${minutes}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    const formatNumber = (num) => {
+        if (!num) return '0';
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        }
+        if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toLocaleString('vi-VN');
     };
 
     return (
-        <div className="group flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200">
-            <div className="flex items-center w-16 flex-shrink-0">
-                <span className={`text-3xl font-bold font-sans ${rankColor} w-10 text-center`} style={strokeStyle}>
-                    {rank}
-                </span>
-                <div className={`flex items-center text-xs ${rankChange.color}`}>
-                    {rankChange.icon}
-                    <span className="ml-0.5">{rankChange.text}</span>
-                </div>
-            </div>
+        <div className={`group transition-all duration-300 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 relative overflow-hidden ${
+            isCurrentlyPlaying ? 'bg-gradient-to-r from-cyan-50/50 to-blue-50/50 dark:from-cyan-900/20 dark:to-blue-900/20' : ''
+        }`}>
+            {/* Background Animation for Currently Playing */}
+            {isCurrentlyPlaying && (
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 dark:from-cyan-400/10 dark:to-blue-400/10 animate-pulse" />
+            )}
 
-            <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0 ml-4">
-                <img 
-                    src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : song.imageUrl} 
-                    alt={song.title} 
-                    className="w-full h-full object-cover" 
-                />
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            {/* Grid Layout matching header */}
+            <div className="grid grid-cols-[4rem_1rem_1fr_12rem_5rem_5rem_5rem_3rem] gap-4 items-center px-6 py-4 relative z-10">
+                {/* Rank */}
+                <div className="flex items-center justify-center">
+                    <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${rankDisplay.bgColor} ${rankDisplay.textColor} ${rankDisplay.shadow} ${
+                        isCurrentlyPlaying ? 'scale-110' : ''
+                    }`}>
+                        {rankDisplay.icon && rank <= 3 ? (
+                            <rankDisplay.icon className="w-5 h-5" />
+                        ) : (
+                            rank
+                        )}
+                        {isCurrentlyPlaying && (
+                            <div className="absolute -inset-1 rounded-full border-2 border-cyan-400 animate-pulse" />
+                        )}
+                    </div>
+                </div>
+
+                {/* Rank Change */}
+                <div className="flex items-center justify-center">
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-300 ${rankChange.bgColor} ${rankChange.color}`}>
+                        <rankChange.icon className="w-3 h-3" />
+                        <span>{rankChange.text}</span>
+                    </div>
+                </div>
+
+                {/* Song Info */}
+                <div className="flex items-center gap-4 min-w-0">
+                    <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-md group-hover:shadow-lg transition-all duration-300">
+                        <img 
+                            src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/56'} 
+                            alt={song.title} 
+                            className={`w-full h-full object-cover transition-all duration-300 ${isCurrentlyPlaying ? 'scale-110' : 'group-hover:scale-105'}`} 
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => onPlay(song)}
+                                className="w-10 h-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full text-white border-none"
+                            >
+                                {isCurrentlyPlaying ? (
+                                    <Pause size={18} />
+                                ) : (
+                                    <Play size={18} className="ml-0.5" />
+                                )}
+                            </Button>
+                        </div>
+                        {song.isPremium && (
+                            <div className="absolute top-1 right-1 bg-amber-400 rounded-full p-1">
+                                <Crown className="w-3 h-3 text-white" />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                        <Link 
+                            to={`/song/${song.id}`} 
+                            className={`font-semibold text-base truncate hover:underline block transition-colors duration-300 ${
+                                isCurrentlyPlaying 
+                                    ? 'text-cyan-600 dark:text-cyan-400' 
+                                    : 'text-slate-800 dark:text-slate-100 group-hover:text-cyan-600 dark:group-hover:text-cyan-400'
+                            }`}
+                        >
+                            {song.title}
+                        </Link>
+                        <div className="text-sm text-slate-500 dark:text-slate-400 truncate mt-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300">
+                            {song.singers ? song.singers.map(s => s.name).join(', ') : song.artist || 'Unknown Artist'}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Artists (Desktop) */}
+                <div className="hidden md:block text-sm text-slate-600 dark:text-slate-300 truncate group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors duration-300">
+                    {song.singers ? song.singers.map(s => s.name).join(', ') : song.artist || 'Unknown Artist'}
+                </div>
+
+                {/* Duration (Desktop) */}
+                <div className="hidden md:block text-sm text-slate-500 dark:text-slate-400 text-center group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300">
+                    {formatDuration(song.duration)}
+                </div>
+
+                {/* Listen Count (Desktop) */}
+                <div className="hidden md:flex items-center justify-center text-sm text-slate-500 dark:text-slate-400 gap-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300">
+                    <Headphones className="w-4 h-4" />
+                    <span>{formatNumber(song.listenCount)}</span>
+                </div>
+
+                {/* Like Count (Desktop) */}
+                <div className="hidden md:flex items-center justify-center text-sm text-slate-500 dark:text-slate-400 gap-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300">
+                    <Heart className="w-4 h-4" />
+                    <span>{formatNumber(song.likeCount)}</span>
+                </div>
+
+                {/* Action Button */}
+                <div className="flex justify-center">
                     <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => onPlay(song)}
-                        className="w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full text-white"
+                        className={`w-10 h-10 opacity-0 group-hover:opacity-100 transition-all duration-300 ${
+                            isCurrentlyPlaying 
+                                ? 'opacity-100 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30' 
+                                : 'text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30'
+                        }`}
                     >
-                        <Play size={16} className="ml-0.5" />
+                        {isCurrentlyPlaying ? (
+                            <Pause size={20} />
+                        ) : (
+                            <Play size={20} className="ml-0.5" />
+                        )}
                     </Button>
                 </div>
             </div>
 
-            <div className="flex-1 min-w-0 mx-4">
-                <Link to={`/song/${song.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate hover:underline block">
-                    {song.title}
-                </Link>
-                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                    {song.singers ? song.singers.map(s => s.name).join(', ') : song.artist}
-                </p>
-            </div>
-
-            <div className="hidden md:block text-sm text-slate-500 dark:text-slate-400">
-                {song.duration ? `${Math.floor(song.duration / 60)}:${String(song.duration % 60).padStart(2, '0')}` : ''}
-            </div>
+            {/* Hover Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
     );
 };
