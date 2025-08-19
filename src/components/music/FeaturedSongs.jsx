@@ -86,12 +86,6 @@ const FeaturedSongs = ({ playlists = [] }) => {
                         Có Thể Bạn Thích
                     </h2>
                 </div>
-                <Button 
-                    variant="outline" 
-                    className="text-cyan-600 border-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 text-sm font-semibold"
-                >
-                    Xem tất cả
-                </Button>
             </div>
 
             {/* Featured Playlists Grid - Horizontal Rectangle Cards */}
@@ -182,16 +176,6 @@ const FeaturedSongs = ({ playlists = [] }) => {
                         </div>
                     </div>
                 ))}
-            </div>
-
-            {/* View More Section */}
-            <div className="mt-8 text-center">
-                <Button 
-                    variant="ghost" 
-                    className="text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 font-medium"
-                >
-                    Khám phá thêm nhiều playlist hay →
-                </Button>
             </div>
         </section>
     );

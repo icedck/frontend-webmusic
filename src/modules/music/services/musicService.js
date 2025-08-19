@@ -405,6 +405,16 @@ const getTopSingers = async (limit = 8) => {
     }
 };
 
+const getRandomSongs = async (limit = 9) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/random?limit=${limit}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch random songs:", error);
+        throw error;
+    }
+};
+
 export const musicService = {
     getSongById,
     getSongLyrics,
@@ -446,4 +456,5 @@ export const musicService = {
     searchPlaylists,
     searchSingers,
     getTopSingers,
+    getRandomSongs,
 };
