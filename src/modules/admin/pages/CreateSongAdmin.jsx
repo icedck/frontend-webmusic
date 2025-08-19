@@ -41,7 +41,6 @@ const NewSingerInput = ({ singer, onUpdate, onRemove }) => {
                     disabled
                     className="!mb-0"
                 />
-                {/* START-CHANGE: Thêm ô nhập email */}
                 <Input
                     placeholder="Email (không bắt buộc)"
                     type="email"
@@ -49,7 +48,6 @@ const NewSingerInput = ({ singer, onUpdate, onRemove }) => {
                     onChange={handleEmailChange}
                     className="!mb-0"
                 />
-                {/* END-CHANGE */}
             </div>
             <Button size="icon" variant="ghost" onClick={() => onRemove(singer.value)} className="text-red-500 flex-shrink-0">
                 <X size={18} />
@@ -92,17 +90,20 @@ const CreateSongAdmin = () => {
     const handleSingersChange = (selectedOptions) => {
         setSelectedSingers(selectedOptions);
         const newOnes = selectedOptions.filter(opt => opt.__isNew__);
-
-        // Giữ lại dữ liệu của những ca sĩ mới vẫn còn trong danh sách chọn
         const existingNewData = newSingersData.filter(ns => newOnes.some(n => n.value === ns.value));
-
-        // Thêm dữ liệu cho những ca sĩ mới vừa được thêm vào
         const addedNew = newOnes
             .filter(n => !existingNewData.some(ed => ed.value === n.value))
-            .map(n => ({ ...n, email: '', avatarFile: null })); // Thêm email rỗng
-
+            .map(n => ({ ...n, email: '', avatarFile: null }));
         setNewSingersData([...existingNewData, ...addedNew]);
     };
+
+    // --- START: ADDED FUNCTION ---
+    // Hàm xử lý khi chọn hoặc tạo mới một thể loại
+    const handleTagsChange = (selectedOptions) => {
+        setSelectedTags(selectedOptions);
+        // Logic để tạo tag mới sẽ được xử lý trong handleSubmit
+    };
+    // --- END: ADDED FUNCTION ---
 
     const updateNewSingerData = (singerLabel, key, value) => {
         setNewSingersData(prev => prev.map(s => s.label === singerLabel ? { ...s, [key]: value } : s));
@@ -124,15 +125,19 @@ const CreateSongAdmin = () => {
         setLoading(true);
 
         const singerIds = selectedSingers.filter(s => !s.__isNew__).map(s => s.value);
-        // START-CHANGE: Thêm email vào payload
         const newSingers = newSingersData.map(ns => ({
             name: ns.label,
             email: ns.email,
             avatarFileName: ns.avatarFile ? ns.avatarFile.name : null
         }));
-        // END-CHANGE
 
-        const songRequest = { title, description, singerIds, newSingers, tagIds: selectedTags.map(t => t.value), isPremium };
+        // --- START: MODIFIED LOGIC ---
+        // Tách biệt các tag đã có và các tag mới cần tạo
+        const tagIds = selectedTags.filter(t => !t.__isNew__).map(t => t.value);
+        const newTags = selectedTags.filter(t => t.__isNew__).map(t => t.label);
+
+        const songRequest = { title, description, singerIds, newSingers, tagIds, newTags, isPremium };
+        // --- END: MODIFIED LOGIC ---
 
         const data = new FormData();
         data.append('songRequest', new Blob([JSON.stringify(songRequest)], { type: 'application/json' }));
@@ -176,11 +181,25 @@ const CreateSongAdmin = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Ca sĩ *</label>
-                            <CreatableSelect isMulti isClearable options={singerOptions} value={selectedSingers} onChange={handleSingersChange} placeholder="Chọn hoặc nhập tên ca sĩ mới..." formatCreateLabel={(inputValue) => `Thêm mới "${inputValue}"`} isLoading={isFetchingOptions} isDisabled={isFetchingOptions} styles={selectStyles} noOptionsMessage={() => 'Không tìm thấy ca sĩ'} />
+                            <CreatableSelect isMulti isClearable options={singerOptions} value={selectedSingers} onChange={handleSingersChange} placeholder="Chọn hoặc nhập tên ca sĩ mới..." formatCreateLabel={(inputValue) => `Thêm mới ca sĩ "${inputValue}"`} isLoading={isFetchingOptions} isDisabled={isFetchingOptions} styles={selectStyles} noOptionsMessage={() => 'Không tìm thấy ca sĩ'} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Thể loại</label>
-                            <CreatableSelect isMulti isClearable options={tagOptions} value={selectedTags} onChange={setSelectedTags} placeholder="Chọn thể loại..." isLoading={isFetchingOptions} isDisabled={isFetchingOptions} styles={selectStyles} />
+                            {/* --- START: MODIFIED JSX --- */}
+                            <CreatableSelect
+                                isMulti
+                                isClearable
+                                options={tagOptions}
+                                value={selectedTags}
+                                onChange={handleTagsChange}
+                                placeholder="Chọn hoặc tạo thể loại mới..."
+                                formatCreateLabel={(inputValue) => `Thêm mới thể loại "${inputValue}"`}
+                                isLoading={isFetchingOptions}
+                                isDisabled={isFetchingOptions}
+                                styles={selectStyles}
+                                noOptionsMessage={() => 'Không tìm thấy thể loại'}
+                            />
+                            {/* --- END: MODIFIED JSX --- */}
                         </div>
                     </div>
                     {newSingersData.length > 0 && (

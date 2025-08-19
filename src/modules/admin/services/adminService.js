@@ -115,9 +115,12 @@ const getAllApprovedSingers = async () => {
     }
 };
 
-const getTagsForAdmin = async (page = 0, size = 5) => {
+const getTagsForAdmin = async (page = 0, size = 5, search = '') => {
     try {
         const params = { page, size };
+        if (search) {
+            params.search = search;
+        }
         const response = await apiService.get('/api/v1/tags/admin', { params });
         return response.data;
     } catch (error) {
