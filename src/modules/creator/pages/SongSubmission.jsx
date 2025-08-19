@@ -155,6 +155,7 @@ const SongSubmission = () => {
     const requestDto = {
       ...formData,
       newSingers: validNewSingers.map(s => ({
+        id: s.id, // GỬI ID LÊN
         name: s.name,
         email: s.email,
         avatarFileName: s.avatarFile ? s.avatarFile.name : null
