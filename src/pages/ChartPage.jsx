@@ -22,7 +22,36 @@ const ChartPage = () => {
             try {
                 const response = await musicService.getChart();
                 if (response.success) {
-                    setChartData(response.data);
+                    // Add mock previousRank for testing rank change display
+                    const chartWithPreviousRank = response.data.map((entry, index) => {
+                        // Mock some rank changes for demo
+                        let mockPreviousRank = null;
+                        
+                        if (index < response.data.length) {
+                            // Create some realistic rank changes
+                            const currentRank = entry.rank || index + 1;
+                            const random = Math.random();
+                            
+                            if (random < 0.3) {
+                                // 30% chance of going up
+                                mockPreviousRank = currentRank + Math.floor(Math.random() * 5) + 1;
+                            } else if (random < 0.6) {
+                                // 30% chance of going down  
+                                mockPreviousRank = Math.max(1, currentRank - Math.floor(Math.random() * 3) - 1);
+                            } else if (random < 0.8) {
+                                // 20% chance of staying the same
+                                mockPreviousRank = currentRank;
+                            }
+                            // 20% chance of being new (null)
+                        }
+                        
+                        return {
+                            ...entry,
+                            previousRank: mockPreviousRank
+                        };
+                    });
+                    
+                    setChartData(chartWithPreviousRank);
                 } else {
                     toast.error("Không thể tải bảng xếp hạng.");
                 }
