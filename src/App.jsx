@@ -13,6 +13,7 @@ import ChangePassword from "./modules/auth/pages/ChangePassword";
 import ForgotPassword from "./modules/auth/pages/ForgotPassword";
 import MusicDiscoveryPage from "./pages/MusicDiscoveryPage";
 import ArtistDetailPage from "./modules/music/pages/ArtistDetailPage";
+import ChartPage from './pages/ChartPage';
 import {
   UserManagement,
   SingerManagement,
@@ -75,6 +76,7 @@ function AppContent() {
             <Route path="/all-songs" element={<AllSongsPage />} />
             <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
             <Route path="/singer/:id" element={<ArtistDetailPage />} />
+            <Route path="charts" element={<ChartPage />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/songs" element={<SongManagement />} />
@@ -100,6 +102,7 @@ function AppContent() {
               <Route path="/creator/my-submissions/:submissionId" element={<SubmissionDetail />} />
               <Route path="/creator/submission/new" element={<SongSubmission />} />
               <Route path="/creator/submission/edit/:submissionId" element={<SongSubmission />} />
+
             </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />

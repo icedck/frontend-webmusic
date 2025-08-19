@@ -27,6 +27,10 @@ export const AudioProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [playContext, setPlayContext] = useState({});
 
+  // --- START: ADDED FOR LYRICS ---
+  const [lyrics, setLyrics] = useState([]);
+  // --- END: ADDED FOR LYRICS ---
+
   const isPreviewingRef = useRef(false);
   const isPlayingUpsellRef = useRef(false);
 
@@ -107,6 +111,7 @@ export const AudioProvider = ({ children }) => {
       setCurrentIndex(-1);
       setCurrentTime(0);
       setDuration(0);
+      setLyrics([]); // Clear lyrics
       isPreviewingRef.current = false;
       isPlayingUpsellRef.current = false;
     });
@@ -131,13 +136,21 @@ export const AudioProvider = ({ children }) => {
   }, [fadeOut, fadeIn]);
 
 
-  const playSong = useCallback((song, playlist = [], context = {}) => {
+  const playSong = useCallback(async (song, playlist = [], context = {}) => {
     if (!song) return;
 
     if (authLoading) {
       toast.info("Đang xác thực, vui lòng chờ...");
       return;
     }
+
+    // --- START: FETCH LYRICS ---
+    setLyrics([]); // Reset lyrics immediately for new song
+    const lyricsResponse = await musicService.getSongLyrics(song.id);
+    if (lyricsResponse.success) {
+      setLyrics(lyricsResponse.data);
+    }
+    // --- END: FETCH LYRICS ---
 
     isPreviewingRef.current = false;
     isPlayingUpsellRef.current = false;
@@ -350,17 +363,15 @@ export const AudioProvider = ({ children }) => {
 
   const removeFromQueue = useCallback((songId) => {
     const removedIndex = queue.findIndex(song => song.id === songId);
-    
+
     if (removedIndex === -1) {
-      // Bài hát không tồn tại trong queue
       return;
     }
 
     const newQueue = queue.filter(song => song.id !== songId);
     const isRemovingCurrentSong = removedIndex === currentIndex;
-    
+
     if (newQueue.length === 0) {
-      // Nếu queue trống sau khi xóa
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
@@ -371,28 +382,24 @@ export const AudioProvider = ({ children }) => {
       setCurrentTime(0);
       setDuration(0);
       setIsPlaying(false);
+      setLyrics([]); // Clear lyrics
       toast.success('Đã xóa bài hát khỏi danh sách phát.');
       return;
     }
 
-    // Cập nhật queue trước
     setQueue(newQueue);
-    
+
     if (isRemovingCurrentSong) {
-      // Nếu xóa bài hát đang phát
       let nextIndex = removedIndex;
-      
-      // Nếu xóa bài cuối cùng, quay về bài đầu tiên
+
       if (removedIndex >= newQueue.length) {
         nextIndex = 0;
       }
-      
-      // Phát bài tiếp theo
+
       const nextSong = newQueue[nextIndex];
       setCurrentIndex(nextIndex);
       setCurrentSong(nextSong);
-      
-      // Phát bài mới
+
       setTimeout(() => {
         if (audioRef.current) {
           audioRef.current.src = `${API_BASE_URL}/api/songs/${nextSong.id}/play`;
@@ -402,17 +409,16 @@ export const AudioProvider = ({ children }) => {
         }
       }, 100);
     } else if (removedIndex < currentIndex) {
-      // Nếu xóa bài hát trước bài đang phát, giảm currentIndex
       setCurrentIndex(prev => prev - 1);
     }
-    // Nếu xóa bài hát sau bài đang phát, không cần thay đổi currentIndex
-    
+
     toast.success('Đã xóa bài hát khỏi danh sách phát.');
   }, [queue, currentIndex, isPlaying, audioRef, API_BASE_URL]);
-  
+
   const clearQueue = () => {
     setQueue([]);
     setCurrentIndex(-1);
+    setLyrics([]);
   };
 
   const formatTime = (time) => {
@@ -424,7 +430,8 @@ export const AudioProvider = ({ children }) => {
 
   const value = {
     currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle,
-    queue, currentIndex, loading, audioRef, playSong, playPlaylist, togglePlay, playNext,
+    queue, currentIndex, loading, audioRef, lyrics,
+    playSong, playPlaylist, togglePlay, playNext,
     playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle,
     addToQueue, removeFromQueue, clearQueue, formatTime, stopAndClearPlayer
   };

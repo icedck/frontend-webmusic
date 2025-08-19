@@ -11,6 +11,29 @@ const getSongById = async (songId) => {
     }
 };
 
+const getSongLyrics = async (songId) => {
+    try {
+        const response = await apiService.get(`/api/v1/songs/${songId}/lyrics`);
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to fetch lyrics for song ${songId}:`, error);
+        return { success: false, data: [] }; // Trả về mảng rỗng nếu có lỗi
+    }
+};
+
+// --- START: ADDED FUNCTION ---
+const getChart = async () => {
+    try {
+        const response = await apiService.get('/api/v1/chart');
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch chart data:", error);
+        throw error;
+    }
+};
+// --- END: ADDED FUNCTION ---
+
+
 const getSingerDetail = async (singerId) => {
     try {
         const response = await apiService.get(`/api/v1/singers/${singerId}`);
@@ -361,7 +384,7 @@ const searchSingers = async (keyword, page = 0, size = 10) => {
     }
 };
 
-    const getTopSingers = async (limit = 8) => {
+const getTopSingers = async (limit = 8) => {
     try {
         const response = await apiService.get(`/api/v1/singers/top?limit=${limit}`);
         return response.data;
@@ -373,6 +396,8 @@ const searchSingers = async (keyword, page = 0, size = 10) => {
 
 export const musicService = {
     getSongById,
+    getSongLyrics,
+    getChart,
     getSingerDetail,
     fetchSongSubmissionData,
     submitNewSong,

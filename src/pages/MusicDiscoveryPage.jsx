@@ -4,16 +4,15 @@ import HeroSlider from "../components/music/HeroSlider";
 import PlaylistCard from "../components/music/PlaylistCard";
 import SongCard from "../components/music/SongCard";
 import ArtistCard from "../components/music/ArtistCard";
+import ChartList from "../components/music/ChartList";
 import { musicService } from "../modules/music/services/musicService";
 import { toast } from "react-toastify";
 import { useAudio } from "../hooks/useAudio";
-import { Music, Facebook, Instagram, Youtube, Play } from "lucide-react";
+import { Music, Play } from "lucide-react";
 
-// --- START: MODIFIED COMPONENT ---
 const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
     <section className="space-y-6">
       <div className="group relative flex items-center justify-between">
-        {/* Left side: Title and Play Button */}
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold">
             {title}
@@ -34,18 +33,18 @@ const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
           )}
         </div>
 
-        {/* Right side: "View All" link */}
-        <Link
-            to={viewAllLink}
-            className="text-sm font-semibold text-slate-400 hover:text-white transition-colors"
-        >
-          Tất cả
-        </Link>
+        {viewAllLink && (
+            <Link
+                to={viewAllLink}
+                className="text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+            >
+              Tất cả
+            </Link>
+        )}
       </div>
       {children}
     </section>
 );
-// --- END: MODIFIED COMPONENT ---
 
 const Footer = () => {
   return (
@@ -172,6 +171,7 @@ const MusicDiscoveryPage = () => {
   const [mostLikedSongs, setMostLikedSongs] = useState([]);
   const [mostLikedPlaylists, setMostLikedPlaylists] = useState([]);
   const [topSingers, setTopSingers] = useState([]);
+  const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -186,6 +186,7 @@ const MusicDiscoveryPage = () => {
           mostLikedSongsRes,
           mostLikedPlaylistsRes,
           topSingersRes,
+          chartRes
         ] = await Promise.all([
           musicService.getTopSongs(5),
           musicService.getTopListenedPlaylists(),
@@ -194,18 +195,17 @@ const MusicDiscoveryPage = () => {
           musicService.getMostLikedSongs(5),
           musicService.getMostLikedPlaylists(5),
           musicService.getTopSingers(5),
+          musicService.getChart()
         ]);
 
         if (topSongsRes.success) setTopSongs(topSongsRes.data);
         if (topPlaylistsRes.success) setTopPlaylists(topPlaylistsRes.data);
         if (recentSongsRes.success) setRecentSongs(recentSongsRes.data);
-        if (recentPlaylistsRes.success)
-          setRecentPlaylists(recentPlaylistsRes.data);
-        if (mostLikedSongsRes.success)
-          setMostLikedSongs(mostLikedSongsRes.data);
-        if (mostLikedPlaylistsRes.success)
-          setMostLikedPlaylists(mostLikedPlaylistsRes.data);
+        if (recentPlaylistsRes.success) setRecentPlaylists(recentPlaylistsRes.data);
+        if (mostLikedSongsRes.success) setMostLikedSongs(mostLikedSongsRes.data);
+        if (mostLikedPlaylistsRes.success) setMostLikedPlaylists(mostLikedPlaylistsRes.data);
         if (topSingersRes.success) setTopSingers(topSingersRes.data);
+        if (chartRes.success) setChartData(chartRes.data);
       } catch (error)
       {
         toast.error("Không thể tải dữ liệu trang chủ.");
@@ -228,6 +228,8 @@ const MusicDiscoveryPage = () => {
     }
     playSong(songList[0], songList);
   };
+
+  const chartSongs = chartData.map(entry => entry.song);
 
   return (
       <div className="space-y-16">
@@ -351,7 +353,26 @@ const MusicDiscoveryPage = () => {
           )}
         </Section>
 
-        <Section title="#WebMusicChart" />
+        <Section title="#WebMusicChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
+          {loading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center p-3 rounded-lg animate-pulse">
+                      <div className="w-16 h-8 bg-slate-800 rounded-md"></div>
+                      <div className="w-12 h-12 bg-slate-800 rounded-md ml-4"></div>
+                      <div className="flex-1 ml-4 space-y-2">
+                        <div className="h-4 bg-slate-800 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-800 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                ))}
+              </div>
+          ) : chartData.length > 0 ? (
+              <ChartList chartData={chartData.slice(0, 5)} />
+          ) : (
+              <p className="text-slate-400">Không có dữ liệu bảng xếp hạng.</p>
+          )}
+        </Section>
 
         <Footer />
       </div>

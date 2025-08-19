@@ -1,13 +1,13 @@
-// src/components/music/ChartItem.jsx
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Play, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import Button from '../common/Button';
+import { useDarkMode } from '../../hooks/useDarkMode';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const ChartItem = ({ chartEntry, onPlay }) => {
+    const { isDarkMode } = useDarkMode();
     const { rank, previousRank, song } = chartEntry;
 
     if (!song) {
@@ -32,9 +32,9 @@ const ChartItem = ({ chartEntry, onPlay }) => {
     const rankColor = rank === 1 ? 'text-cyan-400' :
         rank === 2 ? 'text-green-400' :
             rank === 3 ? 'text-amber-400' :
-                'text-slate-600 dark:text-slate-300';
+                (isDarkMode ? 'text-slate-300' : 'text-slate-600');
 
-    const fallbackColor = 'rgba(0, 0, 0, 0.5)';
+    const fallbackColor = isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
     const strokeStyle = {
         WebkitTextStroke: `1.5px ${song.color || fallbackColor}`,
     };
@@ -52,11 +52,7 @@ const ChartItem = ({ chartEntry, onPlay }) => {
             </div>
 
             <div className="relative w-12 h-12 rounded-md overflow-hidden flex-shrink-0 ml-4">
-                <img 
-                    src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : song.imageUrl} 
-                    alt={song.title} 
-                    className="w-full h-full object-cover" 
-                />
+                <img src={`${API_BASE_URL}${song.thumbnailPath}`} alt={song.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <Button
                         size="icon"
@@ -74,7 +70,7 @@ const ChartItem = ({ chartEntry, onPlay }) => {
                     {song.title}
                 </Link>
                 <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                    {song.singers ? song.singers.map(s => s.name).join(', ') : song.artist}
+                    {song.singers.map(s => s.name).join(', ')}
                 </p>
             </div>
 

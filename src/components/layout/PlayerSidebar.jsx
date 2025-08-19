@@ -67,12 +67,75 @@ const QueueItem = ({ song, isPlayingNow, onPlay, onRemove }) => {
     );
 };
 
+const LyricsDisplay = ({ lyrics, currentTime, isCollapsed }) => {
+    const { isDarkMode } = useDarkMode();
+    const activeLineRef = useRef(null);
+    const [activeLineIndex, setActiveLineIndex] = useState(-1);
+
+    useEffect(() => {
+        if (!lyrics || lyrics.length === 0) {
+            setActiveLineIndex(-1);
+            return;
+        };
+
+        let newActiveIndex = -1;
+        for (let i = lyrics.length - 1; i >= 0; i--) {
+            if (currentTime >= lyrics[i].time) {
+                newActiveIndex = i;
+                break;
+            }
+        }
+        setActiveLineIndex(newActiveIndex);
+
+    }, [currentTime, lyrics]);
+
+    // --- START: FIX LOGIC ---
+    useEffect(() => {
+        // Chỉ tự động cuộn khi sidebar đang mở (không bị thu gọn)
+        if (activeLineRef.current && !isCollapsed) {
+            activeLineRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+        }
+    }, [activeLineIndex, isCollapsed]); // Thêm isCollapsed vào dependency array
+    // --- END: FIX LOGIC ---
+
+    if (!lyrics || lyrics.length === 0) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <p className="text-slate-400 dark:text-slate-500">Lời bài hát không có sẵn.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex-1 overflow-y-auto space-y-4 text-center pr-2">
+            {lyrics.map((line, index) => (
+                <p
+                    key={index}
+                    ref={index === activeLineIndex ? activeLineRef : null}
+                    className={`transition-all duration-300 text-lg
+                        ${index === activeLineIndex
+                        ? (isDarkMode ? 'text-white font-bold scale-105' : 'text-slate-900 font-bold scale-105')
+                        : (isDarkMode ? 'text-slate-400' : 'text-slate-600')
+                    }`
+                    }
+                >
+                    {line.text}
+                </p>
+            ))}
+        </div>
+    );
+};
+
+
 const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     const { user, isAuthenticated, isPremium } = useAuth();
     const { isDarkMode } = useDarkMode();
     const navigate = useNavigate();
     const {
-        currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle, queue, currentIndex,
+        currentSong, isPlaying, currentTime, duration, volume, isRepeat, isShuffle, queue, currentIndex, lyrics,
         togglePlay, playNext, playPrevious, seekTo, changeVolume, toggleRepeat, toggleShuffle, formatTime, playSong, removeFromQueue,
     } = useAudio();
 
@@ -132,9 +195,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                         <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/40' : 'bg-white/20'}`}></div>
                     </div>
 
-                    {/* --- START: MODIFIED STRUCTURE --- */}
                     <div className="relative h-full flex flex-col p-4">
-                        {/* Header: Always visible */}
                         <div className="flex justify-between items-center mb-3 flex-shrink-0">
                             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                 {viewMode === 'queue' ? 'Danh sách phát' : 'Lời bài hát'}
@@ -151,7 +212,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                             </div>
                         </div>
 
-                        {/* Content: Conditionally rendered */}
                         <div className="flex-1 flex flex-col min-h-0">
                             {queue.length > 0 ? (
                                 <>
@@ -172,9 +232,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                         </div>
                                     )}
                                     {viewMode === 'lyrics' && (
-                                        <div className="flex-1 overflow-y-auto flex items-center justify-center">
-                                            <p className="text-slate-400">Chức năng Lời bài hát sẽ được phát triển sau.</p>
-                                        </div>
+                                        <LyricsDisplay lyrics={lyrics} currentTime={currentTime} isCollapsed={isCollapsed} />
                                     )}
                                 </>
                             ) : (
@@ -186,7 +244,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                             )}
                         </div>
 
-                        {/* Player Controls & Premium Upsell: Conditionally rendered */}
                         { (currentSong || queue.length > 0) && (
                             <div className="flex-shrink-0">
                                 <div className={`relative mt-4 p-4 backdrop-blur-2xl border rounded-2xl transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}>
@@ -275,7 +332,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                 {(!user || !isPremium()) && <div className="mt-4"><PremiumUpsellCard /></div>}
                             </div>
                         )}
-                        {/* --- END: MODIFIED STRUCTURE --- */}
                     </div>
                 </div>
             </aside>
