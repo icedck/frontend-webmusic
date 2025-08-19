@@ -31,7 +31,7 @@ const ChartList = ({ chartData = [] }) => {
     return (
         <div className="space-y-1">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-700/50 px-6 py-4">
+            <div className="z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-700/50 px-6 py-4">
                 <div className="grid grid-cols-[4rem_1rem_1fr_12rem_5rem_5rem_5rem_3rem] gap-4 items-center text-sm font-semibold text-slate-500 dark:text-slate-400">
                     <div className="flex items-center justify-center">
                         <TrendingUp className="w-4 h-4" />
@@ -39,7 +39,7 @@ const ChartList = ({ chartData = [] }) => {
                     <div></div> {/* Rank change column */}
                     <div>BÀI HÁT</div>
                     <div className="hidden md:block">NGHỆ SĨ</div>
-                    <div className="hidden md:block text-center">THỜI LƯỢNG</div>
+                    <div className="hidden md:block text-center"></div>
                     <div className="hidden md:flex items-center justify-center">
                         <Headphones className="w-4 h-4" />
                     </div>

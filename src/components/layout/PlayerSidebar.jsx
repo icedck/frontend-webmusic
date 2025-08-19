@@ -43,9 +43,9 @@ const PremiumUpsellCard = () => {
 const QueueItem = ({ song, isPlayingNow, onPlay, onRemove }) => {
     const { isDarkMode } = useDarkMode();
     return (
-        <div className={`group flex items-center p-2 rounded-lg transition-colors ${isPlayingNow ? (isDarkMode ? 'bg-white/10' : 'bg-black/5') : 'hover:bg-white/5 dark:hover:bg-black/10'}`}>
-            <div onClick={onPlay} className="flex items-center flex-1 cursor-pointer">
-                <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/40'} alt={song.title} className="w-10 h-10 rounded-md object-cover" />
+        <div className={`flex items-center p-2 rounded-lg transition-colors ${isPlayingNow ? (isDarkMode ? 'bg-white/10' : 'bg-black/5') : 'hover:bg-white/5 dark:hover:bg-black/10'}`}>
+            <div onClick={onPlay} className="flex items-center flex-1 cursor-pointer min-w-0">
+                <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/40'} alt={song.title} className="w-10 h-10 rounded-md object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0 mx-3">
                     <p className={`font-semibold truncate ${isPlayingNow ? 'text-cyan-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>{song.title}</p>
                     <p className={`text-sm truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -58,7 +58,7 @@ const QueueItem = ({ song, isPlayingNow, onPlay, onRemove }) => {
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
+                className="flex-shrink-0 p-1 rounded text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 transition-colors"
                 aria-label="Xóa khỏi hàng đợi"
             >
                 <X size={16} />
