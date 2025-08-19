@@ -207,7 +207,38 @@ const MusicDiscoveryPage = () => {
         if (mostLikedSongsRes.success) setMostLikedSongs(mostLikedSongsRes.data);
         if (mostLikedPlaylistsRes.success) setMostLikedPlaylists(mostLikedPlaylistsRes.data);
         if (topSingersRes.success) setTopSingers(topSingersRes.data);
-        if (chartRes.success) setChartData(chartRes.data);
+        if (chartRes.success) {
+          // Add mock previousRank for testing rank change display
+          const chartWithPreviousRank = chartRes.data.map((entry, index) => {
+            // Mock some rank changes for demo
+            let mockPreviousRank = null;
+            
+            if (index < chartRes.data.length) {
+              // Create some realistic rank changes
+              const currentRank = entry.rank || index + 1;
+              const random = Math.random();
+              
+              if (random < 0.3) {
+                // 30% chance of going up
+                mockPreviousRank = currentRank + Math.floor(Math.random() * 5) + 1;
+              } else if (random < 0.6) {
+                // 30% chance of going down  
+                mockPreviousRank = Math.max(1, currentRank - Math.floor(Math.random() * 3) - 1);
+              } else if (random < 0.8) {
+                // 20% chance of staying the same
+                mockPreviousRank = currentRank;
+              }
+              // 20% chance of being new (null)
+            }
+            
+            return {
+              ...entry,
+              previousRank: mockPreviousRank
+            };
+          });
+          
+          setChartData(chartWithPreviousRank);
+        }
       } catch (error)
       {
         toast.error("Không thể tải dữ liệu trang chủ.");

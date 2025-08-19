@@ -22,17 +22,17 @@ const ChartItem = ({ chartEntry, onPlay, index }) => {
 
     const getRankChange = () => {
         if (previousRank === null || previousRank === undefined) {
-            return { icon: ArrowUp, color: 'text-slate-600 dark:text-slate-400', text: '', bgColor: 'bg-transparent' };
+            return { icon: Minus, color: 'text-slate-400 dark:text-slate-500', text: '-', bgColor: 'bg-transparent' };
         }
         if (rank < previousRank) {
             const change = previousRank - rank;
-            return { icon: ArrowUp, color: 'text-slate-600 dark:text-slate-400', text: `+${change}`, bgColor: 'bg-transparent' };
+            return { icon: ArrowUp, color: 'text-green-600 dark:text-green-400', text: change.toString(), bgColor: 'bg-transparent' };
         }
         if (rank > previousRank) {
             const change = rank - previousRank;
-            return { icon: ArrowDown, color: 'text-slate-600 dark:text-slate-400', text: `-${change}`, bgColor: 'bg-transparent' };
+            return { icon: ArrowDown, color: 'text-red-600 dark:text-red-400', text: change.toString(), bgColor: 'bg-transparent' };
         }
-        return { icon: Minus, color: 'text-slate-500 dark:text-slate-500', text: '', bgColor: 'bg-transparent' };
+        return { icon: Minus, color: 'text-slate-400 dark:text-slate-500', text: '-', bgColor: 'bg-transparent' };
     };
 
     const rankChange = getRankChange();
@@ -120,8 +120,9 @@ const ChartItem = ({ chartEntry, onPlay, index }) => {
 
                 {/* Rank Change */}
                 <div className="flex items-center justify-center">
-                    <div className={`flex items-center justify-center w-4 h-4 transition-all duration-300 ${rankChange.color}`}>
-                        <rankChange.icon className="w-4 h-4" />
+                    <div className={`flex flex-col items-center justify-center transition-all duration-300 ${rankChange.color}`}>
+                        <rankChange.icon className="w-3 h-3 mb-0.5" />
+                        <span className="text-xs font-medium leading-none">{rankChange.text}</span>
                     </div>
                 </div>
 
