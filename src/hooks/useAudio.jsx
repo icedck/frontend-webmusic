@@ -13,17 +13,37 @@ export const useAudio = () => {
   }
   return context;
 };
+const LOCAL_STORAGE_KEY = 'webmusic-player-state';
 
 export const AudioProvider = ({ children }) => {
-  const [currentSong, setCurrentSong] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const getInitialState = () => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        // Đảm bảo không tải lại bài hát premium nếu người dùng đã đăng xuất
+        if (parsedState.currentSong?.isPremium && !isPremium()) {
+          return { ...parsedState, currentSong: null, queue: [], currentIndex: -1 };
+        }
+        return parsedState;
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải trạng thái audio từ localStorage:", error);
+    }
+    return null; // Trả về null nếu không có gì hoặc lỗi
+  };
+
+  const initialSavedState = getInitialState();
+
+  const [currentSong, setCurrentSong] = useState(initialSavedState?.currentSong || null);
+  const [isPlaying, setIsPlaying] = useState(false); // Luôn bắt đầu với trạng thái pause
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isRepeat, setIsRepeat] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [queue, setQueue] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [volume, setVolume] = useState(initialSavedState?.volume ?? 0.4); // Mặc định 40%
+  const [isRepeat, setIsRepeat] = useState(initialSavedState?.isRepeat || false);
+  const [isShuffle, setIsShuffle] = useState(initialSavedState?.isShuffle || false);
+  const [queue, setQueue] = useState(initialSavedState?.queue || []);
+  const [currentIndex, setCurrentIndex] = useState(initialSavedState?.currentIndex ?? -1);
   const [loading, setLoading] = useState(false);
   const [playContext, setPlayContext] = useState({});
 
@@ -41,6 +61,35 @@ export const AudioProvider = ({ children }) => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
   const UPSELL_AUDIO_URL = '/audio/premium_upsell.mp3';
 
+  useEffect(() => {
+    const stateToSave = {
+      currentSong,
+      queue,
+      currentIndex,
+      volume,
+      isRepeat,
+      isShuffle,
+    };
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (error) {
+      console.error("Lỗi khi lưu trạng thái audio vào localStorage:", error);
+    }
+  }, [currentSong, queue, currentIndex, volume, isRepeat, isShuffle]);
+
+  // Đặt âm lượng ban đầu cho thẻ audio và tải lại bài hát nếu có
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = volume;
+
+      // Nếu có bài hát đã lưu, hãy chuẩn bị nó để phát
+      if (currentSong && (!audio.src || audio.src === '')) {
+        audio.src = `${API_BASE_URL}${currentSong.filePath}`;
+        audio.load();
+      }
+    }
+  }, [volume, currentSong, API_BASE_URL]);
   const FADE_DURATION = 300;
   const FADE_INTERVAL = 30;
 
@@ -54,11 +103,22 @@ export const AudioProvider = ({ children }) => {
   const fadeIn = useCallback(() => {
     clearFadeInterval();
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !currentSong) return;
+
+    // Ensure audio source is set
+    if (!audio.src || audio.src === '') {
+      audio.src = `${API_BASE_URL}${currentSong.filePath}`;
+      audio.load();
+    }
 
     const playPromise = audio.play();
     if (playPromise !== undefined) {
-      playPromise.catch(error => {});
+      playPromise.then(() => {
+        setIsPlaying(true);
+      }).catch(error => {
+        console.error("Play failed:", error);
+        setIsPlaying(false);
+      });
     }
 
     if (audio.volume >= volume) return;
@@ -76,7 +136,7 @@ export const AudioProvider = ({ children }) => {
         clearFadeInterval();
       }
     }, FADE_INTERVAL);
-  }, [volume]);
+  }, [volume, currentSong, API_BASE_URL]);
 
 
   const fadeOut = useCallback((onComplete) => {
@@ -101,21 +161,23 @@ export const AudioProvider = ({ children }) => {
   }, []);
 
   const stopAndClearPlayer = useCallback(() => {
-    fadeOut(() => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-      }
-      setCurrentSong(null);
-      setQueue([]);
-      setCurrentIndex(-1);
-      setCurrentTime(0);
-      setDuration(0);
-      setLyrics([]); // Clear lyrics
-      isPreviewingRef.current = false;
-      isPlayingUpsellRef.current = false;
-    });
-  }, [fadeOut]);
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = '';
+      audio.volume = volume; // Restore volume
+    }
+    setCurrentSong(null);
+    setQueue([]);
+    setCurrentIndex(-1);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+    setLyrics([]); // Clear lyrics
+    isPreviewingRef.current = false;
+    isPlayingUpsellRef.current = false;
+  }, [volume]);
 
   const playUpsellAudio = useCallback(() => {
     const audio = audioRef.current;
@@ -276,6 +338,11 @@ export const AudioProvider = ({ children }) => {
     const handleCanPlayThrough = () => setLoading(false);
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
+    const handleError = (e) => {
+      console.error("Audio error:", e);
+      setLoading(false);
+      setIsPlaying(false);
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', updateDuration);
@@ -284,6 +351,7 @@ export const AudioProvider = ({ children }) => {
     audio.addEventListener('canplaythrough', handleCanPlayThrough);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
+    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
@@ -293,18 +361,41 @@ export const AudioProvider = ({ children }) => {
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('error', handleError);
       clearFadeInterval();
     };
-  }, [isRepeat, fadeIn, playNext, playUpsellAudio, navigate]);
+  }, [isRepeat, fadeIn, playNext, playUpsellAudio]);
 
   const togglePlay = () => {
     if (!audioRef.current || !currentSong || isPlayingUpsellRef.current) return;
+    
+    const audio = audioRef.current;
+    
     if (isPlaying) {
-      fadeOut(() => {
-        audioRef.current.pause();
-      });
+      // Pause without fading to preserve volume
+      audio.pause();
+      setIsPlaying(false);
     } else {
-      fadeIn();
+      // Resume playing - ensure audio source is set
+      if (!audio.src || audio.src === '') {
+        audio.src = `${API_BASE_URL}${currentSong.filePath}`;
+        audio.load();
+      }
+      
+      // Restore volume if it was faded out
+      if (audio.volume === 0) {
+        audio.volume = volume;
+      }
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsPlaying(true);
+        }).catch(error => {
+          console.error("Play was prevented:", error);
+          setIsPlaying(false);
+        });
+      }
     }
   };
 

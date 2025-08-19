@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import HeroSlider from "../components/music/HeroSlider";
+import FeaturedSongs from "../components/music/FeaturedSongs";
+import SuggestedSongs from "../components/music/SuggestedSongs";
 import PlaylistCard from "../components/music/PlaylistCard";
 import SongCard from "../components/music/SongCard";
 import ArtistCard from "../components/music/ArtistCard";
@@ -235,12 +237,15 @@ const MusicDiscoveryPage = () => {
       <div className="space-y-16">
         <HeroSlider />
 
+        {/* Featured Songs Section */}
+        <FeaturedSongs playlists={mostLikedPlaylists} />
+
         <Section title="Playlist Nghe Nhiều" viewAllLink="/playlists?category=top-listened">
           {loading ? (
               <SkeletonGrid items={5} />
           ) : topPlaylists.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                {topPlaylists.map((p) => (
+              <div className="grid grid-cols-5 gap-x-6 gap-y-8">
+                {topPlaylists.slice(0, 5).map((p) => (
                     <PlaylistCard key={p.id} playlist={p} />
                 ))}
               </div>
@@ -248,6 +253,9 @@ const MusicDiscoveryPage = () => {
               <p className="text-slate-400">Không có playlist nào để hiển thị.</p>
           )}
         </Section>
+
+        {/* Suggested Songs Section */}
+        <SuggestedSongs />
 
         <Section title="Bài hát nghe nhiều" viewAllLink="/all-songs?category=popular" onPlayAll={() => handlePlayAll(topSongs)}>
           {loading ? (
