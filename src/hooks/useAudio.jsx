@@ -13,17 +13,37 @@ export const useAudio = () => {
   }
   return context;
 };
+const LOCAL_STORAGE_KEY = 'webmusic-player-state';
 
 export const AudioProvider = ({ children }) => {
-  const [currentSong, setCurrentSong] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const getInitialState = () => {
+    try {
+      const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        // Đảm bảo không tải lại bài hát premium nếu người dùng đã đăng xuất
+        if (parsedState.currentSong?.isPremium && !isPremium()) {
+          return { ...parsedState, currentSong: null, queue: [], currentIndex: -1 };
+        }
+        return parsedState;
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải trạng thái audio từ localStorage:", error);
+    }
+    return null; // Trả về null nếu không có gì hoặc lỗi
+  };
+
+  const initialSavedState = getInitialState();
+
+  const [currentSong, setCurrentSong] = useState(initialSavedState?.currentSong || null);
+  const [isPlaying, setIsPlaying] = useState(false); // Luôn bắt đầu với trạng thái pause
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isRepeat, setIsRepeat] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [queue, setQueue] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [volume, setVolume] = useState(initialSavedState?.volume ?? 0.4); // Mặc định 40%
+  const [isRepeat, setIsRepeat] = useState(initialSavedState?.isRepeat || false);
+  const [isShuffle, setIsShuffle] = useState(initialSavedState?.isShuffle || false);
+  const [queue, setQueue] = useState(initialSavedState?.queue || []);
+  const [currentIndex, setCurrentIndex] = useState(initialSavedState?.currentIndex ?? -1);
   const [loading, setLoading] = useState(false);
   const [playContext, setPlayContext] = useState({});
 
@@ -41,6 +61,35 @@ export const AudioProvider = ({ children }) => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
   const UPSELL_AUDIO_URL = '/audio/premium_upsell.mp3';
 
+  useEffect(() => {
+    const stateToSave = {
+      currentSong,
+      queue,
+      currentIndex,
+      volume,
+      isRepeat,
+      isShuffle,
+    };
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (error) {
+      console.error("Lỗi khi lưu trạng thái audio vào localStorage:", error);
+    }
+  }, [currentSong, queue, currentIndex, volume, isRepeat, isShuffle]);
+
+  // Đặt âm lượng ban đầu cho thẻ audio và tải lại bài hát nếu có
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = volume;
+
+      // Nếu có bài hát đã lưu, hãy chuẩn bị nó để phát
+      if (currentSong && audio.src === '') {
+        audio.src = `${API_BASE_URL}${currentSong.filePath}`;
+        audio.load();
+      }
+    }
+  }, []);
   const FADE_DURATION = 300;
   const FADE_INTERVAL = 30;
 
