@@ -2,12 +2,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 import Button from '../../../components/common/Button';
+import Input from '../../../components/common/Input';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Search } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import { toast } from 'react-toastify';
 import CreateTagModal from '../components/CreateTagModal';
 import UpdateTagModal from '../components/UpdateTagModal';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 const PAGE_SIZE = 5;
 
@@ -27,10 +29,15 @@ const TagManagement = () => {
     const [selectedTag, setSelectedTag] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const fetchTags = useCallback(async (page = 0) => {
+    // --- START: ADDED FOR SEARCH ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    // --- END: ADDED FOR SEARCH ---
+
+    const fetchTags = useCallback(async (page = 0, search = '') => {
         try {
             setLoading(true);
-            const response = await adminService.getTagsForAdmin(page, PAGE_SIZE);
+            const response = await adminService.getTagsForAdmin(page, PAGE_SIZE, search);
             if (response.success && response.data) {
                 setTags(Array.isArray(response.data.content) ? response.data.content : []);
                 setPageInfo({
@@ -49,20 +56,23 @@ const TagManagement = () => {
         }
     }, []);
 
+    // --- START: MODIFIED EFFECT FOR SEARCH ---
     useEffect(() => {
-        fetchTags(0);
-    }, [fetchTags]);
+        // Fetch tags when debounced search term changes, always go to page 0
+        fetchTags(0, debouncedSearchTerm);
+    }, [debouncedSearchTerm, fetchTags]);
+    // --- END: MODIFIED EFFECT FOR SEARCH ---
 
     const handleCreateSuccess = () => {
         setIsCreateModalOpen(false);
-        // Không cần toast ở đây vì đã có trong modal
-        fetchTags(pageInfo.currentPage);
+        // Fetch again with the current search term
+        fetchTags(pageInfo.currentPage, debouncedSearchTerm);
     };
 
     const handleUpdateSuccess = () => {
         setIsUpdateModalOpen(false);
         toast.success("Cập nhật tag thành công!");
-        fetchTags(pageInfo.currentPage);
+        fetchTags(pageInfo.currentPage, debouncedSearchTerm);
     };
 
     const handleDeleteClick = (tag) => {
@@ -79,7 +89,7 @@ const TagManagement = () => {
                 toast.success(response.message || "Xóa tag thành công!");
                 setIsDeleteModalOpen(false);
                 const newPage = tags.length === 1 && pageInfo.currentPage > 0 ? pageInfo.currentPage - 1 : pageInfo.currentPage;
-                fetchTags(newPage);
+                fetchTags(newPage, debouncedSearchTerm);
             } else {
                 toast.error(response.message || "Xóa tag thất bại.");
             }
@@ -92,7 +102,8 @@ const TagManagement = () => {
 
     const handlePageChange = (newPage) => {
         if (newPage >= 0 && newPage < pageInfo.totalPages) {
-            fetchTags(newPage);
+            // Fetch new page with the current search term
+            fetchTags(newPage, debouncedSearchTerm);
         }
     };
 
@@ -101,16 +112,27 @@ const TagManagement = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Quản lý Tags</h1>
                     <p className={`mt-2 ${currentTheme.textSecondary}`}>Thêm, sửa, và quản lý các thể loại nhạc.</p>
                 </div>
-                <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+                <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 w-full sm:w-auto">
                     <PlusCircle className="w-5 h-5" />
                     <span>Thêm Tag</span>
                 </Button>
             </div>
+
+            {/* --- START: ADDED SEARCH INPUT --- */}
+            <div className="w-full sm:w-72">
+                <Input
+                    placeholder="Tìm kiếm theo tên tag..."
+                    icon={<Search size={18} />}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            {/* --- END: ADDED SEARCH INPUT --- */}
 
             <div className={`overflow-x-auto ${currentTheme.bgCard} rounded-xl border ${currentTheme.border}`}>
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -125,7 +147,7 @@ const TagManagement = () => {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {loading && <tr><td colSpan="4" className="text-center py-4">Đang tải...</td></tr>}
                     {!loading && tags.length === 0 && (
-                        <tr><td colSpan="4" className="text-center py-4">Không có dữ liệu.</td></tr>
+                        <tr><td colSpan="4" className="text-center py-4">{debouncedSearchTerm ? `Không tìm thấy tag nào với từ khóa "${debouncedSearchTerm}"` : 'Không có dữ liệu.'}</td></tr>
                     )}
                     {!loading && tags.map((tag) => (
                         <tr key={tag.id}>

@@ -6,7 +6,7 @@ import { useDarkMode } from '../../hooks/useDarkMode';
 import Button from '../common/Button';
 import {
     Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Star, ChevronsRight,
-    Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal, Mic2, X // Import thêm X cho nút xóa
+    Music, Heart, ListMusic, Volume2, Volume1, VolumeX, MoreHorizontal, Mic2, X
 } from 'lucide-react';
 import { musicService } from '../../modules/music/services/musicService';
 import { toast } from 'react-toastify';
@@ -80,7 +80,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     const [isAddToPlaylistModalOpen, setIsAddToPlaylistModalOpen] = useState(false);
     const progressBarRef = useRef(null);
     const [isQueueVisible, setIsQueueVisible] = useState(true);
-    // State để quản lý chế độ xem: 'queue' hoặc 'lyrics'
     const [viewMode, setViewMode] = useState('queue');
 
     const [isLiked, setIsLiked] = useState(currentSong?.isLikedByCurrentUser || false);
@@ -135,11 +134,13 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                     </div>
 
                     <div className="relative h-full flex flex-col p-4">
+                        {/* --- START: REVERTED SECTION --- */}
                         <div className={`absolute inset-4 flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 transition-opacity duration-500 ease-in-out ${!currentSong && queue.length === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <Music className="w-10 h-10 mb-2" />
                             <p className="font-semibold">Chưa có nhạc</p>
                             <p className="text-sm">Hãy chọn một bài hát để bắt đầu.</p>
                         </div>
+                        {/* --- END: REVERTED SECTION --- */}
 
                         <div className={`h-full flex flex-col transition-opacity duration-500 ease-in-out ${currentSong || queue.length > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                             <div className="flex-1 flex flex-col min-h-0">
@@ -149,20 +150,15 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                     </h3>
 
                                     <div className="flex items-center">
-                                        {/* === KHU VỰC ĐÃ SỬA ĐỔI === */}
                                         <Button variant="ghost" size="icon" className="!w-8 !h-8" onClick={handleToggleView}>
-                                            {/* Icon sẽ thay đổi tùy theo viewMode */}
                                             {viewMode === 'queue' ? <Mic2 size={18} /> : <ListMusic size={18} />}
                                         </Button>
-                                        {/* === KẾT THÚC KHU VỰC SỬA ĐỔI === */}
-
                                         <Button onClick={onToggle} variant="ghost" size="icon" className="!w-8 !h-8">
                                             <ChevronsRight size={20} />
                                         </Button>
                                     </div>
                                 </div>
 
-                                {/* Hiển thị nội dung tùy theo viewMode */}
                                 {viewMode === 'queue' && (
                                     <div className="flex-1 overflow-y-auto space-y-1 pr-1">
                                         {queue.length > 0 ? (
@@ -196,7 +192,6 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
 
                             <div className={`relative mt-4 p-4 backdrop-blur-2xl border rounded-2xl transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}>
                                 {currentSong ? (
-                                    // Hiển thị khi có bài hát đang phát
                                     <>
                                         <div className="flex items-center gap-3">
                                             <img src={`${API_BASE_URL}${currentSong.thumbnailPath}`} className="w-14 h-14 rounded-md flex-shrink-0 object-cover" />
@@ -235,7 +230,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                     <div className="text-center py-4">
                                         <p className={`font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Danh sách phát sẵn sàng</p>
                                         <p className={`text-sm mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{queue.length} bài hát trong hàng đợi</p>
-                                        <Button 
+                                        <Button
                                             onClick={() => queue.length > 0 && playSong(queue[0], queue)}
                                             className="!px-6"
                                         >
