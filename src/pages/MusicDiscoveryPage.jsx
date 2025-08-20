@@ -324,6 +324,27 @@ const MusicDiscoveryPage = () => {
           )}
         </Section>
 
+        <Section title="#WebMusicChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
+          {loading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center p-3 rounded-lg animate-pulse">
+                      <div className="w-16 h-8 bg-slate-800 rounded-md"></div>
+                      <div className="w-12 h-12 bg-slate-800 rounded-md ml-4"></div>
+                      <div className="flex-1 ml-4 space-y-2">
+                        <div className="h-4 bg-slate-800 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-800 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                ))}
+              </div>
+          ) : chartData.length > 0 ? (
+              <ChartList chartData={chartData.slice(0, 5)} />
+          ) : (
+              <p className="text-slate-400">Không có dữ liệu bảng xếp hạng.</p>
+          )}
+        </Section>
+
         <Section title="Mới Phát Hành" onPlayAll={() => handlePlayAll(recentSongs)}>
           {loading ? (
               <SkeletonGrid items={5} />
@@ -407,27 +428,6 @@ const MusicDiscoveryPage = () => {
               </div>
           ) : (
               <p className="text-slate-400">Không có nghệ sĩ nào để hiển thị.</p>
-          )}
-        </Section>
-
-        <Section title="#WebMusicChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
-          {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex items-center p-3 rounded-lg animate-pulse">
-                      <div className="w-16 h-8 bg-slate-800 rounded-md"></div>
-                      <div className="w-12 h-12 bg-slate-800 rounded-md ml-4"></div>
-                      <div className="flex-1 ml-4 space-y-2">
-                        <div className="h-4 bg-slate-800 rounded w-3/4"></div>
-                        <div className="h-3 bg-slate-800 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                ))}
-              </div>
-          ) : chartData.length > 0 ? (
-              <ChartList chartData={chartData.slice(0, 5)} />
-          ) : (
-              <p className="text-slate-400">Không có dữ liệu bảng xếp hạng.</p>
           )}
         </Section>
 

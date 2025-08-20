@@ -2,11 +2,13 @@ import React from 'react';
 import ChartItem from './ChartItem';
 import { useAudio } from '../../hooks/useAudio';
 import { useDarkMode } from '../../hooks/useDarkMode';
+import { useAuth } from '../../hooks/useAuth';
 import { TrendingUp, Music, Clock, Headphones, Heart } from 'lucide-react';
 
 const ChartList = ({ chartData = [] }) => {
     const { playSong } = useAudio();
     const { isDarkMode } = useDarkMode();
+    const { isAdmin } = useAuth();
 
     const validChartData = chartData ? chartData.filter(entry => entry && entry.song) : [];
 
@@ -63,29 +65,31 @@ const ChartList = ({ chartData = [] }) => {
                 ))}
             </div>
 
-            {/* Footer Stats */}
-            <div className="px-6 py-8 bg-slate-50/50 dark:bg-slate-800/20 rounded-b-2xl border-t border-slate-200/50 dark:border-slate-700/50">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-                    <div className="space-y-2">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
-                            {validChartData.length}
+            {/* Footer Stats - Only visible to admins */}
+            {isAdmin() && (
+                <div className="px-6 py-8 bg-slate-50/50 dark:bg-slate-800/20 rounded-b-2xl border-t border-slate-200/50 dark:border-slate-700/50">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                        <div className="space-y-2">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
+                                {validChartData.length}
+                            </div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">Bài hát trong chart</div>
                         </div>
-                        <div className="text-sm text-slate-500 dark:text-slate-400">Bài hát trong chart</div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
-                            {validChartData.reduce((total, entry) => total + (entry.song.listenCount || 0), 0).toLocaleString('vi-VN')}
+                        <div className="space-y-2">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                                {validChartData.reduce((total, entry) => total + (entry.song.listenCount || 0), 0).toLocaleString('vi-VN')}
+                            </div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">Tổng lượt nghe</div>
                         </div>
-                        <div className="text-sm text-slate-500 dark:text-slate-400">Tổng lượt nghe</div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent">
-                            {validChartData.reduce((total, entry) => total + (entry.song.likeCount || 0), 0).toLocaleString('vi-VN')}
+                        <div className="space-y-2">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent">
+                                {validChartData.reduce((total, entry) => total + (entry.song.likeCount || 0), 0).toLocaleString('vi-VN')}
+                            </div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">Tổng lượt thích</div>
                         </div>
-                        <div className="text-sm text-slate-500 dark:text-slate-400">Tổng lượt thích</div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

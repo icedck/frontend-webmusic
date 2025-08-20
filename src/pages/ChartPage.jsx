@@ -22,12 +22,15 @@ const ChartPage = () => {
             try {
                 const response = await musicService.getChart();
                 if (response.success) {
+                    // Limit to top 50 songs for better performance
+                    const top50Data = response.data.slice(0, 50);
+                    
                     // Add mock previousRank for testing rank change display
-                    const chartWithPreviousRank = response.data.map((entry, index) => {
+                    const chartWithPreviousRank = top50Data.map((entry, index) => {
                         // Mock some rank changes for demo
                         let mockPreviousRank = null;
                         
-                        if (index < response.data.length) {
+                        if (index < top50Data.length) {
                             // Create some realistic rank changes
                             const currentRank = entry.rank || index + 1;
                             const random = Math.random();
@@ -144,7 +147,7 @@ const ChartPage = () => {
                                 <div className="flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-slate-800/30 backdrop-blur-sm rounded-lg border border-white/30 dark:border-slate-700/40">
                                     <TrendingUp className="w-4 h-4 text-green-500" />
                                     <span className="text-sm font-medium">
-                                        {chartData.length || 0} bài hát
+                                        Top {Math.min(chartData.length, 50)} bài hát
                                     </span>
                                 </div>
                             </div>
@@ -200,19 +203,6 @@ const ChartPage = () => {
                             </div>
                         )}
                     </div>
-
-                    {/* Show More Button */}
-                    {!loading && chartData.length > 0 && (
-                        <div className="text-center mt-8 mb-16">
-                            <Button 
-                                variant="outline" 
-                                size="lg"
-                                className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200 dark:border-slate-700 hover:bg-white/80 dark:hover:bg-slate-800/80"
-                            >
-                                Xem thêm
-                            </Button>
-                        </div>
-                    )}
                 </div>
             </div>
 
