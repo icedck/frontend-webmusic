@@ -87,7 +87,7 @@ const PlanCard = ({ plan }) => {
         {/* Countdown timer giả lập */}
         <div className="mt-4 text-center">
           <div className="text-xs text-red-600 dark:text-red-400 font-medium">
-            ⏰ Ưu đãi Quốc khánh kết thúc sau: 7 ngày
+            Ưu đãi Quốc khánh kết thúc sau 7 ngày
           </div>
         </div>
       </div>

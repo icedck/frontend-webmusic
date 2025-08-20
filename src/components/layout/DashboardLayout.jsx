@@ -317,12 +317,12 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
         <div className="relative px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Link to="/" className="group flex items-center space-x-2 flex-shrink-0 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
-                <Music className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex flex-col transition-all duration-300 ease-in-out text-slate-800 dark:text-white max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100">
-                <span className="font-bold text-lg leading-tight whitespace-nowrap">WebMusic</span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 leading-tight whitespace-nowrap">Music Connects, Emotions Rise</span>
+              <div className="w-13.1 h-13.1 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 overflow-hidden">
+                <img 
+                  src="/logo/mozu.png" 
+                  alt="Mozu Logo" 
+                  className="w-20 h-20 object-contain"
+                />
               </div>
             </Link>
             <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 ml-2"></div>

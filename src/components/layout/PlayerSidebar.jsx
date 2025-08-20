@@ -263,11 +263,44 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                             </div>
                                             <div className="my-2">
                                                 <div className="flex justify-center items-center gap-4">
-                                                    <Button variant="ghost" size="icon" className={`!rounded-full ${isShuffle ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black')}`} onClick={toggleShuffle}><Shuffle size={18} /></Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className={`!rounded-full relative transition-all duration-200 ${
+                                                            isShuffle 
+                                                                ? (isDarkMode 
+                                                                    ? 'text-cyan-400 bg-cyan-400/20 hover:bg-cyan-400/30' 
+                                                                    : 'text-blue-600 bg-blue-600/20 hover:bg-blue-600/30'
+                                                                  ) 
+                                                                : (isDarkMode 
+                                                                    ? 'text-slate-400 hover:text-white hover:bg-white/10' 
+                                                                    : 'text-slate-500 hover:text-black hover:bg-black/10'
+                                                                  )
+                                                        }`} 
+                                                        onClick={toggleShuffle}
+                                                    >
+                                                        <Shuffle size={18} />
+                                                        {isShuffle && <div className="absolute bottom-1 h-1 w-1 bg-current rounded-full"></div>}
+                                                    </Button>
                                                     <Button onClick={playPrevious} variant="ghost" size="icon" className={`!rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`} disabled={queue.length <= 1}><SkipBack size={22} /></Button>
                                                     <Button onClick={togglePlay} variant="secondary" size="icon" className={`!w-14 !h-14 !rounded-full transition-colors ${isDarkMode ? 'bg-white hover:bg-slate-200 text-slate-900' : 'bg-slate-900 hover:bg-slate-700 text-white'}`} >{isPlaying ? <Pause size={24} className="fill-current" /> : <Play size={24} className="fill-current ml-1" />}</Button>
                                                     <Button onClick={playNext} variant="ghost" size="icon" className={`!rounded-full ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`} disabled={queue.length <= 1}><SkipForward size={22} /></Button>
-                                                    <Button variant="ghost" size="icon" className={`!rounded-full relative ${isRepeat ? (isDarkMode ? 'text-cyan-400' : 'text-blue-600') : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black')}`} onClick={toggleRepeat}>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className={`!rounded-full relative transition-all duration-200 ${
+                                                            isRepeat 
+                                                                ? (isDarkMode 
+                                                                    ? 'text-cyan-400 bg-cyan-400/20 hover:bg-cyan-400/30' 
+                                                                    : 'text-blue-600 bg-blue-600/20 hover:bg-blue-600/30'
+                                                                  ) 
+                                                                : (isDarkMode 
+                                                                    ? 'text-slate-400 hover:text-white hover:bg-white/10' 
+                                                                    : 'text-slate-500 hover:text-black hover:bg-black/10'
+                                                                  )
+                                                        }`} 
+                                                        onClick={toggleRepeat}
+                                                    >
                                                         {isRepeat ? <Repeat1 size={20} /> : <Repeat size={20} />}
                                                         {isRepeat && <div className="absolute bottom-1 h-1 w-1 bg-current rounded-full"></div>}
                                                     </Button>

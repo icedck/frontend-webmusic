@@ -108,18 +108,12 @@ const ChartPage = () => {
                         {/* Title Section */}
                         <div className="text-center mb-12">
                             <div className="flex items-center justify-center gap-3 mb-6">
-                                <div className="p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl shadow-lg">
-                                    <TrendingUp className="w-10 h-10 text-white" />
-                                </div>
                                 <div className="text-left">
                                     <h1 className="text-6xl lg:text-7xl font-black">
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
-                                            #zakchart
+                                            # MozuChart
                                         </span>
                                     </h1>
-                                </div>
-                                <div className="p-3 bg-white/20 dark:bg-slate-800/40 backdrop-blur-sm rounded-full border border-white/30 dark:border-slate-700/40">
-                                    <Play className="w-8 h-8 text-slate-700 dark:text-slate-300" />
                                 </div>
                             </div>
                             

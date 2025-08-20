@@ -10,7 +10,7 @@ import ChartList from "../components/music/ChartList";
 import { musicService } from "../modules/music/services/musicService";
 import { toast } from "react-toastify";
 import { useAudio } from "../hooks/useAudio";
-import { Music, Play } from "lucide-react";
+import { Music, Play, Youtube, Facebook, Instagram, Twitter } from "lucide-react";
 
 const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
     <section className="space-y-6">
@@ -22,7 +22,7 @@ const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
           {onPlayAll && (
               <button
                   onClick={onPlayAll}
-                  className="flex items-center justify-center w-10 h-10 bg-slate-700/80 hover:bg-slate-600/80 rounded-full text-white
+                  className="flex items-center justify-center w-10 h-10 bg-slate-200 dark:bg-slate-700/80 hover:bg-slate-300 dark:hover:bg-slate-600/80 rounded-full text-slate-800 dark:text-white
                      opacity-0 group-hover:opacity-100
                      transform scale-75 group-hover:scale-100
                      transition-all duration-300 ease-in-out"
@@ -38,7 +38,7 @@ const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
         {viewAllLink && (
             <Link
                 to={viewAllLink}
-                className="text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+                className="text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Tất cả
             </Link>
@@ -50,97 +50,70 @@ const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
 
 const Footer = () => {
   return (
-      <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 text-sm">
+      <footer className="relative bg-slate-50 dark:bg-slate-900 mt-16 border-t border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
-            <div className="col-span-full lg:col-span-2">
-              <Link to="/" className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <Music className="w-5 h-5 text-white" />
-                </div>
-                <span className="font-bold text-xl text-slate-800 dark:text-white">
-                WebMusic
-              </span>
-              </Link>
-              <p className="text-slate-500 dark:text-slate-400 max-w-sm">
-                Đây là dự án được phát triển bởi các học viên tại trung tâm
-                CodeGym Hà Nội. Sản phẩm phi thương mại nhằm mục đích học tập và
-                trau dồi kỹ năng.
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Company Info */}
+            <div>
+              <h4 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">Doanh nghiệp quản lý</h4>
+              <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-2">
+                Công ty Cổ phần Tập đoàn Mozu Việt Nam. GCĐKKD: 1234567890 do sở KH & ĐT TP.HN cấp ngày 9/9/2025.
               </p>
+              <p className="text-slate-600 dark:text-slate-400 text-xs">
+                Địa chỉ: Số 23, Lô TT01, Mỹ Đình 2, Hà Nội, Việt Nam.
+              </p>
+              <div className="mt-4">
+                <h5 className="font-semibold text-slate-800 dark:text-white mb-2 text-sm">Người chịu trách nghiệm nội dung</h5>
+                <p className="text-slate-600 dark:text-slate-400 text-xs">Ông Ngô Gia Khánh</p>
+              </div>
             </div>
 
+            {/* Service Info */}
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Về WebMusic
-              </h4>
-              <ul className="space-y-3 text-slate-500 dark:text-slate-400">
-                <li>
-                  <Link
-                      to="/about"
-                      className="hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Giới thiệu
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                      to="/terms"
-                      className="hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Điều khoản
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                      to="/privacy"
-                      className="hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Bảo mật
-                  </Link>
-                </li>
-              </ul>
+              <h4 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">Thông tin dịch vụ</h4>
+              <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-2">
+                GPMXH: 888/GP-BTTTT do Bộ Thông Tin và Truyền Thông cấp ngày 22/9/2025.
+              </p>
+              <div className="mt-4">
+                <p className="text-slate-600 dark:text-slate-400 text-xs">CSKH/Liên hệ qua Zalo: 0987654321</p>
+                <p className="text-slate-600 dark:text-slate-400 text-xs">Email: contact@mozu.com.vn</p>
+              </div>
             </div>
 
-            <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Hỗ trợ
-              </h4>
-              <ul className="space-y-3 text-slate-500 dark:text-slate-400">
-                <li>
-                  <Link
-                      to="/help"
-                      className="hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Trung tâm trợ giúp
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                      to="/report"
-                      className="hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Báo cáo vi phạm
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                      to="/contact"
-                      className="hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Liên hệ
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Kết nối
-              </h4>
+            {/* Logo and Connect */}
+            <div className="flex flex-col items-center md:items-end">
+              <Link to="/" className="inline-flex items-center mb-4 group">
+                <div className="w-20 h-20 group-hover:scale-105 transition-all duration-300">
+                  <img src="/logo/mozu.png" alt="Mozu Logo" className="w-full h-full object-contain" />
+                </div>
+              </Link>
+              <div className="flex items-center gap-4 mb-4">
+                <a href="#" aria-label="Facebook" className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                  <Facebook size={20} />
+                </a>
+                <a href="#" aria-label="Instagram" className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                  <Instagram size={20} />
+                </a>
+                <a href="#" aria-label="Twitter" className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                  <Twitter size={20} />
+                </a>
+                <a href="#" aria-label="Youtube" className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                  <Youtube size={20} />
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-red-600 dark:text-red-400">Gia Khánh - Trần Tú - Phạm Khánh - Thái Hưng</span>
+              </div>
             </div>
           </div>
-          <p className="mt-12 text-center text-xs text-slate-500 dark:text-slate-400">
-            &copy; {new Date().getFullYear()} WebMusic. All Rights Reserved.
-          </p>
+
+          {/* Bottom Copyright */}
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              &copy; {new Date().getFullYear()} Mozu Music Platform. Dự án học tập tại CodeGym Hà Nội.
+            </p>
+          </div>
         </div>
       </footer>
   );
@@ -153,12 +126,12 @@ const SkeletonGrid = ({ items = 5, type = "default" }) => (
       {Array.from({ length: items }).map((_, index) => (
           <div key={index} className="space-y-2 animate-pulse">
             <div
-                className={`aspect-square bg-slate-800 ${
+                className={`aspect-square bg-slate-200 dark:bg-slate-800 ${
                     type === "artist" ? "rounded-full" : "rounded-lg"
                 }`}
             ></div>
-            <div className="h-4 bg-slate-800 rounded w-3/4"></div>
-            <div className="h-3 bg-slate-800 rounded w-1/2"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
+            <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
           </div>
       ))}
     </div>
@@ -202,59 +175,49 @@ const MusicDiscoveryPage = () => {
 
         if (topSongsRes.success) setTopSongs(topSongsRes.data);
         if (topPlaylistsRes.success) {
-          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
-          const visiblePlaylists = topPlaylistsRes.data?.filter(playlist => 
-            playlist.visibility === 'PUBLIC'
+          const visiblePlaylists = topPlaylistsRes.data?.filter(playlist =>
+              playlist.visibility === 'PUBLIC'
           ) || [];
           setTopPlaylists(visiblePlaylists);
         }
         if (recentSongsRes.success) setRecentSongs(recentSongsRes.data);
         if (recentPlaylistsRes.success) {
-          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
-          const visiblePlaylists = recentPlaylistsRes.data?.filter(playlist => 
-            playlist.visibility === 'PUBLIC'
+          const visiblePlaylists = recentPlaylistsRes.data?.filter(playlist =>
+              playlist.visibility === 'PUBLIC'
           ) || [];
           setRecentPlaylists(visiblePlaylists);
         }
         if (mostLikedSongsRes.success) setMostLikedSongs(mostLikedSongsRes.data);
         if (mostLikedPlaylistsRes.success) {
-          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
-          const visiblePlaylists = mostLikedPlaylistsRes.data?.filter(playlist => 
-            playlist.visibility === 'PUBLIC'
+          const visiblePlaylists = mostLikedPlaylistsRes.data?.filter(playlist =>
+              playlist.visibility === 'PUBLIC'
           ) || [];
           setMostLikedPlaylists(visiblePlaylists);
         }
         if (topSingersRes.success) setTopSingers(topSingersRes.data);
         if (chartRes.success) {
-          // Add mock previousRank for testing rank change display
           const chartWithPreviousRank = chartRes.data.map((entry, index) => {
-            // Mock some rank changes for demo
             let mockPreviousRank = null;
-            
+
             if (index < chartRes.data.length) {
-              // Create some realistic rank changes
               const currentRank = entry.rank || index + 1;
               const random = Math.random();
-              
+
               if (random < 0.3) {
-                // 30% chance of going up
                 mockPreviousRank = currentRank + Math.floor(Math.random() * 5) + 1;
               } else if (random < 0.6) {
-                // 30% chance of going down  
                 mockPreviousRank = Math.max(1, currentRank - Math.floor(Math.random() * 3) - 1);
               } else if (random < 0.8) {
-                // 20% chance of staying the same
                 mockPreviousRank = currentRank;
               }
-              // 20% chance of being new (null)
             }
-            
+
             return {
               ...entry,
               previousRank: mockPreviousRank
             };
           });
-          
+
           setChartData(chartWithPreviousRank);
         }
       } catch (error)
@@ -299,7 +262,7 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">Không có playlist nào để hiển thị.</p>
+              <p className="text-slate-500 dark:text-slate-400">Không có playlist nào để hiển thị.</p>
           )}
         </Section>
 
@@ -320,20 +283,20 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">Không có bài hát nào để hiển thị.</p>
+              <p className="text-slate-500 dark:text-slate-400">Không có bài hát nào để hiển thị.</p>
           )}
         </Section>
 
-        <Section title="#WebMusicChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
+        <Section title="#MozuChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
           {loading ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex items-center p-3 rounded-lg animate-pulse">
-                      <div className="w-16 h-8 bg-slate-800 rounded-md"></div>
-                      <div className="w-12 h-12 bg-slate-800 rounded-md ml-4"></div>
+                      <div className="w-16 h-8 bg-slate-200 dark:bg-slate-800 rounded-md"></div>
+                      <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-md ml-4"></div>
                       <div className="flex-1 ml-4 space-y-2">
-                        <div className="h-4 bg-slate-800 rounded w-3/4"></div>
-                        <div className="h-3 bg-slate-800 rounded w-1/2"></div>
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
                       </div>
                     </div>
                 ))}
@@ -341,7 +304,7 @@ const MusicDiscoveryPage = () => {
           ) : chartData.length > 0 ? (
               <ChartList chartData={chartData.slice(0, 5)} />
           ) : (
-              <p className="text-slate-400">Không có dữ liệu bảng xếp hạng.</p>
+              <p className="text-slate-500 dark:text-slate-400">Không có dữ liệu bảng xếp hạng.</p>
           )}
         </Section>
 
@@ -359,7 +322,7 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">
+              <p className="text-slate-500 dark:text-slate-400">
                 Không có bài hát mới nào để hiển thị.
               </p>
           )}
@@ -375,7 +338,7 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">
+              <p className="text-slate-500 dark:text-slate-400">
                 Không có playlist mới nào để hiển thị.
               </p>
           )}
@@ -395,7 +358,7 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">
+              <p className="text-slate-500 dark:text-slate-400">
                 Không có bài hát nào được yêu thích để hiển thị.
               </p>
           )}
@@ -411,7 +374,7 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">
+              <p className="text-slate-500 dark:text-slate-400">
                 Không có playlist nào được yêu thích để hiển thị.
               </p>
           )}
@@ -427,7 +390,7 @@ const MusicDiscoveryPage = () => {
                 ))}
               </div>
           ) : (
-              <p className="text-slate-400">Không có nghệ sĩ nào để hiển thị.</p>
+              <p className="text-slate-500 dark:text-slate-400">Không có nghệ sĩ nào để hiển thị.</p>
           )}
         </Section>
 
