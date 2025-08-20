@@ -78,7 +78,7 @@ const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
       setTimeout(() => {
         setDisplayedLine(lyrics[newActiveIndex]?.text || "");
         setIsAnimating(false);
-      }, 150);
+      }, 100);
     } else if (newActiveIndex < 0) {
       setDisplayedLine("");
       setActiveLineIndex(-1);
@@ -90,67 +90,22 @@ const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
   }
 
   return (
-    <div className="flex items-center justify-center mx-4 max-w-lg">
-      <div 
+    <div className="flex items-center justify-center pointer-events-none min-h-[20px]">
+      <p 
         className={`
-          relative px-6 py-3 rounded-full backdrop-blur-md border transition-all duration-700 ease-out transform
-          ${isDarkMode 
-            ? 'bg-slate-800/90 border-slate-600/60 text-white shadow-lg shadow-slate-900/50' 
-            : 'bg-white/90 border-slate-300/60 text-slate-800 shadow-lg shadow-slate-500/20'
+          text-sm font-medium text-center max-w-xs lg:max-w-sm truncate transition-all duration-300 ease-out
+          ${isDarkMode ? 'text-cyan-400' : 'text-blue-600'}
+          ${isAnimating 
+            ? 'transform translate-y-1 opacity-0 scale-95' 
+            : 'transform translate-y-0 opacity-100 scale-100'
           }
-          ${isAnimating ? 'scale-105 opacity-80' : 'scale-100 opacity-100'}
-          hover:scale-105 hover:shadow-xl
         `}
         style={{
-          background: isDarkMode 
-            ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.9))'
-            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9))',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
+          animation: isAnimating ? 'none' : 'slideUp 0.3s ease-out',
         }}
       >
-        {/* Hiệu ứng glow */}
-        <div 
-          className={`absolute inset-0 rounded-full opacity-60 ${isDarkMode ? 'bg-cyan-400/10' : 'bg-blue-500/10'}`}
-          style={{
-            animation: isAnimating ? 'none' : 'pulse 2s infinite',
-          }}
-        />
-        
-        {/* Hiệu ứng shimmer */}
-        <div 
-          className="absolute inset-0 rounded-full"
-          style={{
-            background: `linear-gradient(
-              120deg,
-              transparent 30%,
-              ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)'} 50%,
-              transparent 70%
-            )`,
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 3s infinite',
-          }}
-        />
-        
-        <p 
-          className={`
-            relative text-sm font-semibold text-center truncate max-w-sm z-10
-            ${isAnimating ? 'transform translate-y-1' : 'transform translate-y-0'}
-            transition-transform duration-300
-          `}
-          style={{
-            textShadow: isDarkMode 
-              ? '0 1px 2px rgba(0, 0, 0, 0.5)' 
-              : '0 1px 2px rgba(255, 255, 255, 0.8)',
-          }}
-        >
-          {displayedLine}
-        </p>
-        
-        {/* Decorative elements */}
-        <div className={`absolute -left-1 top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full ${isDarkMode ? 'bg-cyan-400' : 'bg-blue-500'} opacity-70`} />
-        <div className={`absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 rounded-full ${isDarkMode ? 'bg-cyan-400' : 'bg-blue-500'} opacity-70`} />
-      </div>
+        {displayedLine}
+      </p>
     </div>
   );
 };
@@ -279,7 +234,7 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
       <header
           className={`sticky top-0 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-700/80`}
       >
-        <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+        <div className="relative px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
               <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -330,6 +285,21 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Hiển thị lời bài hát gần player controls - CHO PREMIUM, ADMIN, VÀ CREATOR */}
+            <div className={`transition-all duration-300 ease-in-out ${
+              user && (isPremium() || isAdmin() || isCreator()) && !isPlayerVisible && currentSong && lyrics && lyrics.length > 0
+                ? "opacity-100 max-w-xs"
+                : "opacity-0 max-w-0"
+            } overflow-hidden`}>
+              {user && (isPremium() || isAdmin() || isCreator()) && (
+                <NavbarLyricsDisplay 
+                  lyrics={lyrics}
+                  currentTime={currentTime}
+                  isVisible={!isPlayerVisible && currentSong && lyrics && lyrics.length > 0}
+                />
+              )}
+            </div>
+            
             <div
                 className={`flex items-center gap-3 transition-all duration-300 ease-in-out ${
                     !isPlayerVisible && currentSong
@@ -413,13 +383,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
                   </>
               )}
             </div>
-
-            {/* Hiển thị lời bài hát khi PlayerSidebar bị ẩn */}
-            <NavbarLyricsDisplay 
-              lyrics={lyrics}
-              currentTime={currentTime}
-              isVisible={!isPlayerVisible && currentSong && lyrics && lyrics.length > 0}
-            />
 
             <div className="flex items-center gap-2">
               {user ? (

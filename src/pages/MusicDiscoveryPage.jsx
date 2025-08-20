@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import HeroSlider from "../components/music/HeroSlider";
+import FeaturedSongs from "../components/music/FeaturedSongs";
+import SuggestedSongs from "../components/music/SuggestedSongs";
 import PlaylistCard from "../components/music/PlaylistCard";
 import SongCard from "../components/music/SongCard";
 import ArtistCard from "../components/music/ArtistCard";
@@ -199,13 +201,62 @@ const MusicDiscoveryPage = () => {
         ]);
 
         if (topSongsRes.success) setTopSongs(topSongsRes.data);
-        if (topPlaylistsRes.success) setTopPlaylists(topPlaylistsRes.data);
+        if (topPlaylistsRes.success) {
+          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
+          const visiblePlaylists = topPlaylistsRes.data?.filter(playlist => 
+            playlist.visibility === 'PUBLIC'
+          ) || [];
+          setTopPlaylists(visiblePlaylists);
+        }
         if (recentSongsRes.success) setRecentSongs(recentSongsRes.data);
-        if (recentPlaylistsRes.success) setRecentPlaylists(recentPlaylistsRes.data);
+        if (recentPlaylistsRes.success) {
+          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
+          const visiblePlaylists = recentPlaylistsRes.data?.filter(playlist => 
+            playlist.visibility === 'PUBLIC'
+          ) || [];
+          setRecentPlaylists(visiblePlaylists);
+        }
         if (mostLikedSongsRes.success) setMostLikedSongs(mostLikedSongsRes.data);
-        if (mostLikedPlaylistsRes.success) setMostLikedPlaylists(mostLikedPlaylistsRes.data);
+        if (mostLikedPlaylistsRes.success) {
+          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
+          const visiblePlaylists = mostLikedPlaylistsRes.data?.filter(playlist => 
+            playlist.visibility === 'PUBLIC'
+          ) || [];
+          setMostLikedPlaylists(visiblePlaylists);
+        }
         if (topSingersRes.success) setTopSingers(topSingersRes.data);
-        if (chartRes.success) setChartData(chartRes.data);
+        if (chartRes.success) {
+          // Add mock previousRank for testing rank change display
+          const chartWithPreviousRank = chartRes.data.map((entry, index) => {
+            // Mock some rank changes for demo
+            let mockPreviousRank = null;
+            
+            if (index < chartRes.data.length) {
+              // Create some realistic rank changes
+              const currentRank = entry.rank || index + 1;
+              const random = Math.random();
+              
+              if (random < 0.3) {
+                // 30% chance of going up
+                mockPreviousRank = currentRank + Math.floor(Math.random() * 5) + 1;
+              } else if (random < 0.6) {
+                // 30% chance of going down  
+                mockPreviousRank = Math.max(1, currentRank - Math.floor(Math.random() * 3) - 1);
+              } else if (random < 0.8) {
+                // 20% chance of staying the same
+                mockPreviousRank = currentRank;
+              }
+              // 20% chance of being new (null)
+            }
+            
+            return {
+              ...entry,
+              previousRank: mockPreviousRank
+            };
+          });
+          
+          setChartData(chartWithPreviousRank);
+        }
       } catch (error)
       {
         toast.error("Không thể tải dữ liệu trang chủ.");
@@ -235,12 +286,15 @@ const MusicDiscoveryPage = () => {
       <div className="space-y-16">
         <HeroSlider />
 
+        {/* Featured Songs Section */}
+        <FeaturedSongs playlists={mostLikedPlaylists} />
+
         <Section title="Playlist Nghe Nhiều" viewAllLink="/playlists?category=top-listened">
           {loading ? (
               <SkeletonGrid items={5} />
           ) : topPlaylists.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
-                {topPlaylists.map((p) => (
+              <div className="grid grid-cols-5 gap-x-6 gap-y-8">
+                {topPlaylists.slice(0, 5).map((p) => (
                     <PlaylistCard key={p.id} playlist={p} />
                 ))}
               </div>
@@ -248,6 +302,9 @@ const MusicDiscoveryPage = () => {
               <p className="text-slate-400">Không có playlist nào để hiển thị.</p>
           )}
         </Section>
+
+        {/* Suggested Songs Section */}
+        <SuggestedSongs />
 
         <Section title="Bài hát nghe nhiều" viewAllLink="/all-songs?category=popular" onPlayAll={() => handlePlayAll(topSongs)}>
           {loading ? (

@@ -22,7 +22,36 @@ const ChartPage = () => {
             try {
                 const response = await musicService.getChart();
                 if (response.success) {
-                    setChartData(response.data);
+                    // Add mock previousRank for testing rank change display
+                    const chartWithPreviousRank = response.data.map((entry, index) => {
+                        // Mock some rank changes for demo
+                        let mockPreviousRank = null;
+                        
+                        if (index < response.data.length) {
+                            // Create some realistic rank changes
+                            const currentRank = entry.rank || index + 1;
+                            const random = Math.random();
+                            
+                            if (random < 0.3) {
+                                // 30% chance of going up
+                                mockPreviousRank = currentRank + Math.floor(Math.random() * 5) + 1;
+                            } else if (random < 0.6) {
+                                // 30% chance of going down  
+                                mockPreviousRank = Math.max(1, currentRank - Math.floor(Math.random() * 3) - 1);
+                            } else if (random < 0.8) {
+                                // 20% chance of staying the same
+                                mockPreviousRank = currentRank;
+                            }
+                            // 20% chance of being new (null)
+                        }
+                        
+                        return {
+                            ...entry,
+                            previousRank: mockPreviousRank
+                        };
+                    });
+                    
+                    setChartData(chartWithPreviousRank);
                 } else {
                     toast.error("Không thể tải bảng xếp hạng.");
                 }
@@ -82,7 +111,7 @@ const ChartPage = () => {
                                 <div className="text-left">
                                     <h1 className="text-6xl lg:text-7xl font-black">
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
-                                            #zingchart
+                                            #zakchart
                                         </span>
                                     </h1>
                                 </div>
@@ -147,7 +176,11 @@ const ChartPage = () => {
                     )}
 
                     {/* Main Chart List */}
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl overflow-hidden">
+                    <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl overflow-hidden">
+                        {/* Bottom fade overlay - Enhanced for natural look */}
+                        <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none z-20">
+                            <div className="h-full bg-gradient-to-t from-white/95 via-white/50 to-transparent dark:from-slate-900/95 dark:via-slate-900/50 dark:to-transparent rounded-b-2xl"></div>
+                        </div>
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20">
                                 <Loader2 className="w-12 h-12 animate-spin text-cyan-500 mb-4" />

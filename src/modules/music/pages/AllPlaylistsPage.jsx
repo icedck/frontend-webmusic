@@ -140,20 +140,26 @@ const AllPlaylistsPage = () => {
 
             if (response.success) {
                 if (response.data.content) {
-                    // Response có phân trang
-                    setPlaylists(response.data.content);
+                    // Response có phân trang - Filter out admin-hidden playlists
+                    const visiblePlaylists = response.data.content?.filter(playlist => 
+                        playlist.visibility === 'PUBLIC'
+                    ) || [];
+                    setPlaylists(visiblePlaylists);
                     setPageInfo(prev => ({
                         ...prev,
                         totalPages: response.data.pageInfo?.totalPages || 1,
-                        totalElements: response.data.pageInfo?.totalElements || response.data.content.length
+                        totalElements: response.data.pageInfo?.totalElements || visiblePlaylists.length
                     }));
                 } else {
-                    // Response không có phân trang (mảng đơn giản)
-                    setPlaylists(response.data || []);
+                    // Response không có phân trang (mảng đơn giản) - Filter out admin-hidden playlists
+                    const visiblePlaylists = response.data?.filter(playlist => 
+                        playlist.visibility === 'PUBLIC'
+                    ) || [];
+                    setPlaylists(visiblePlaylists);
                     setPageInfo(prev => ({
                         ...prev,
                         totalPages: 1,
-                        totalElements: response.data?.length || 0
+                        totalElements: visiblePlaylists.length
                     }));
                 }
             } else {

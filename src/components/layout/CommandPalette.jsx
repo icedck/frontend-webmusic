@@ -93,7 +93,8 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
     const handleAction = (item) => {
         if (!item) return;
         if (item.type === 'song') {
-            playSong(item);
+            // Navigate to song detail page instead of auto-playing
+            navigate(`/song/${item.id}`);
         } else if (item.type === 'singer') {
             navigate(`/singer/${item.id}`);
         } else if (item.type === 'playlist') {
@@ -127,10 +128,12 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
                     break;
                 case 'Enter':
                     e.preventDefault();
-                    if (allItems.length > 0 && allItems[activeIndex]) {
-                        handleAction(allItems[activeIndex]);
-                    } else {
+                    // Always navigate to search results page when pressing Enter
+                    // Don't auto-play songs from search results
+                    if (searchTerm.trim()) {
                         handleGlobalSearch();
+                    } else if (allItems.length > 0 && allItems[activeIndex]) {
+                        handleAction(allItems[activeIndex]);
                     }
                     break;
                 case 'Escape': handleClose(); break;
