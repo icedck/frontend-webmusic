@@ -201,11 +201,29 @@ const MusicDiscoveryPage = () => {
         ]);
 
         if (topSongsRes.success) setTopSongs(topSongsRes.data);
-        if (topPlaylistsRes.success) setTopPlaylists(topPlaylistsRes.data);
+        if (topPlaylistsRes.success) {
+          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
+          const visiblePlaylists = topPlaylistsRes.data?.filter(playlist => 
+            playlist.visibility === 'PUBLIC'
+          ) || [];
+          setTopPlaylists(visiblePlaylists);
+        }
         if (recentSongsRes.success) setRecentSongs(recentSongsRes.data);
-        if (recentPlaylistsRes.success) setRecentPlaylists(recentPlaylistsRes.data);
+        if (recentPlaylistsRes.success) {
+          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
+          const visiblePlaylists = recentPlaylistsRes.data?.filter(playlist => 
+            playlist.visibility === 'PUBLIC'
+          ) || [];
+          setRecentPlaylists(visiblePlaylists);
+        }
         if (mostLikedSongsRes.success) setMostLikedSongs(mostLikedSongsRes.data);
-        if (mostLikedPlaylistsRes.success) setMostLikedPlaylists(mostLikedPlaylistsRes.data);
+        if (mostLikedPlaylistsRes.success) {
+          // Filter out admin-hidden playlists (visibility !== 'PUBLIC')
+          const visiblePlaylists = mostLikedPlaylistsRes.data?.filter(playlist => 
+            playlist.visibility === 'PUBLIC'
+          ) || [];
+          setMostLikedPlaylists(visiblePlaylists);
+        }
         if (topSingersRes.success) setTopSingers(topSingersRes.data);
         if (chartRes.success) {
           // Add mock previousRank for testing rank change display

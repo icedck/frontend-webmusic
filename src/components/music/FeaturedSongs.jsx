@@ -13,8 +13,9 @@ const FeaturedSongs = ({ playlists = [] }) => {
     const [playlistsWithSongs, setPlaylistsWithSongs] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Chỉ hiển thị playlists thật từ API
-    const displayPlaylists = playlists.length > 0 ? playlists.slice(0, 3) : [];
+    // Chỉ hiển thị playlists thật từ API và filter out admin-hidden playlists
+    const displayPlaylists = playlists.length > 0 ? 
+        playlists.filter(playlist => playlist.visibility === 'PUBLIC').slice(0, 3) : [];
 
     useEffect(() => {
         const fetchPlaylistDetails = async () => {
