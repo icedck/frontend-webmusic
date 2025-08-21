@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { UploadCloud, File as FileIcon, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 const FileUpload = ({
                         onFileChange,
@@ -80,7 +82,14 @@ const FileUpload = ({
 
         // Ưu tiên hiển thị ảnh nếu previewType là image
         if (previewType === 'image') {
-            return <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg" />;
+            return <LazyLoadImage 
+                src={preview} 
+                alt="Preview" 
+                className="w-full h-full object-cover rounded-lg" 
+                effect="blur"
+                loading="lazy"
+                placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+            />;
         }
         if (previewType === 'audio' || (fileName && fileName.match(/\.(mp3|wav|ogg)$/i))) {
             return <audio controls src={preview} className="w-full" />;

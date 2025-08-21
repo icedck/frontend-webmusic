@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, Link} from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import {musicService} from '../services/musicService';
 import {useAudio} from '../../../hooks/useAudio';
 import Button from '../../../components/common/Button';
@@ -90,7 +92,14 @@ const ArtistDetailPage = () => {
                                 <div key={song.id} className="group grid grid-cols-[2rem_1fr_auto] md:grid-cols-[2rem_4fr_2fr_2fr_1fr_1fr_3rem] gap-4 items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200">
                                     <div className="text-sm text-slate-400 text-center">{index + 1}</div>
                                     <div className="flex items-center gap-4 min-w-0">
-                                        <img src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} alt={song.title} className="w-12 h-12 rounded-md object-cover" />
+                                        <LazyLoadImage 
+                                            src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} 
+                                            alt={song.title} 
+                                            className="w-12 h-12 rounded-md object-cover" 
+                                            effect="blur"
+                                            loading="lazy"
+                                            placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+                                        />
                                         <div className="flex-1 min-w-0">
                                             <Link to={`/song/${song.id}`} className="font-semibold text-slate-800 dark:text-slate-100 truncate block hover:underline">
                                                 {song.title}

@@ -1,5 +1,7 @@
 // File: src/modules/admin/components/CreateSingerModal.jsx
 import React, { useState } from "react";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import Modal from "../../../components/common/Modal";
 import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
@@ -23,7 +25,18 @@ const SingerRow = ({ singer, onUpdate, onRemove }) => {
       <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-3 gap-y-2 p-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
         <label className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center bg-slate-200 dark:bg-slate-600 cursor-pointer overflow-hidden text-slate-400 hover:opacity-80 transition-opacity">
           <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-          {avatarPreview ? <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" /> : <span className="text-xs">Ảnh</span>}
+          {avatarPreview ? (
+            <LazyLoadImage 
+              src={avatarPreview} 
+              alt="Preview" 
+              className="w-full h-full object-cover" 
+              effect="blur"
+              loading="lazy"
+              placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
+            />
+          ) : (
+            <span className="text-xs">Ảnh</span>
+          )}
         </label>
         <Input placeholder="Tên ca sĩ *" value={singer.name} onChange={(e) => onUpdate(singer.clientId, 'name', e.target.value)} className="!mb-0" required />
         <Input placeholder="Email *" type="email" value={singer.email} onChange={(e) => onUpdate(singer.clientId, 'email', e.target.value)} className="!mb-0" required />

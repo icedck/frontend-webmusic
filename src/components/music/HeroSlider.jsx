@@ -5,6 +5,8 @@ import { Autoplay, Navigation, Thumbs, EffectFade } from "swiper/modules";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 import Button from "../common/Button";
 import { useAudio } from "../../hooks/useAudio";
@@ -39,7 +41,7 @@ const staticSlides = [
     type: 'link', // Loại slide này là một liên kết
     title: "Trở Thành Premium",
     description: "Nghe nhạc không quảng cáo, chất lượng cao nhất",
-    imageUrl: "/image-heroslide/pre.gif",
+    imageUrl: "/image-heroslide/banner-premium.jpg",
     link: "/premium",
   },
 ];
@@ -98,7 +100,14 @@ const HeroSlider = () => {
           {staticSlides.map((slide) => (
             <SwiperSlide key={slide.id}>
               <div className="relative w-full h-full group">
-                <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover slide-image" />
+                <LazyLoadImage 
+                  src={slide.imageUrl} 
+                  alt={slide.title} 
+                  className="w-full h-full object-cover slide-image" 
+                  effect="blur"
+                  loading="lazy"
+                  placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent slide-overlay"></div>
                 <div className="absolute bottom-0 left-0 p-8 text-white slide-content">
                   <h2 className="text-4xl font-bold mb-2 drop-shadow-lg">{slide.title}</h2>
@@ -147,7 +156,14 @@ const HeroSlider = () => {
           {staticSlides.map((slide) => (
             <SwiperSlide key={slide.id}>
               <div className="w-full h-full rounded-xl overflow-hidden cursor-pointer relative group">
-                 <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover" />
+                 <LazyLoadImage 
+                   src={slide.imageUrl} 
+                   alt={slide.title} 
+                   className="w-full h-full object-cover" 
+                   effect="blur"
+                   loading="lazy"
+                   placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+                 />
                  <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors duration-300"></div>
                  <h3 className="absolute bottom-4 left-4 text-white font-semibold text-lg drop-shadow-md">
                    {slide.title}

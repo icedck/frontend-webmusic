@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useAudio } from '../../hooks/useAudio';
 import Button from '../common/Button';
@@ -43,10 +45,13 @@ const LyricsSidebar = ({ isOpen, onClose }) => {
                 {/* Background */}
                 <div className="absolute inset-0">
                     {currentSong && (
-                        <img 
+                        <LazyLoadImage 
                             src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}${currentSong.thumbnailPath}`} 
                             alt="Lyrics background" 
                             className={`w-full h-full object-cover scale-110 filter blur-2xl transition-all duration-500 ${isDarkMode ? 'brightness-[.3]' : 'brightness-75'}`} 
+                            effect="blur"
+                            loading="lazy"
+                            placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                         />
                     )}
                     <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-white/30'}`}></div>

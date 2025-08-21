@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { musicService } from '../services/musicService';
 import SongCard from '../../../components/music/SongCard';
 import Button from '../../../components/common/Button';
@@ -24,10 +26,13 @@ const SongListItem = ({ song, index, onPlay }) => {
             {/* Thumbnail */}
             <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                 {song.thumbnailPath ? (
-                    <img
+                    <LazyLoadImage
                         src={`${API_BASE_URL}${song.thumbnailPath}`}
                         alt={song.title}
                         className="w-full h-full object-cover"
+                        effect="blur"
+                        loading="lazy"
+                        placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                     />
                 ) : (
                     <div className="w-full h-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">

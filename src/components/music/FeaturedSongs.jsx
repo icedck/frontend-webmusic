@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Heart, MoreHorizontal, Music } from 'lucide-react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useAudio } from '../../hooks/useAudio';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { musicService } from '../../modules/music/services/musicService';
@@ -109,10 +111,13 @@ const FeaturedSongs = ({ playlists = [] }) => {
                             <div className="relative flex-shrink-0">
                                 <div className="w-16 h-16 rounded-lg overflow-hidden shadow-md group-hover:shadow-lg transition-all duration-300">
                                     {playlist.thumbnailPath ? (
-                                        <img 
+                                        <LazyLoadImage 
                                             src={`${API_BASE_URL}${playlist.thumbnailPath}`}
                                             alt={playlist.name}
                                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            effect="blur"
+                                            loading="lazy"
+                                            placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center">

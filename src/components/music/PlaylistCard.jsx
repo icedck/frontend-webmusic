@@ -5,6 +5,8 @@ import { useAudio } from '../../hooks/useAudio';
 import { musicService } from '../../modules/music/services/musicService';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -45,10 +47,14 @@ const PlaylistCard = ({ playlist }) => {
             <Link to={`/playlist/${playlist.id}`}>
                 <div className="relative w-full aspect-square rounded-md overflow-hidden mb-4">
                     {playlist.thumbnailPath ? (
-                        <img
+                        <LazyLoadImage
                             src={`${API_BASE_URL}${playlist.thumbnailPath}`}
                             alt={playlist.name}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            effect="blur"
+                            loading="lazy"
+                            wrapperClassName="w-full h-full"
+                            placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700">

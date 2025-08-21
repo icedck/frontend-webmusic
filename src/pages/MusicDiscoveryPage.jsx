@@ -11,6 +11,8 @@ import { musicService } from "../modules/music/services/musicService";
 import { toast } from "react-toastify";
 import { useAudio } from "../hooks/useAudio";
 import { Music, Play, Youtube, Facebook, Instagram, Twitter } from "lucide-react";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 const Section = ({ title, viewAllLink = "#", onPlayAll, children }) => (
     <section className="space-y-6">
@@ -85,7 +87,14 @@ const Footer = () => {
             <div className="flex flex-col items-center md:items-end">
               <Link to="/" className="inline-flex items-center mb-4 group">
                 <div className="w-20 h-20 group-hover:scale-105 transition-all duration-300">
-                  <img src="/logo/Muzo.png" alt="Muzo Logo" className="w-full h-full object-contain" />
+                  <LazyLoadImage
+                    src="/logo/Muzo.png"
+                    alt="Muzo Logo"
+                    className="w-full h-full object-contain"
+                    effect="blur"
+                    placeholderSrc="/logo/Muzo.png"
+                    loading="lazy"
+                  />
                 </div>
               </Link>
               <div className="flex items-center gap-4 mb-4">

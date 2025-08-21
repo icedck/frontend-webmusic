@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { adminService } from '../services/adminService';
 import { toast } from 'react-toastify';
 import { Loader2, User, Mail, Phone, Calendar, Music, ShieldCheck, ListMusic, GitCommitVertical } from 'lucide-react';
@@ -61,7 +63,14 @@ const CreatorDetailPage = () => {
             <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className={`w-24 h-24 rounded-full ${currentTheme.bgCard} border ${currentTheme.border} flex-shrink-0 flex items-center justify-center`}>
                     {creator.avatarPath ? (
-                        <img src={`${API_BASE_URL}${creator.avatarPath}`} alt={creator.displayName} className="w-full h-full object-cover rounded-full" />
+                        <LazyLoadImage 
+                            src={`${API_BASE_URL}${creator.avatarPath}`} 
+                            alt={creator.displayName} 
+                            className="w-full h-full object-cover rounded-full" 
+                            effect="blur"
+                            loading="lazy"
+                            placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
+                        />
                     ) : (
                         <User className="w-12 h-12 text-slate-400" />
                     )}
@@ -105,7 +114,14 @@ const CreatorDetailPage = () => {
                                     <tr key={song.id} className={`hover:${currentTheme.bg}`}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-4">
-                                                <img src={`${API_BASE_URL}${song.thumbnailPath}`} alt={song.title} className="w-10 h-10 rounded-md object-cover" />
+                                                <LazyLoadImage 
+                                                    src={`${API_BASE_URL}${song.thumbnailPath}`} 
+                                                    alt={song.title} 
+                                                    className="w-10 h-10 rounded-md object-cover" 
+                                                    effect="blur"
+                                                    loading="lazy"
+                                                    placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+                                                />
                                                 <div>
                                                     <p className={`font-medium ${currentTheme.text}`}>{song.title}</p>
                                                     <p className={`text-sm ${currentTheme.textSecondary}`}>

@@ -1,4 +1,6 @@
 import React from "react";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -27,10 +29,13 @@ const Avatar = ({ user, className = "w-8 h-8" }) => {
     <div
       className={`rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 bg-slate-700 ${className}`}
     >
-      <img
+      <LazyLoadImage
         src={finalImageUrl}
         alt={user.displayName}
         className="w-full h-full object-cover"
+        effect="blur"
+        loading="lazy"
+        placeholderSrc={defaultAvatarUrl}
         // Xử lý trường hợp link ảnh thật bị lỗi, sẽ tự động chuyển về ảnh mặc định
         onError={(e) => {
           if (e.target.src !== defaultAvatarUrl) {

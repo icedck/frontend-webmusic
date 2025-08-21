@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useDarkMode } from "../../../hooks/useDarkMode";
 import Button from "../../../components/common/Button";
 import ConfirmationModal from "../../../components/common/ConfirmationModal";
@@ -234,7 +236,7 @@ const SingerManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <img
+                        <LazyLoadImage
                           className="h-10 w-10 rounded-full object-cover"
                           src={
                             singer.avatarPath
@@ -245,6 +247,9 @@ const SingerManagement = () => {
                                 )}`
                           }
                           alt={singer.name}
+                          effect="blur"
+                          loading="lazy"
+                          placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
                         />
                       </div>
                       <div className="ml-4 font-medium">{singer.name}</div>

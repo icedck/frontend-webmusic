@@ -115,10 +115,10 @@
   /* Text shimmer effect */
   .text-shimmer {
     background: linear-gradient(
-      120deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.8) 50%,
-      transparent 70%
+            120deg,
+            transparent 30%,
+            rgba(255, 255, 255, 0.8) 50%,
+            transparent 70%
     );
     background-size: 200% 100%;
     animation: shimmer 2s infinite;

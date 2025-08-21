@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useAudio } from '../../hooks/useAudio';
@@ -156,7 +158,14 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
             title = item.name || 'Unknown Singer';
             typeLabel = "Ca sĩ";
             if (item.avatarPath) {
-                icon = <img src={`${API_BASE_URL}${item.avatarPath}`} className="w-8 h-8 rounded-full object-cover" alt={item.name} />;
+                icon = <LazyLoadImage 
+                    src={`${API_BASE_URL}${item.avatarPath}`} 
+                    className="w-8 h-8 rounded-full object-cover" 
+                    alt={item.name} 
+                    effect="blur"
+                    loading="lazy"
+                    placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
+                />;
             } else {
                 icon = <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white text-sm font-bold">{item.name?.charAt(0)?.toUpperCase() || <SingerIcon size={16}/>}</div>;
             }
