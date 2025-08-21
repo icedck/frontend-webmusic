@@ -10,6 +10,7 @@ const getNotifications = async (page = 0, size = 10) => {
     }
 };
 
+
 const getUnreadCount = async () => {
     try {
         const response = await apiService.get('/api/v1/notifications/unread-count');

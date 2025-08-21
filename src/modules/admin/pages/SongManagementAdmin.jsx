@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useDarkMode } from "../../../hooks/useDarkMode";
 import Button from "../../../components/common/Button";
 import Input from "../../../components/common/Input";
@@ -222,7 +220,7 @@ const SongManagementAdmin = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <LazyLoadImage
+                        <img
                           className="h-10 w-10 rounded-lg object-cover"
                           src={
                             song.thumbnailPath
@@ -233,9 +231,6 @@ const SongManagementAdmin = () => {
                                 )}&background=random`
                           }
                           alt={song.title}
-                          effect="opacity"
-                          loading="lazy"
-                          placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                         />
                       </div>
                       <div className="ml-4">
