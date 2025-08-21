@@ -25,7 +25,7 @@ const PlaylistListItem = ({ playlist, onPlay }) => {
                         src={`${API_BASE_URL}${playlist.thumbnailPath}`} 
                         alt={playlist.name} 
                         className="w-full h-full object-cover" 
-                        effect="blur"
+                        effect="opacity"
                         loading="lazy"
                         placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                     />

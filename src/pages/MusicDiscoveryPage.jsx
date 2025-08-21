@@ -91,7 +91,7 @@ const Footer = () => {
                     src="/logo/Muzo.png"
                     alt="Muzo Logo"
                     className="w-full h-full object-contain"
-                    effect="blur"
+                    effect="opacity"
                     placeholderSrc="/logo/Muzo.png"
                     loading="lazy"
                   />

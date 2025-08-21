@@ -162,7 +162,7 @@ const CommandPalette = ({ isOpen, onClose, navigationCommands }) => {
                     src={`${API_BASE_URL}${item.avatarPath}`} 
                     className="w-8 h-8 rounded-full object-cover" 
                     alt={item.name} 
-                    effect="blur"
+                    effect="opacity"
                     loading="lazy"
                     placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
                 />;

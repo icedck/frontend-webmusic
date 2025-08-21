@@ -30,7 +30,7 @@ const SingerRow = ({ singer, onUpdate, onRemove }) => {
               src={avatarPreview} 
               alt="Preview" 
               className="w-full h-full object-cover" 
-              effect="blur"
+              effect="opacity"
               loading="lazy"
               placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
             />

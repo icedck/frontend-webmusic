@@ -51,7 +51,7 @@ const PlaylistCard = ({ playlist }) => {
                             src={`${API_BASE_URL}${playlist.thumbnailPath}`}
                             alt={playlist.name}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            effect="blur"
+                            effect="opacity"
                             loading="lazy"
                             wrapperClassName="w-full h-full"
                             placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"

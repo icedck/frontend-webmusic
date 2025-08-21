@@ -104,7 +104,7 @@ const HeroSlider = () => {
                   src={slide.imageUrl} 
                   alt={slide.title} 
                   className="w-full h-full object-cover slide-image" 
-                  effect="blur"
+                  effect="opacity"
                   loading="lazy"
                   placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                 />
@@ -160,7 +160,7 @@ const HeroSlider = () => {
                    src={slide.imageUrl} 
                    alt={slide.title} 
                    className="w-full h-full object-cover" 
-                   effect="blur"
+                   effect="opacity"
                    loading="lazy"
                    placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                  />

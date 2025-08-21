@@ -67,7 +67,7 @@ const CreatorDetailPage = () => {
                             src={`${API_BASE_URL}${creator.avatarPath}`} 
                             alt={creator.displayName} 
                             className="w-full h-full object-cover rounded-full" 
-                            effect="blur"
+                            effect="opacity"
                             loading="lazy"
                             placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iNDgiIGZpbGw9IiNkZGQiLz48L3N2Zz4="
                         />
@@ -118,7 +118,7 @@ const CreatorDetailPage = () => {
                                                     src={`${API_BASE_URL}${song.thumbnailPath}`} 
                                                     alt={song.title} 
                                                     className="w-10 h-10 rounded-md object-cover" 
-                                                    effect="blur"
+                                                    effect="opacity"
                                                     loading="lazy"
                                                     placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                                                 />

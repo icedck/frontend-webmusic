@@ -51,7 +51,7 @@ const QueueItem = ({ song, isPlayingNow, onPlay, onRemove }) => {
                     src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/40'} 
                     alt={song.title} 
                     className="w-10 h-10 rounded-md object-cover flex-shrink-0" 
-                    effect="blur"
+                    effect="opacity"
                     loading="lazy"
                     placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                 />
@@ -204,7 +204,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                             src={`${API_BASE_URL}${currentSong.thumbnailPath}`} 
                             alt="Ambient background" 
                             className={`w-full h-full object-cover scale-110 filter blur-2xl transition-all duration-500 ${isDarkMode ? 'brightness-[.4]' : 'brightness-100'}`} 
-                            effect="blur"
+                            effect="opacity"
                             loading="lazy"
                             placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                         />}
@@ -269,7 +269,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                                 <LazyLoadImage 
                                                     src={`${API_BASE_URL}${currentSong.thumbnailPath}`} 
                                                     className="w-14 h-14 rounded-md flex-shrink-0 object-cover" 
-                                                    effect="blur"
+                                                    effect="opacity"
                                                     loading="lazy"
                                                     placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                                                 />

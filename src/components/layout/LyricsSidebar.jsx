@@ -49,7 +49,7 @@ const LyricsSidebar = ({ isOpen, onClose }) => {
                             src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}${currentSong.thumbnailPath}`} 
                             alt="Lyrics background" 
                             className={`w-full h-full object-cover scale-110 filter blur-2xl transition-all duration-500 ${isDarkMode ? 'brightness-[.3]' : 'brightness-75'}`} 
-                            effect="blur"
+                            effect="opacity"
                             loading="lazy"
                             placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                         />

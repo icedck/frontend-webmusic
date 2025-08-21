@@ -33,7 +33,7 @@ const Avatar = ({ user, className = "w-8 h-8" }) => {
         src={finalImageUrl}
         alt={user.displayName}
         className="w-full h-full object-cover"
-        effect="blur"
+        effect="opacity"
         loading="lazy"
         placeholderSrc={defaultAvatarUrl}
         // Xử lý trường hợp link ảnh thật bị lỗi, sẽ tự động chuyển về ảnh mặc định

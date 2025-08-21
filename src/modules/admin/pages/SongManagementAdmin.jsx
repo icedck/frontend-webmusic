@@ -233,7 +233,7 @@ const SongManagementAdmin = () => {
                                 )}&background=random`
                           }
                           alt={song.title}
-                          effect="blur"
+                          effect="opacity"
                           loading="lazy"
                           placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                         />

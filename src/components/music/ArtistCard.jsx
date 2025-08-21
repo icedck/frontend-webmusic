@@ -15,7 +15,7 @@ const ArtistCard = ({ artist }) => {
                     src={imageUrl} 
                     alt={artist.name} 
                     className="w-full h-full object-cover" 
-                    effect="blur"
+                    effect="opacity"
                     loading="lazy"
                     placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                 />

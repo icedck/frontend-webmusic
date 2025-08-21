@@ -96,7 +96,7 @@ const ArtistDetailPage = () => {
                                             src={song.thumbnailPath ? `${API_BASE_URL}${song.thumbnailPath}` : 'https://via.placeholder.com/48'} 
                                             alt={song.title} 
                                             className="w-12 h-12 rounded-md object-cover" 
-                                            effect="blur"
+                                            effect="opacity"
                                             loading="lazy"
                                             placeholderSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
                                         />
