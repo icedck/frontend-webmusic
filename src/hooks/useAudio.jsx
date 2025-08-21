@@ -47,7 +47,7 @@ export const AudioProvider = ({ children }) => {
   const isPreviewingRef = useRef(false);
   const isPlayingUpsellRef = useRef(false);
   const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    import.meta.env.VITE_API_BASE_URL || "http://api.muzo.com.vn";
   const UPSELL_AUDIO_URL = "/audio/premium_upsell.mp3";
 
   // TỰ ĐỘNG DỌN DẸP KHI LOGOUT VÀ KHÔI PHỤC KHI LOGIN
