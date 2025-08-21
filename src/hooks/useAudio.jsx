@@ -21,7 +21,7 @@ export const useAudio = () => {
   return context;
 };
 
-const LOCAL_STORAGE_KEY = "Mozu-player-state";
+const LOCAL_STORAGE_KEY = "Muzo-player-state";
 
 export const AudioProvider = ({ children }) => {
   // Lấy trạng thái xác thực từ AuthProvider

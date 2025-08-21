@@ -58,7 +58,7 @@ const Footer = () => {
             <div>
               <h4 className="font-semibold text-slate-800 dark:text-white mb-4 text-sm">Doanh nghiệp quản lý</h4>
               <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-2">
-                Công ty Cổ phần Tập đoàn Mozu Việt Nam. GCĐKKD: 1234567890 do sở KH & ĐT TP.HN cấp ngày 9/9/2025.
+                Công ty Cổ phần Tập đoàn Muzo Việt Nam. GCĐKKD: 1234567890 do sở KH & ĐT TP.HN cấp ngày 9/9/2025.
               </p>
               <p className="text-slate-600 dark:text-slate-400 text-xs">
                 Địa chỉ: Số 23, Lô TT01, Mỹ Đình 2, Hà Nội, Việt Nam.
@@ -77,7 +77,7 @@ const Footer = () => {
               </p>
               <div className="mt-4">
                 <p className="text-slate-600 dark:text-slate-400 text-xs">CSKH/Liên hệ qua Zalo: 0987654321</p>
-                <p className="text-slate-600 dark:text-slate-400 text-xs">Email: contact@mozu.com.vn</p>
+                <p className="text-slate-600 dark:text-slate-400 text-xs">Email: contact@Muzo.com.vn</p>
               </div>
             </div>
 
@@ -85,7 +85,7 @@ const Footer = () => {
             <div className="flex flex-col items-center md:items-end">
               <Link to="/" className="inline-flex items-center mb-4 group">
                 <div className="w-20 h-20 group-hover:scale-105 transition-all duration-300">
-                  <img src="/logo/mozu.png" alt="Mozu Logo" className="w-full h-full object-contain" />
+                  <img src="/logo/Muzo.png" alt="Muzo Logo" className="w-full h-full object-contain" />
                 </div>
               </Link>
               <div className="flex items-center gap-4 mb-4">
@@ -111,7 +111,7 @@ const Footer = () => {
           {/* Bottom Copyright */}
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              &copy; {new Date().getFullYear()} Mozu Music Platform. Dự án học tập tại CodeGym Hà Nội.
+              &copy; {new Date().getFullYear()} Muzo Music Platform. Dự án học tập tại CodeGym Hà Nội.
             </p>
           </div>
         </div>
@@ -287,7 +287,7 @@ const MusicDiscoveryPage = () => {
           )}
         </Section>
 
-        <Section title="#MozuChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
+        <Section title="#MuzoChart" viewAllLink="/charts" onPlayAll={() => handlePlayAll(chartSongs.slice(0, 5))}>
           {loading ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (

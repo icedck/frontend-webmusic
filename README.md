@@ -1,4 +1,4 @@
-# Mozu Frontend
+# Muzo Frontend
 
 Ứng dụng phát nhạc trực tuyến được xây dựng với React, Vite và TailwindCSS theo kiến trúc modular.
 
@@ -73,7 +73,7 @@ src/
 ```bash
 # Clone repository
 git clone <repository-url>
-cd Mozu_frontend
+cd Muzo_frontend
 
 # Cài đặt dependencies
 npm install

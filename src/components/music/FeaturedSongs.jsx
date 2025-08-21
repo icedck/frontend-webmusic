@@ -158,7 +158,7 @@ const FeaturedSongs = ({ playlists = [] }) => {
                                         {playlist.name}
                                     </h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 truncate">
-                                        Creator {playlist.creatorName || 'Mozu'}
+                                        Creator {playlist.creatorName || 'Muzo'}
                                     </p>
                                 </div>
 

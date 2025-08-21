@@ -14,7 +14,7 @@ const getMockSongData = (songId) => ({
     id: songId,
     title: "Waiting For You",
     audioUrl: "/mock-audio/waiting-for-you.mp3", // Cần có file audio mẫu trong public/
-    albumArtUrl: "https://via.placeholder.com/500x500.png?text=Mozu",
+    albumArtUrl: "https://via.placeholder.com/500x500.png?text=Muzo",
     duration: 262,
     lyrics: `[00:19.48]Em không hề vội vã\n[00:21.84]Anh chỉ cần một cành hoa\n[00:24.23]Mặc một chiếc váy trắng tinh khôi\n[00:26.79]Rồi em sẽ theo anh về nhà...`,
     artist: { id: "mono", name: "MONO" },

@@ -48,7 +48,7 @@ const LandingPage = () => {
                 </div>
                 <div>
                 <span className={`text-2xl font-bold ${currentTheme.text} tracking-tight`}>
-                  Mozu
+                  Muzo
                 </span>
                   <div className="text-xs text-slate-500 font-medium tracking-wider">
                     NEXT-GEN MUSIC
@@ -168,7 +168,7 @@ const LandingPage = () => {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-20">
               <h2 className={`text-4xl lg:text-5xl font-bold ${currentTheme.text} mb-6 tracking-tight`}>
-                Tại sao chọn Mozu?
+                Tại sao chọn Muzo?
               </h2>
               <p className={`text-xl ${currentTheme.textSecondary} max-w-3xl mx-auto font-light`}>
                 Trải nghiệm âm nhạc được thiết kế cho tương lai với những tính năng độc quyền
@@ -246,8 +246,8 @@ const LandingPage = () => {
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
                     <img 
-                      src="/logo/mozu.png" 
-                      alt="Mozu Logo" 
+                      src="/logo/Muzo.png" 
+                      alt="Muzo Logo" 
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -289,7 +289,7 @@ const LandingPage = () => {
             {/* Bottom Bar */}
             <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center">
               <p className="text-slate-400 mb-4 md:mb-0">
-                © 2024 Mozu. Tất cả quyền được bảo lưu.
+                © 2024 Muzo. Tất cả quyền được bảo lưu.
               </p>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2 text-slate-400">

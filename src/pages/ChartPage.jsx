@@ -111,7 +111,7 @@ const ChartPage = () => {
                                 <div className="text-left">
                                     <h1 className="text-6xl lg:text-7xl font-black">
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
-                                            # MozuChart
+                                            # MuzoChart
                                         </span>
                                     </h1>
                                 </div>

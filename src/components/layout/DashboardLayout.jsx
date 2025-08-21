@@ -38,7 +38,7 @@ import {
   Tags,
   History,
   Bell,
-  ChevronsLeft, // Import icon còn thiếu
+  ChevronsLeft,
 } from "lucide-react";
 import NotificationDropdown from "./NotificationDropdown";
 import { useNotifications } from "../../hooks/useNotifications";
@@ -47,11 +47,10 @@ import Avatar from "../common/Avatar";
 const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-// Component thanh tiến trình phát nhạc dưới navbar
 const NavbarProgressBar = ({ currentSong, currentTime, duration, isPlaying, onSeek }) => {
   const { isDarkMode } = useDarkMode();
   const progressBarRef = useRef(null);
-  
+
   const handleSeek = (e) => {
     if (!progressBarRef.current || !duration || !onSeek) return;
     const rect = progressBarRef.current.getBoundingClientRect();
@@ -66,57 +65,52 @@ const NavbarProgressBar = ({ currentSong, currentTime, duration, isPlaying, onSe
   if (!currentSong) return null;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-1 group">
-      {/* Progress Bar */}
-      <div 
-        ref={progressBarRef}
-        onClick={handleSeek}
-        className={`w-full h-full cursor-pointer ${
-          isDarkMode ? 'bg-slate-800/50' : 'bg-slate-200/50'
-        } group-hover:h-1.5 transition-all duration-200`}
-      >
-        <div 
-          className={`h-full transition-all duration-200 ${
-            isPlaying 
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600' 
-              : isDarkMode 
-                ? 'bg-slate-600' 
-                : 'bg-slate-400'
-          }`}
-          style={{ width: `${progress}%` }}
-        />
-        
-        {/* Thumb (visible on hover) */}
-        <div 
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none"
-          style={{ left: `${progress}%`, transform: 'translateX(-50%) translateY(-50%)' }}
-        />
-      </div>
-      
-      {/* Hover tooltip with song info */}
-      <div className={`absolute bottom-full left-0 right-0 mb-2 px-4 py-2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none backdrop-blur-lg rounded-t-lg ${
-        isDarkMode ? 'bg-slate-900/90 border-slate-700/50' : 'bg-white/90 border-slate-200/50'
-      } border-t border-l border-r`}>
-        <div className="flex items-center gap-3">
-          <img 
-            src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}${currentSong.thumbnailPath}`}
-            alt={currentSong.title}
-            className="w-8 h-8 rounded object-cover"
+      <div className="absolute bottom-0 left-0 right-0 h-1 group">
+        <div
+            ref={progressBarRef}
+            onClick={handleSeek}
+            className={`w-full h-full cursor-pointer ${
+                isDarkMode ? 'bg-slate-800/50' : 'bg-slate-200/50'
+            } group-hover:h-1.5 transition-all duration-200`}
+        >
+          <div
+              className={`h-full transition-all duration-200 ${
+                  isPlaying
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
+                      : isDarkMode
+                          ? 'bg-slate-600'
+                          : 'bg-slate-400'
+              }`}
+              style={{ width: `${progress}%` }}
           />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">{currentSong.title}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              {currentSong.singers?.map(s => s.name).join(', ')}
-            </p>
-          </div>
-          <div className="text-xs font-mono text-slate-500 dark:text-slate-400">
-            {formatTime(currentTime)} / {formatTime(duration)}
+          <div
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none"
+              style={{ left: `${progress}%`, transform: 'translateX(-50%) translateY(-50%)' }}
+          />
+        </div>
+        <div className={`absolute bottom-full left-0 right-0 mb-2 px-4 py-2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none backdrop-blur-lg rounded-t-lg ${
+            isDarkMode ? 'bg-slate-900/90 border-slate-700/50' : 'bg-white/90 border-slate-200/50'
+        } border-t border-l border-r`}>
+          <div className="flex items-center gap-3">
+            <img
+                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}${currentSong.thumbnailPath}`}
+                alt={currentSong.title}
+                className="w-8 h-8 rounded object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium truncate">{currentSong.title}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                {currentSong.singers?.map(s => s.name).join(', ')}
+              </p>
+            </div>
+            <div className="text-xs font-mono text-slate-500 dark:text-slate-400">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
-  
+
   function formatTime(time) {
     if (isNaN(time) || time === 0) return "0:00";
     const minutes = Math.floor(time / 60);
@@ -125,7 +119,6 @@ const NavbarProgressBar = ({ currentSong, currentTime, duration, isPlaying, onSe
   }
 };
 
-// Component hiển thị lời bài hát trên navbar
 const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
   const { isDarkMode } = useDarkMode();
   const [activeLineIndex, setActiveLineIndex] = useState(-1);
@@ -139,7 +132,6 @@ const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
       return;
     }
 
-    // Tìm dòng lyric hiện tại
     let newActiveIndex = -1;
     for (let i = lyrics.length - 1; i >= 0; i--) {
       if (currentTime >= lyrics[i].time) {
@@ -147,12 +139,11 @@ const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
         break;
       }
     }
-    
+
     if (newActiveIndex !== activeLineIndex && newActiveIndex >= 0) {
       setIsAnimating(true);
       setActiveLineIndex(newActiveIndex);
-      
-      // Animation effect khi thay đổi dòng
+
       setTimeout(() => {
         setDisplayedLine(lyrics[newActiveIndex]?.text || "");
         setIsAnimating(false);
@@ -168,23 +159,23 @@ const NavbarLyricsDisplay = ({ lyrics, currentTime, isVisible }) => {
   }
 
   return (
-    <div className="flex items-center justify-center pointer-events-none min-h-[20px]">
-      <p 
-        className={`
+      <div className="flex items-center justify-center pointer-events-none min-h-[20px]">
+        <p
+            className={`
           text-sm font-medium text-center max-w-xs lg:max-w-sm truncate transition-all duration-300 ease-out
           ${isDarkMode ? 'text-cyan-400' : 'text-blue-600'}
-          ${isAnimating 
-            ? 'transform translate-y-1 opacity-0 scale-95' 
-            : 'transform translate-y-0 opacity-100 scale-100'
-          }
+          ${isAnimating
+                ? 'transform translate-y-1 opacity-0 scale-95'
+                : 'transform translate-y-0 opacity-100 scale-100'
+            }
         `}
-        style={{
-          animation: isAnimating ? 'none' : 'slideUp 0.3s ease-out',
-        }}
-      >
-        {displayedLine}
-      </p>
-    </div>
+            style={{
+              animation: isAnimating ? 'none' : 'slideUp 0.3s ease-out',
+            }}
+        >
+          {displayedLine}
+        </p>
+      </div>
   );
 };
 
@@ -271,7 +262,6 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
       label: "Lịch sử giao dịch",
     },
   ];
-  // Chỉ thêm mục "Đổi mật khẩu" nếu người dùng không đăng nhập bằng Google
   if (user && user.provider !== "google") {
     userMenuItems.push({
       href: "/profile/change-password",
@@ -316,13 +306,20 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
       >
         <div className="relative px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <Link to="/" className="group flex items-center space-x-2 flex-shrink-0 p-2 rounded-lg">
-              <div className="w-13.1 h-13.1 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 overflow-hidden">
-                <img 
-                  src="/logo/mozu.png" 
-                  alt="Mozu Logo" 
-                  className="w-20 h-20 object-contain"
-                />
+            <Link to="/" className="group flex items-center p-2 rounded-lg">
+              <div className="relative w-10 h-10 transition-all duration-300 ease-in-out group-hover:w-[105px]">
+                <div className="absolute inset-0 flex items-center transition-all duration-300 ease-in-out">
+                  <img
+                      src="/logo/M.png"
+                      alt="M"
+                      className="h-[28px] w-auto object-contain transition-all duration-300 ease-in-out"
+                  />
+                  <img
+                      src="/logo/uzo.png"
+                      alt="uzo"
+                      className="h-[28px] w-auto object-contain transition-all duration-300 ease-in-out transform -translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                  />
+                </div>
               </div>
             </Link>
             <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 ml-2"></div>
@@ -369,21 +366,20 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Hiển thị lời bài hát gần player controls - CHO PREMIUM, ADMIN, VÀ CREATOR */}
             <div className={`transition-all duration-300 ease-in-out ${
-              user && (isPremium() || isAdmin() || isCreator()) && !isPlayerVisible && currentSong && lyrics && lyrics.length > 0
-                ? "opacity-100 max-w-xs"
-                : "opacity-0 max-w-0"
+                user && (isPremium() || isAdmin() || isCreator()) && !isPlayerVisible && currentSong && lyrics && lyrics.length > 0
+                    ? "opacity-100 max-w-xs"
+                    : "opacity-0 max-w-0"
             } overflow-hidden`}>
               {user && (isPremium() || isAdmin() || isCreator()) && (
-                <NavbarLyricsDisplay 
-                  lyrics={lyrics}
-                  currentTime={currentTime}
-                  isVisible={!isPlayerVisible && currentSong && lyrics && lyrics.length > 0}
-                />
+                  <NavbarLyricsDisplay
+                      lyrics={lyrics}
+                      currentTime={currentTime}
+                      isVisible={!isPlayerVisible && currentSong && lyrics && lyrics.length > 0}
+                  />
               )}
             </div>
-            
+
             <div
                 className={`flex items-center gap-3 transition-all duration-300 ease-in-out ${
                     !isPlayerVisible && currentSong
@@ -659,16 +655,15 @@ const AppHeader = ({ onOpenPalette, isPlayerVisible, onConfirmLogout }) => {
             </div>
           </div>
         </div>
-        
-        {/* Thanh tiến trình phát nhạc (chỉ hiện khi PlayerSidebar bị ẩn) */}
+
         {!isPlayerVisible && currentSong && (
-          <NavbarProgressBar 
-            currentSong={currentSong}
-            currentTime={currentTime}
-            duration={duration}
-            isPlaying={isPlaying}
-            onSeek={seekTo}
-          />
+            <NavbarProgressBar
+                currentSong={currentSong}
+                currentTime={currentTime}
+                duration={duration}
+                isPlaying={isPlaying}
+                onSeek={seekTo}
+            />
         )}
       </header>
   );
