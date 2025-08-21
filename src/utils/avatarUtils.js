@@ -1,9 +1,4 @@
-/**
- * Lấy 2 chữ cái đầu từ tên hiển thị.
- * Ví dụ: "Trần Văn Tú" -> "TT", "Tú Anh" -> "TA", "Long" -> "L"
- * @param {string} name Tên hiển thị của người dùng
- * @returns {string} 2 chữ cái đầu
- */
+
 export const getInitials = (name = "") => {
   if (!name) return "?";
   const words = name.trim().split(" ");
@@ -34,11 +29,7 @@ const avatarColors = [
   "#607d8b",
 ];
 
-/**
- * Tạo ra một màu nền nhất quán cho mỗi người dùng dựa trên tên của họ.
- * @param {string} name Tên hiển thị của người dùng
- * @returns {string} Mã màu hex
- */
+
 export const generateAvatarColor = (name = "") => {
   if (!name) return "#607d8b";
   let hash = 0;
