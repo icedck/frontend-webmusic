@@ -142,6 +142,7 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
     const [isAddToPlaylistModalOpen, setIsAddToPlaylistModalOpen] = useState(false);
     const progressBarRef = useRef(null);
+    const volumeRef = useRef(null);
     const [viewMode, setViewMode] = useState('queue');
 
     const [isLiked, setIsLiked] = useState(currentSong?.isLikedByCurrentUser || false);
@@ -149,6 +150,22 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
     useEffect(() => {
         setIsLiked(currentSong?.isLikedByCurrentUser || false);
     }, [currentSong]);
+
+    // Đóng volume popup khi click bên ngoài
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (volumeRef.current && !volumeRef.current.contains(event.target)) {
+                setIsVolumeOpen(false);
+            }
+        };
+
+        if (isVolumeOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }
+    }, [isVolumeOpen]);
 
     const handleToggleLike = useCallback(async () => {
         if (!isAuthenticated) {
@@ -329,7 +346,35 @@ const PlayerSidebar = ({ isCollapsed, onToggle }) => {
                                         </div>
                                     )}
                                     <div className={`flex justify-end items-center gap-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                        <div className="relative"><Button variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white" onClick={() => setIsVolumeOpen(v => !v)}><VolumeIcon/></Button>{isVolumeOpen && (<div className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-2 rounded-lg backdrop-blur-2xl border transition-colors duration-300 ${isDarkMode ? 'bg-gray-900/60 border-white/10' : 'bg-slate-50/60 border-black/10'}`}><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => changeVolume(parseFloat(e.target.value))} className="w-20 h-1 accent-cyan-400" /></div>)}</div>
+                                        <div className="relative" ref={volumeRef}>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="!w-9 !h-9 hover:!text-current dark:hover:!text-white" 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setIsVolumeOpen(v => !v);
+                                                }}
+                                            >
+                                                <VolumeIcon/>
+                                            </Button>
+                                            {isVolumeOpen && (
+                                                <div className={`absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl backdrop-blur-xl transition-all duration-300 ease-out transform z-50 ${isVolumeOpen ? 'translate-x-0 opacity-100 scale-100' : 'translate-x-4 opacity-0 scale-95'} ${isDarkMode ? 'bg-gray-900/70' : 'bg-white/70'}`}>
+                                                    <input 
+                                                        type="range" 
+                                                        min="0" 
+                                                        max="1" 
+                                                        step="0.01" 
+                                                        value={volume} 
+                                                        onChange={(e) => {
+                                                            e.stopPropagation();
+                                                            changeVolume(parseFloat(e.target.value));
+                                                        }} 
+                                                        className="w-24 h-1 accent-cyan-400 cursor-pointer" 
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                         <Menu as="div" className="relative">
                                             <Menu.Button as={Button} variant="ghost" size="icon" className="!w-9 !h-9 hover:!text-current dark:hover:!text-white">
                                                 <MoreHorizontal size={18} />
