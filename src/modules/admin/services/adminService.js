@@ -38,7 +38,7 @@ const getCreatorDetails = async (creatorId) => {
     }
 };
 
-const getSingers = async (page = 0, size = 5, search = '') => {
+const getSingers = async (page = 0, size = 5, search = '', status = '') => {
     try {
         const params = new URLSearchParams({
             page: page,
@@ -47,6 +47,9 @@ const getSingers = async (page = 0, size = 5, search = '') => {
         });
         if (search) {
             params.append('search', search);
+        }
+        if (status) {
+            params.append('status', status);
         }
         const response = await apiService.get(`/api/v1/singers/admin/all?${params.toString()}`);
         return response.data;

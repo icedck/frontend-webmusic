@@ -19,26 +19,7 @@ import Pagination from "../../../components/common/Pagination";
 import { toast } from "react-toastify";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://api.muzo.com.vn";
-
-const StatusBadge = ({ status }) => {
-  const statusStyles = {
-    PENDING:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300",
-    APPROVED:
-      "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
-    REJECTED: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
-  };
-  return (
-    <span
-      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-        statusStyles[status] || "bg-gray-100 text-gray-800"
-      }`}
-    >
-      {status}
-    </span>
-  );
-};
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 const SingerManagement = () => {
   const { currentTheme } = useDarkMode();
@@ -65,7 +46,7 @@ const SingerManagement = () => {
     // Thêm search vào hàm
     try {
       setLoading(true);
-      const response = await adminService.getSingers(page, size, search); // Truyền search vào service
+      const response = await adminService.getSingers(page, size, search, 'APPROVED'); // Chỉ lấy ca sĩ đã được duyệt
       if (response.success && response.data) {
         setSingers(
           Array.isArray(response.data.content) ? response.data.content : []
@@ -158,10 +139,10 @@ const SingerManagement = () => {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className={`text-3xl font-bold ${currentTheme.text}`}>
-            Quản lý ca sĩ
+            Quản lý ca sĩ đã duyệt
           </h1>
           <p className={`mt-2 ${currentTheme.textSecondary}`}>
-            Thêm, sửa, và quản lý các ca sĩ trong hệ thống.
+            Thêm, sửa, và quản lý các ca sĩ đã được duyệt trong hệ thống.
           </p>
         </div>
         <Button
@@ -178,7 +159,7 @@ const SingerManagement = () => {
         <div className="w-full md:w-1/3">
           <Input
             id="search-singer"
-            placeholder="Tìm theo tên hoặc email ca sĩ..."
+            placeholder="Tìm ca sĩ đã duyệt theo tên hoặc email..."
             icon={<Search size={18} />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -202,9 +183,6 @@ const SingerManagement = () => {
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Trạng thái
-              </th>
               <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
                 Hành động
               </th>
@@ -213,15 +191,15 @@ const SingerManagement = () => {
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {loading && (
               <tr>
-                <td colSpan="5" className="text-center py-4">
+                <td colSpan="4" className="text-center py-4">
                   Đang tải...
                 </td>
               </tr>
             )}
             {!loading && singers.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center py-4">
-                  Không có ca sĩ nào phù hợp.
+                <td colSpan="4" className="text-center py-4">
+                  Không có ca sĩ đã duyệt nào phù hợp.
                 </td>
               </tr>
             )}
@@ -253,9 +231,6 @@ const SingerManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {singer.email}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={singer.status} />
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
                     <Button
                       variant="ghost"
@@ -284,7 +259,7 @@ const SingerManagement = () => {
       {!loading && pageInfo.totalPages > 1 && (
         <div className="flex items-center justify-between w-full mt-2 flex-col md:flex-row gap-4 md:gap-0">
           <p className={`text-sm ${currentTheme.textSecondary}`}>
-            Hiển thị {from} - {to} trên {pageInfo.totalElements} ca sĩ
+            Hiển thị {from} - {to} trên {pageInfo.totalElements} ca sĩ đã duyệt
           </p>
           <Pagination
             currentPage={pageInfo.pageNumber}

@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 import { AddToPlaylistModal } from '../../modules/music/components/AddToPlaylistModal';
 import { Menu, Transition } from '@headlessui/react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.muzo.com.vn';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const PremiumUpsellCard = () => {
     const { isDarkMode } = useDarkMode();
