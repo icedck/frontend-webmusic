@@ -86,7 +86,7 @@ npm install
 cp .env.example .env
 
 # Chỉnh sửa file .env với thông tin backend
-VITE_API_BASE_URL=https://api.muzo.com.vn
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
 ### 3. Chạy development server
